@@ -11,21 +11,33 @@ métré de matière première.
 ## Démarrage
 
 ```bash
-uv sync                                        # installe tout
-uv run briq valider exemples/maison.json       # contrôle le plan
-uv run briq calepiner exemples/maison.json -o sortie/
+uv sync                                          # installe tout
+uv run briq valider exemples/maison.json         # contrôle le plan
+uv run briq calepiner exemples/maison.json -o sortie/   # dossier complet
 ```
 
-`uv run briq calepiner` écrit le dossier complet : `calepinage.json`,
-`nomenclature.csv`, `nomenclature-par-mur.csv`, `metre.csv`, `debit.csv`,
-`rapport.txt`, les 17 planches en `plans/*.svg`, le `dossier.pdf` A3 relié, les
-`dxf/*.dxf` à l'échelle 1 et les `3d/*.glb`. `--glouton` force le solveur de
-débit sans dépendance ; `--formats svg,pdf` restreint les plans, `--formats ""`
-les supprime.
+| Commande | Effet |
+|---|---|
+| `briq valider PLAN` | rapport de validation seul ; sort en 1 s'il y a une erreur |
+| `briq calepiner PLAN -o DOSSIER` | le dossier complet : modèle, nomenclature, métré, débit, plans |
+| `briq nomenclature PLAN` | la nomenclature à l'écran, sans rien écrire |
+| `briq debit PLAN` | le plan de découpe optimisé, sans rien écrire |
+| `briq schema -o DOSSIER` | régénère le schéma JSON du format de plan |
 
-`uv run briq schema` régénère `schemas/briq-plan-v1.schema.json`. Référencez-le
-depuis votre plan (`"$schema": "../schemas/briq-plan-v1.schema.json"`) pour
-obtenir autocomplétion et validation en direct dans l'éditeur pendant la saisie.
+Options utiles de `calepiner` : `-f svg` (répétable) restreint les formats de
+plans, aucune occurrence produisant les quatre ; `--glouton` remplace le solveur
+de débit exact par celui sans dépendance ; `--secondes` borne chaque phase du
+solveur exact.
+
+`calepiner` écrit `calepinage.json`, `nomenclature.csv`,
+`nomenclature-par-mur.csv`, `metre.csv`, `debit.csv`, `rapport.txt`, les
+17 planches en `plans/*.svg`, le `dossier.pdf` A3 relié, les `dxf/*.dxf` à
+l'échelle 1 et les `3d/*.glb`.
+
+Référencez le schéma depuis votre plan
+(`"$schema": "../schemas/briq-plan-v1.schema.json"`) pour obtenir autocomplétion
+et validation en direct dans l'éditeur pendant la saisie. Un test vérifie que le
+schéma commité suit le modèle : sans cela l'autocomplétion mentirait.
 
 ## État d'avancement
 
@@ -34,7 +46,7 @@ obtenir autocomplétion et validation en direct dans l'éditeur pendant la saisi
 | 1 | modèle, règles, moteur de calepinage, tests | **livré** |
 | 2 | nomenclature, métré, débit optimisé | **livré** |
 | 3 | plans SVG / PDF A3 / DXF, vue 3D de contrôle | **livré** |
-| 4 | CLI complète, exemple, documentation | partiel (CLI en argparse) |
+| 4 | CLI complète, exemple, documentation | **livré** |
 
 ## Architecture
 
@@ -62,8 +74,10 @@ src/briq/
   cli.py
 ```
 
-`engine/` et `rules/` n'ont **aucune dépendance** : ils s'importent avec la seule
-bibliothèque standard. Pydantic ne sert qu'à la frontière d'entrée.
+`engine/`, `rules/` et `bom/` n'ont **aucune dépendance** : ils s'importent avec
+la seule bibliothèque standard. Pydantic ne sert qu'à la frontière d'entrée,
+Typer et Rich qu'à la CLI, OR-Tools qu'au solveur exact (avec un repli glouton),
+ReportLab, ezdxf et trimesh qu'aux back-ends de dessin.
 
 ### Trois principes
 
@@ -101,8 +115,8 @@ définit aucune référence (voir `docs/hypotheses.md`).
 ## Tests
 
 ```bash
-uv run pytest                  # 83 tests, ~60 s
-uv run pytest -m "not lent"    # ~20 s : exclut les preuves d'optimalite du débit
+uv run pytest                  # 98 tests, ~60 s
+uv run pytest -m "not lent"    # ~25 s : exclut les preuves d'optimalité du débit
 uv run ruff check src tests
 uv run mypy
 ```
@@ -147,6 +161,12 @@ obligatoire est apposée par le back-end, donc impossible à oublier.
 
 Le dossier comprend une élévation par mur, un plan de pose par rang et une page
 d'instructions générée.
+
+**Pagination.** Une élévation qui ne tiendrait pas au 1:50 est découpée en
+plusieurs A3 qui se recouvrent d'une bande de 960 mm, plutôt que réduite au 1:100
+où les repères portés sur les briques ne se lisent plus. Les pages partagent le
+même cadre vertical pour rester comparables. Les murs de 13,92 m de la maison
+d'exemple tiennent sur une seule feuille ; un mur de 24 m en demande deux.
 
 ## La vérification 3D
 

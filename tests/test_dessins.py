@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections import Counter
+from itertools import pairwise
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
@@ -10,7 +11,7 @@ import pytest
 
 from briq.drawings import dxf, pdf, svg
 from briq.drawings.ir import MENTION, Calque, Dessin, Rect, echelle_adaptee
-from briq.drawings.mise_en_page import A3, cadrer
+from briq.drawings.mise_en_page import A3, ECHELLE_DE_LISIBILITE, cadrer, paginer
 from briq.drawings.planches import dossier, elevation, instructions, plan_de_rang
 from briq.drawings.volume import (
     receptions_globales,
@@ -229,3 +230,73 @@ def test_les_petites_planches_passent_par_tous_les_back_ends(tmp_path: Path) -> 
     dxf.ecrire(planches, tmp_path)
     assert (tmp_path / "p.svg").stat().st_size > 0
     assert (tmp_path / "p.pdf").stat().st_size > 0
+
+
+# --- pagination ---------------------------------------------------------------
+
+
+def test_une_elevation_qui_tient_n_est_pas_paginee(maison: Plan, maison_calepinee) -> None:
+    mur = maison_calepinee.murs[0]
+    baies = [o for o in maison.ouvertures if o.mur == mur.id]
+    pages = paginer(elevation(mur, maison, baies))
+    assert len(pages) == 1
+    assert pages[0].echelle is None, "l'echelle reste libre sur une planche unique"
+
+
+def test_un_mur_trop_long_est_decoupe_en_pages_qui_se_recouvrent() -> None:
+    """Un mur de 24 m ne tiendrait qu'au 1:100, ou les reperes sont illisibles."""
+    long_ = plan_rectangle(
+        24000,
+        4800,
+        ouvertures=[
+            {
+                "id": f"F{i}",
+                "mur": m,
+                "type": "fenetre",
+                "position": pos,
+                "largeur": 1200,
+                "allege": 960,
+                "hauteur": 1200,
+            }
+            for i, (m, pos) in enumerate(
+                [
+                    ("M1", 4800),
+                    ("M1", 11040),
+                    ("M1", 17280),
+                    ("M3", 4800),
+                    ("M3", 11040),
+                    ("M3", 17280),
+                ]
+            )
+        ],
+    )
+    calepinage, rapport = calepiner(long_)
+    assert calepinage is not None, [str(e) for e in rapport.erreurs]
+    mur = calepinage.murs[0]
+    baies = [o for o in long_.ouvertures if o.mur == mur.id]
+    pages = paginer(elevation(mur, long_, baies))
+
+    assert len(pages) > 1
+    assert [p.titre for p in pages] == [
+        f"Elevation du mur M1 ({i + 1}/{len(pages)})" for i in range(len(pages))
+    ]
+    for page in pages:
+        assert page.echelle == ECHELLE_DE_LISIBILITE
+        x0, _, x1, _ = page.emprise
+        _, _, zdx, _ = A3.zone
+        assert (x1 - x0) / page.echelle <= zdx + 0.01
+    # Les pages se recouvrent, et couvrent tout le mur sans trou.
+    for gauche, droite in pairwise(pages):
+        assert droite.emprise[0] < gauche.emprise[2], "il manque une bande commune"
+    assert pages[0].emprise[0] == elevation(mur, long_, baies).emprise[0]
+    assert pages[-1].emprise[2] == elevation(mur, long_, baies).emprise[2]
+
+
+def test_les_pages_partagent_le_meme_cadre_vertical() -> None:
+    long_ = plan_rectangle(24000, 4800)
+    calepinage, _ = calepiner(long_)
+    if calepinage is None:  # murs sans raidisseur : le refus est attendu
+        return
+    pages = paginer(elevation(calepinage.murs[0], long_, []))
+    hauteurs = {(p.emprise[1], p.emprise[3]) for p in pages}
+    assert len(hauteurs) == 1, "les pages doivent rester comparables"

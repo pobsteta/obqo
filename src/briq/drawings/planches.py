@@ -13,6 +13,7 @@ from briq.drawings.ir import (
     coter_horizontal,
     coter_vertical,
 )
+from briq.drawings.mise_en_page import paginer
 from briq.model.plan import Ouverture, Plan
 from briq.model.systeme import BriquePosee, Calepinage, MurCalepine
 from briq.units import (
@@ -266,11 +267,17 @@ def instructions(calepinage: Calepinage, plan: Plan) -> Dessin:
 
 
 def dossier(calepinage: Calepinage, plan: Plan) -> list[Dessin]:
-    """Toutes les planches du dossier, dans l'ordre de reliure."""
+    """Toutes les planches du dossier, dans l'ordre de reliure.
+
+    Une elevation trop longue pour tenir au 1:50 est paginee en plusieurs
+    feuilles qui se recouvrent, plutot que reduite jusqu'a l'illisible.
+    """
     par_mur: dict[str, list[Ouverture]] = {}
     for o in plan.ouvertures:
         par_mur.setdefault(o.mur, []).append(o)
-    planches = [elevation(m, plan, par_mur.get(m.id, [])) for m in calepinage.murs]
+    planches: list[Dessin] = []
+    for mur in calepinage.murs:
+        planches.extend(paginer(elevation(mur, plan, par_mur.get(mur.id, []))))
     planches += [plan_de_rang(calepinage, plan, r) for r in range(plan.rangs)]
     planches.append(instructions(calepinage, plan))
     return planches

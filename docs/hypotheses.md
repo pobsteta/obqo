@@ -172,8 +172,11 @@ acceptable sur ton plan réel ?
 Voir `docs/etudes/longueur-de-barre.md` pour l'analyse complète. Le jalon 2 est
 livré avec les valeurs par défaut ci-dessous, toutes paramétrables dans le plan.
 
-1. **Trait de scie** : 4 mm par défaut, en remplacement de la « marge de chute »
-   globale du §2.1. Quelle est la valeur réelle de ta lame ?
+1. **Trait de scie** : ✅ **acté le 2026-09-01 à 4 mm**, en remplacement de la
+   « marge de chute » globale du §2.1. C'est la valeur retenue par défaut dans
+   `parametres.trait_de_scie` et celle sur laquelle repose l'étude de longueur de
+   barre : à 4 mm, la barre de 4 m reste le choix le plus robuste, 2,40 m le
+   pire, et il ne faut acheter que des longueurs multiples de 80.
 2. **Chute minimale réutilisable** : 240 mm par défaut (une demi-brique).
 3. **Lisibilité contre optimalité** : la question ne se pose finalement pas. Sur
    la maison d'exemple, l'objectif lexicographique (minimiser les barres, puis

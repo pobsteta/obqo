@@ -124,7 +124,10 @@ class Dessin:
     titre: str
     sous_titre: str = ""
     primitives: list[Primitive] = field(default_factory=list)
-    echelle: int = 50
+    echelle: int | None = None
+    """None : l'echelle normalisee la plus grande qui tienne sur la feuille."""
+    emprise_imposee: tuple[float, float, float, float] | None = None
+    """Cadre force, pour que les pages d'une meme planche restent alignees."""
     legende: list[tuple[str, Calque]] = field(default_factory=list)
 
     def ajouter(self, *primitives: Primitive) -> None:
@@ -132,7 +135,9 @@ class Dessin:
 
     @property
     def emprise(self) -> tuple[float, float, float, float]:
-        """Boite englobante du dessin, hors textes, en millimetres du modele."""
+        """Boite englobante du dessin, en millimetres du modele."""
+        if self.emprise_imposee is not None:
+            return self.emprise_imposee
         xs: list[float] = []
         ys: list[float] = []
         for p in self.primitives:

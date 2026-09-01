@@ -107,6 +107,12 @@
           "title": "Longueur Barre",
           "type": "integer"
         },
+        "longueur_barre_madrier": {
+          "default": 4000,
+          "exclusiveMinimum": 0,
+          "title": "Longueur Barre Madrier",
+          "type": "integer"
+        },
         "trait_de_scie": {
           "default": 4,
           "minimum": 0,
@@ -353,6 +359,7 @@
       "$ref": "#/$defs/Parametres",
       "default": {
         "longueur_barre": 4000,
+        "longueur_barre_madrier": 4000,
         "trait_de_scie": 4,
         "chute_minimale_reutilisable": 240,
         "hors_grille": "refuser",
