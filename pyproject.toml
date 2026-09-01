@@ -1,0 +1,47 @@
+[project]
+name = "briq"
+version = "0.1.0"
+description = "Calepinage, nomenclature et metre pour le systeme constructif BRIQ (bois massif cheville)"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic>=2.9",
+]
+
+[project.optional-dependencies]
+solveur = ["ortools>=9.11"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "hypothesis>=6.112",
+    "ruff>=0.7",
+    "mypy>=1.13",
+]
+
+[project.scripts]
+briq = "briq.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/briq"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+mypy_path = "src"
+packages = ["briq"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

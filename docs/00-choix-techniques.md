@@ -46,7 +46,8 @@ Trois conséquences directes, qui valent plus que n'importe quel choix de librai
 
 ```python
 from typing import NewType
-Mm = NewType("Mm", int)          # millimètres, toujours entiers
+
+Mm = NewType("Mm", int)  # millimètres, toujours entiers
 Module = NewType("Module", int)  # multiples de 80
 Grille = NewType("Grille", int)  # multiples de 240 (grille de calepinage)
 ```

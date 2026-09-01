@@ -1,0 +1,374 @@
+{
+  "$defs": {
+    "Contour": {
+      "additionalProperties": false,
+      "description": "Contour exterieur des murs : soit une polyligne absolue, soit un trace.",
+      "properties": {
+        "points": {
+          "anyOf": [
+            {
+              "items": {
+                "maxItems": 2,
+                "minItems": 2,
+                "prefixItems": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "integer"
+                  }
+                ],
+                "type": "array"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Points"
+        },
+        "trace": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Trace"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "Contour",
+      "type": "object"
+    },
+    "Ouverture": {
+      "additionalProperties": false,
+      "description": "Une baie. Toutes les cotes portent sur la **tremie**, pas sur le passage\nlibre : les jambages P10 se logent a l'interieur de la tremie.",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "mur": {
+          "title": "Mur",
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "porte",
+            "fenetre",
+            "porte_fenetre"
+          ],
+          "title": "Type",
+          "type": "string"
+        },
+        "position": {
+          "minimum": 0,
+          "title": "Position",
+          "type": "integer"
+        },
+        "largeur": {
+          "exclusiveMinimum": 0,
+          "title": "Largeur",
+          "type": "integer"
+        },
+        "allege": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Allege",
+          "type": "integer"
+        },
+        "hauteur": {
+          "exclusiveMinimum": 0,
+          "title": "Hauteur",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "mur",
+        "type",
+        "position",
+        "largeur",
+        "hauteur"
+      ],
+      "title": "Ouverture",
+      "type": "object"
+    },
+    "Parametres": {
+      "additionalProperties": false,
+      "properties": {
+        "longueur_barre": {
+          "default": 4000,
+          "exclusiveMinimum": 0,
+          "title": "Longueur Barre",
+          "type": "integer"
+        },
+        "trait_de_scie": {
+          "default": 4,
+          "minimum": 0,
+          "title": "Trait De Scie",
+          "type": "integer"
+        },
+        "chute_minimale_reutilisable": {
+          "default": 240,
+          "minimum": 0,
+          "title": "Chute Minimale Reutilisable",
+          "type": "integer"
+        },
+        "hors_grille": {
+          "default": "refuser",
+          "enum": [
+            "refuser",
+            "arrondir"
+          ],
+          "title": "Hors Grille",
+          "type": "string"
+        },
+        "prix_barre": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            }
+          ],
+          "default": "0",
+          "title": "Prix Barre"
+        },
+        "prix_ml_hetre": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            }
+          ],
+          "default": "0",
+          "title": "Prix Ml Hetre"
+        },
+        "prix_ml_madrier": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            }
+          ],
+          "default": "0",
+          "title": "Prix Ml Madrier"
+        },
+        "prix_ml_lamelle": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            }
+          ],
+          "default": "0",
+          "title": "Prix Ml Lamelle"
+        },
+        "masse_volumique_epicea": {
+          "default": 450,
+          "exclusiveMinimum": 0,
+          "title": "Masse Volumique Epicea",
+          "type": "integer"
+        }
+      },
+      "title": "Parametres",
+      "type": "object"
+    },
+    "Refend": {
+      "additionalProperties": false,
+      "description": "Mur interieur porteur, attache a deux murs existants.",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "depart": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            }
+          ],
+          "title": "Depart",
+          "type": "array"
+        },
+        "arrivee": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            }
+          ],
+          "title": "Arrivee",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "depart",
+        "arrivee"
+      ],
+      "title": "Refend",
+      "type": "object"
+    },
+    "Segment": {
+      "additionalProperties": false,
+      "description": "Un deplacement du trace en « tortue ».",
+      "properties": {
+        "direction": {
+          "enum": [
+            "est",
+            "ouest",
+            "nord",
+            "sud"
+          ],
+          "title": "Direction",
+          "type": "string"
+        },
+        "longueur": {
+          "exclusiveMinimum": 0,
+          "title": "Longueur",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "direction",
+        "longueur"
+      ],
+      "title": "Segment",
+      "type": "object"
+    },
+    "Trace": {
+      "additionalProperties": false,
+      "description": "Contour saisi par deplacements relatifs : la fermeture est verifiee.",
+      "properties": {
+        "depart": {
+          "default": [
+            0,
+            0
+          ],
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            }
+          ],
+          "title": "Depart",
+          "type": "array"
+        },
+        "segments": {
+          "items": {
+            "$ref": "#/$defs/Segment"
+          },
+          "minItems": 3,
+          "title": "Segments",
+          "type": "array"
+        }
+      },
+      "required": [
+        "segments"
+      ],
+      "title": "Trace",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "$Schema"
+    },
+    "version": {
+      "const": "1",
+      "default": "1",
+      "title": "Version",
+      "type": "string"
+    },
+    "nom": {
+      "default": "sans nom",
+      "title": "Nom",
+      "type": "string"
+    },
+    "hauteur_sous_chainage": {
+      "exclusiveMinimum": 0,
+      "title": "Hauteur Sous Chainage",
+      "type": "integer"
+    },
+    "contour": {
+      "$ref": "#/$defs/Contour"
+    },
+    "ouvertures": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Ouverture"
+      },
+      "title": "Ouvertures",
+      "type": "array"
+    },
+    "refends": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Refend"
+      },
+      "title": "Refends",
+      "type": "array"
+    },
+    "parametres": {
+      "$ref": "#/$defs/Parametres",
+      "default": {
+        "longueur_barre": 4000,
+        "trait_de_scie": 4,
+        "chute_minimale_reutilisable": 240,
+        "hors_grille": "refuser",
+        "prix_barre": "0",
+        "prix_ml_hetre": "0",
+        "prix_ml_madrier": "0",
+        "prix_ml_lamelle": "0",
+        "masse_volumique_epicea": 450
+      }
+    }
+  },
+  "required": [
+    "hauteur_sous_chainage",
+    "contour"
+  ],
+  "title": "Plan BRIQ, version 1",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}
