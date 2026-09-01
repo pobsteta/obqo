@@ -1,0 +1,38 @@
+{
+  "$schema": "../schemas/briq-plan-v1.schema.json",
+  "version": "1",
+  "nom": "Maison en L — 9,60 × 7,20 m avec encoche 4,80 × 2,88 m",
+  "hauteur_sous_chainage": 2640,
+  "contour": {
+    "trace": {
+      "depart": [0, 0],
+      "segments": [
+        { "direction": "est", "longueur": 9600 },
+        { "direction": "nord", "longueur": 4320 },
+        { "direction": "ouest", "longueur": 4800 },
+        { "direction": "nord", "longueur": 2880 },
+        { "direction": "ouest", "longueur": 4800 },
+        { "direction": "sud", "longueur": 7200 }
+      ]
+    }
+  },
+  "refends": [
+    { "id": "R1", "depart": [4800, 0], "arrivee": [4800, 4320] }
+  ],
+  "ouvertures": [
+    { "id": "P-entree",  "mur": "M1", "type": "porte",         "position": 2880, "largeur": 1200, "hauteur": 2160 },
+    { "id": "F-sud",     "mur": "M1", "type": "fenetre",       "position": 6240, "largeur": 1440, "allege": 960,  "hauteur": 1200 },
+    { "id": "F-est",     "mur": "M2", "type": "fenetre",       "position": 1440, "largeur": 1200, "allege": 960,  "hauteur": 1200 },
+    { "id": "PF-cour",   "mur": "M3", "type": "porte_fenetre", "position": 1680, "largeur": 1440, "hauteur": 2160 },
+    { "id": "F-encoche", "mur": "M4", "type": "fenetre",       "position": 720,  "largeur": 1200, "allege": 960,  "hauteur": 1200 },
+    { "id": "F-nord",    "mur": "M5", "type": "fenetre",       "position": 1680, "largeur": 1440, "allege": 960,  "hauteur": 1200 },
+    { "id": "F-ouest",   "mur": "M6", "type": "fenetre",       "position": 2880, "largeur": 1440, "allege": 960,  "hauteur": 1200 },
+    { "id": "P-couloir", "mur": "R1", "type": "porte",         "position": 1440, "largeur": 960,  "hauteur": 2160 }
+  ],
+  "parametres": {
+    "longueur_barre": 4000,
+    "trait_de_scie": 4,
+    "chute_minimale_reutilisable": 240,
+    "hors_grille": "refuser"
+  }
+}

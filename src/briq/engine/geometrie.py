@@ -17,7 +17,17 @@ Point = tuple[int, int]
 
 @dataclass(frozen=True, slots=True)
 class Angle:
-    """Un angle de mur a 90 degres entre deux murs consecutifs."""
+    """Un angle de mur a 90 degres entre deux murs consecutifs.
+
+    Convexe ou rentrant, le mecanisme est le meme : une colonne de 240 x 240 que
+    l'un des deux murs doit occuper, et qui change de mur a chaque rang. Seule sa
+    position change. A un angle **convexe** (angle interieur de 90 degres) la
+    colonne tombe au bout de la course nominale : le mur filant va jusqu'au nu
+    exterieur de l'autre, le mur en butee s'arrete 240 avant. A un angle
+    **rentrant** (angle interieur de 270 degres) les deux bandes de mur ne se
+    touchent que par un point : la colonne se trouve **au-dela** du sommet, et
+    c'est le mur filant qui deborde de 240 pour la remplir.
+    """
 
     id: str
     sommet: Point
@@ -26,13 +36,25 @@ class Angle:
     sortant: str
     """Mur qui en repart."""
     filant_rang0: str
-    """Mur qui file jusqu'au nu de l'autre au rang 0 (le plus long)."""
+    """Mur qui occupe la colonne d'angle au rang 0 (le plus long)."""
+    convexe: bool = True
 
     def filant(self, rang: int) -> str:
         """Harpage croise alterne : le mur filant change a chaque rang."""
         if rang % 2 == 0:
             return self.filant_rang0
         return self.sortant if self.filant_rang0 == self.entrant else self.entrant
+
+    def decalage(self, mur: str, rang: int) -> int:
+        """Ce que la colonne d'angle ajoute ou retire a la course d'un mur.
+
+        Compte positivement vers l'exterieur de la course : a appliquer en
+        soustraction au debut et en addition a la fin.
+        """
+        file = self.filant(rang) == mur
+        if self.convexe:
+            return 0 if file else -EPAISSEUR_MUR
+        return EPAISSEUR_MUR if file else 0
 
 
 @dataclass(frozen=True, slots=True)
@@ -66,15 +88,24 @@ class Squelette:
     def course(self, mur: Mur, rang: int) -> tuple[int, int]:
         """Abscisses de debut et de fin de la maconnerie du mur a ce rang.
 
-        Au droit d'un angle, le mur filant occupe la colonne d'angle et part de 0 ;
-        le mur en butee s'arrete au nu de l'autre, donc recule de 240.
+        Un refend, sans angle, garde sa course nominale a tous les rangs.
         """
         depart, arrivee = self.angles_par_mur[mur.id]
-        debut = 0 if depart is None or depart.filant(rang) == mur.id else EPAISSEUR_MUR
-        fin = mur.longueur - (
-            0 if arrivee is None or arrivee.filant(rang) == mur.id else EPAISSEUR_MUR
-        )
+        debut = -depart.decalage(mur.id, rang) if depart is not None else 0
+        fin = mur.longueur + (arrivee.decalage(mur.id, rang) if arrivee is not None else 0)
         return debut, fin
+
+
+def _direction(mur: Mur) -> Point:
+    (x0, y0), (x1, y1) = mur.depart, mur.arrivee
+    return ((x1 > x0) - (x1 < x0), (y1 > y0) - (y1 < y0))
+
+
+def _convexe(entrant: Mur, sortant: Mur) -> bool:
+    """Le contour tourne-t-il a gauche ? Sur un contour trigonometrique, oui
+    signifie un angle interieur de 90 degres, non un angle rentrant de 270."""
+    (dx1, dy1), (dx2, dy2) = _direction(entrant), _direction(sortant)
+    return dx1 * dy2 - dy1 * dx2 > 0
 
 
 def _sur_segment(point: Point, a: Point, b: Point) -> bool:
@@ -123,6 +154,7 @@ def squelette(plan: Plan) -> Squelette:
                 entrant=entrant.id,
                 sortant=sortant.id,
                 filant_rang0=filant,
+                convexe=_convexe(entrant, sortant),
             )
         )
 

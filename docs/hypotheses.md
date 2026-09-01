@@ -61,13 +61,38 @@ Cette règle n'est plus émise à l'exécution : elle est documentée dans
 
 Quand une course de longueur impaire en modules oblige la demi-brique à tomber à
 l'about **filant** d'un angle, la brique d'angle est une demi-brique. Le §1.4 ne
-définit qu'une 480-ANR. L'application émet alors une 240-ANR et le signale.
+définit qu'une 480-ANR. L'application émet alors une 240-ANR et le signale — en
+un seul constat agrégé, listant les murs et les rangs concernés.
 
 Géométriquement, une 240 convient : son tenon unique est à 120 mm de l'about,
 donc exactement sur l'axe (120, 120) de la colonne d'angle du §1.5. Mais aucune
 référence du brief ne la couvre.
 
-**Le contourner est possible et gratuit :** voir R1 ci-dessous.
+**Ce n'est pas toujours évitable.** Un mur filant d'un côté et en butée de
+l'autre a une course de longueur `L ± 240` : impaire en modules dès que `L` est
+un multiple de 480. La demi-brique doit alors tomber à un about, et si cet about
+est celui d'un angle filant, c'est une 240-ANR. Caler les dimensions sur 480
+(voir R1) réduit fortement le phénomène sans le supprimer : la maison
+rectangulaire d'exemple n'en a aucune, la maison en L en a 21.
+
+**Question :** faut-il ajouter une 240-ANR au catalogue, ou interdire par une
+règle de conception les configurations qui la produisent ?
+
+## H4 — Angle rentrant (270 degrés)
+
+Le §1.5 ne décrit le harpage que pour un angle de 90°. Une maison en L, en U ou
+en T a aussi des angles **rentrants**, et ce n'est pas le symétrique du cas
+convexe : à 90° les deux bandes de mur se recouvrent dans un carré de 240 × 240,
+à 270° elles ne se touchent que par un point.
+
+Le mécanisme reste le même — une colonne de 240 que le mur filant occupe un rang
+sur deux — mais elle se trouve **au-delà** du sommet et non en deçà : c'est le
+mur filant qui déborde de 240, au lieu que le mur en butée recule de 240.
+
+L'application applique la quincaillerie d'angle par analogie et le signale.
+**Question :** l'orientation de la mortaise de flanc de la 480-ANR (§1.4 : ligne
+1, rangée intérieure) reste-t-elle valable quand le mur perpendiculaire arrive de
+l'autre côté ?
 
 ---
 

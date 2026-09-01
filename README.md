@@ -49,6 +49,7 @@ schéma commité suit le modèle : sans cela l'autocomplétion mentirait.
 | 3 | plans SVG / PDF A3 / DXF, vue 3D de contrôle | **livré** |
 | 4 | CLI complète, exemple, documentation | **livré** |
 | — | interface web légère (option du brief) | **livrée** |
+| — | contours en L, U, T et escalier (angles rentrants) | **livré** |
 
 ## Architecture
 
@@ -120,8 +121,8 @@ définit aucune référence (voir `docs/hypotheses.md`).
 ## Tests
 
 ```bash
-uv run pytest                  # 111 tests, ~65 s
-uv run pytest -m "not lent"    # ~30 s : exclut les preuves d'optimalité du débit
+uv run pytest                  # 129 tests, ~75 s
+uv run pytest -m "not lent"    # ~40 s : exclut les preuves d'optimalité du débit
 uv run ruff check src tests
 uv run mypy
 ```
@@ -152,6 +153,22 @@ Le bois acheté se répartit en **trois** catégories, jamais deux : les pièces
 utiles, la **surproduction** (des pièces en trop, utilisables en rechange — un
 fond de barre rempli d'une pièce de plus ne gaspille rien) et la **chute**, seul
 vrai déchet. Les confondre masque complètement le rendement réel.
+
+## Les contours non rectangulaires
+
+Le moteur accepte tout contour rectiligne fermé : L, U, T, escalier. Ce qui
+demande un traitement à part, ce sont les **angles rentrants** (270° à
+l'intérieur), et ils ne sont pas le symétrique des angles convexes.
+
+À 90°, les deux bandes de mur se recouvrent dans un carré de 240 × 240 : le mur
+filant le prend, le mur en butée recule de 240. **À 270°, les deux bandes ne se
+touchent que par un point** : la colonne de 240 se trouve au-delà du sommet, et
+c'est le mur filant qui déborde de 240 pour la remplir. Traiter les deux cas de
+la même façon laissait un trou de 240 × 240 dans le mur, à chaque rang.
+
+Cinq familles de contour sont vérifiées en continu — rectangle, L, U, T,
+escalier — plus des L et des U de dimensions tirées au hasard : couverture
+exacte, aucun recouvrement, joints décalés, et aucun tenon sans réception.
 
 ## Les plans
 

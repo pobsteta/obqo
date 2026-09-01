@@ -92,6 +92,7 @@ def valider(
     plan: Plan,
     longueurs_murs: dict[str, int],
     ancrages: dict[str, list[int]] | None = None,
+    courses: dict[str, list[tuple[int, int]]] | None = None,
 ) -> tuple[Rapport, list[Ouverture]]:
     """Valide le plan et retourne le rapport et les ouvertures normalisees."""
     rapport = Rapport()
@@ -119,6 +120,19 @@ def valider(
                 "(le contour n'est jamais recale automatiquement, un arrondi "
                 "romprait sa fermeture)",
             )
+
+    for identifiant, rangs in (courses or {}).items():
+        for indice, (debut, fin) in enumerate(rangs):
+            if fin - debut < GRILLE:
+                rapport.ajouter(
+                    Gravite.ERREUR,
+                    "MUR-TROP-COURT",
+                    identifiant,
+                    f"au rang {indice}, le harpage ne laisse que {fin - debut} mm de "
+                    f"maconnerie : un mur doit garder au moins {GRILLE} mm de course "
+                    "a tous les rangs",
+                )
+                break
 
     # --- ouvertures ------------------------------------------------------
     normalisees: list[Ouverture] = []

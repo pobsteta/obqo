@@ -81,7 +81,7 @@ def _poser_rang(
     rang: int,
     sq: Squelette,
     ouvertures: list[Ouverture],
-    rapport: Rapport,
+    demi_briques_d_angle: list[tuple[str, int]],
 ) -> Rang:
     debut, fin = sq.course(mur, rang)
     debut0, _ = sq.course(mur, 0)
@@ -116,14 +116,7 @@ def _poser_rang(
                 coin = angle_debut if angle_debut_ici else angle_fin
                 assert coin is not None
                 if longueur != LONGUEUR_BRIQUE:
-                    rapport.ajouter(
-                        Gravite.HYPOTHESE,
-                        "ANGLE-DEMI-BRIQUE",
-                        f"{mur.id}/R{rang}",
-                        "la brique filante d'angle est une demi-brique de 240 : "
-                        "le catalogue du brief ne definit qu'une 480-ANR, "
-                        "une 240-ANR est supposee (tenon d'angle a 120 de l'about)",
-                    )
+                    demi_briques_d_angle.append((mur.id, rang))
             r.briques.append(
                 BriquePosee(
                     mur=mur.id,
@@ -231,11 +224,26 @@ def calepiner(plan: Plan) -> tuple[Calepinage | None, Rapport]:
     """Calepine le plan. Retourne None si le plan porte des erreurs."""
     sq = squelette(plan)
     longueurs = {m.id: m.longueur for m in sq.murs}
-    rapport, ouvertures = valider(plan, longueurs, sq.ancrages)
+    courses = {m.id: [sq.course(m, r) for r in range(plan.rangs)] for m in sq.murs}
+    rapport, ouvertures = valider(plan, longueurs, sq.ancrages, courses)
     if not rapport.valide:
         return None, rapport
 
+    rentrants = [a.id for a in sq.angles if not a.convexe]
+    if rentrants:
+        rapport.ajouter(
+            Gravite.HYPOTHESE,
+            "ANGLE-RENTRANT",
+            ", ".join(rentrants),
+            "le paragraphe 1.5 ne decrit le harpage que pour un angle de 90 degres. "
+            "La geometrie est la meme a 270 (une colonne de 240 que le mur filant "
+            "occupe un rang sur deux, ici au-dela du sommet et non en deca), et la "
+            "quincaillerie d'angle est appliquee par analogie — mais l'orientation "
+            "de la mortaise de flanc de la brique 480-ANR reste a confirmer",
+        )
+
     calepinage = Calepinage(nom=plan.nom)
+    demi_briques_d_angle: list[tuple[str, int]] = []
     par_mur: dict[str, list[Ouverture]] = {}
     for o in ouvertures:
         par_mur.setdefault(o.mur, []).append(o)
@@ -250,7 +258,7 @@ def calepiner(plan: Plan) -> tuple[Calepinage | None, Rapport]:
         )
         baies = par_mur.get(mur.id, [])
         for rang in range(plan.rangs):
-            r = _poser_rang(mur, rang, sq, baies, rapport)
+            r = _poser_rang(mur, rang, sq, baies, demi_briques_d_angle)
             for o in baies:
                 if rang == o.rang_linteau:
                     r.quincaillerie.append(_montants_de_linteau(mur, o))
@@ -291,6 +299,28 @@ def calepiner(plan: Plan) -> tuple[Calepinage | None, Rapport]:
                     )
                 )
         calepinage.murs.append(mc)
+
+    if demi_briques_d_angle:
+        # Un seul constat agrege : le meme message repete vingt fois rend le
+        # rapport illisible et fait passer les autres constats inapercus.
+        par_mur_touche: dict[str, list[int]] = {}
+        for identifiant, indice in demi_briques_d_angle:
+            par_mur_touche.setdefault(identifiant, []).append(indice)
+        detail = " ; ".join(
+            f"{identifiant} rangs " + ", ".join(str(i) for i in sorted(rangs))
+            for identifiant, rangs in sorted(par_mur_touche.items())
+        )
+        rapport.ajouter(
+            Gravite.HYPOTHESE,
+            "ANGLE-DEMI-BRIQUE",
+            f"{len(demi_briques_d_angle)} briques",
+            "la brique filante d'angle est une demi-brique de 240, faute de mieux : "
+            "un mur filant d'un cote et en butee de l'autre a une course de "
+            "longueur impaire en modules, et la demi-brique doit tomber a un "
+            "about. Le catalogue du brief ne definit qu'une 480-ANR ; une 240-ANR "
+            "est supposee, son tenon unique etant deja a 120 de l'about, donc sur "
+            f"l'axe de la colonne d'angle. Concerne : {detail}",
+        )
 
     calepinage.avertissements = [str(c) for c in rapport.avertissements]
     calepinage.hypotheses = [str(c) for c in rapport.constats if c.gravite is Gravite.HYPOTHESE]
