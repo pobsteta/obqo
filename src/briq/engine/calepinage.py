@@ -1,4 +1,11 @@
-"""Moteur de calepinage : du plan valide au modele de briques posees."""
+"""Moteur de calepinage : du plan valide au modele de briques posees.
+
+**Regle actee (D2)** — jonction en T : le paragraphe 1.5 ne decrit le harpage
+que pour les angles a 90 degres. Un refend est **en butee a ses deux extremites
+a tous les rangs** : le mur traverse file toujours et n'est jamais interrompu.
+La liaison est assuree par le chevillage traversant, non par une penetration
+alternee, qui demanderait une brique que le catalogue ne contient pas.
+"""
 
 from __future__ import annotations
 
@@ -41,7 +48,7 @@ def _reference(longueur: int, debut_ferme: bool, fin_ferme: bool, angle: bool) -
     return Ref(f"{famille}-{suffixe}")
 
 
-def _vide(o: Ouverture, rang: int) -> tuple[int, int] | None:
+def vide_du_rang(o: Ouverture, rang: int) -> tuple[int, int] | None:
     """Intervalle de maconnerie absente du a une baie, pour ce rang."""
     if rang < o.rang_bas or rang > o.rang_linteau:
         return None
@@ -83,7 +90,7 @@ def _poser_rang(
     file_au_debut = angle_debut is not None and angle_debut.filant(rang) == mur.id
     file_a_la_fin = angle_fin is not None and angle_fin.filant(rang) == mur.id
 
-    vides = [v for o in ouvertures if (v := _vide(o, rang)) is not None]
+    vides = [v for o in ouvertures if (v := vide_du_rang(o, rang)) is not None]
     troncons = _segments(debut, fin, vides)
     r = Rang(mur=mur.id, indice=rang, debut=debut, fin=fin)
 
@@ -228,15 +235,6 @@ def calepiner(plan: Plan) -> tuple[Calepinage | None, Rapport]:
     if not rapport.valide:
         return None, rapport
 
-    if plan.refends:
-        rapport.ajouter(
-            Gravite.HYPOTHESE,
-            "JONCTION-EN-T",
-            "refends",
-            "le brief ne decrit le harpage que pour les angles a 90 degres : "
-            "le refend est suppose en butee aux deux extremites a tous les rangs, "
-            "avec la meme quincaillerie qu'un angle mais sans tenon P5-A",
-        )
     calepinage = Calepinage(nom=plan.nom)
     par_mur: dict[str, list[Ouverture]] = {}
     for o in ouvertures:

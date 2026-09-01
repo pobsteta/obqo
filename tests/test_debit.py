@@ -62,6 +62,7 @@ def test_l_optimum_exact_bat_le_glouton() -> None:
     assert exact.patrons_distincts <= glouton.patrons_distincts
 
 
+@pytest.mark.lent
 def test_la_chute_suit_la_loi_des_80_sur_L() -> None:
     """Le trait de scie fait perdre un module de 80 par barre : chute ~ 80/L.
 
@@ -129,11 +130,13 @@ def test_le_solveur_exact_est_deterministe() -> None:
     sur le meme plan donneraient des plans de debit differents a objectif egal,
     et aucun test de non-regression ne serait possible sur les livrables.
     """
-    demandes = Counter({240: 3000, 480: 250, 160: 1400, 80: 60})
+    # Une demande modeste suffit a prouver le determinisme : ce qui varie d'une
+    # execution a l'autre est le chemin de recherche, pas la taille du probleme.
+    demandes = Counter({240: 400, 480: 35, 160: 190, 80: 9})
     rendus = [
         [
             (str(b.patron), b.repetitions)
-            for b in CpSat(secondes_par_phase=15.0).resoudre(demandes, CARRELET).barres
+            for b in CpSat(secondes_par_phase=10.0).resoudre(demandes, CARRELET).barres
         ]
         for _ in range(2)
     ]

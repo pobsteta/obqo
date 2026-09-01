@@ -24,6 +24,9 @@ from briq.bom.sorties import (
     lignes_par_mur,
     synthese,
 )
+from briq.drawings import dxf, pdf, svg
+from briq.drawings.ir import nom_de_fichier
+from briq.drawings.planches import dossier as planches_du_dossier
 from briq.engine.calepinage import calepiner
 from briq.engine.validation import Constat, Gravite, Rapport
 from briq.model.plan import Plan
@@ -132,17 +135,61 @@ def cmd_calepiner(args: argparse.Namespace) -> int:
     ecrire_csv(dossier / "metre.csv", ENTETES_METRE, lignes_metre(metre))
     ecrire_csv(dossier / "debit.csv", ENTETES_DEBIT, lignes_debit(metre))
 
+    ecrits = _dessiner(calepinage, plan, dossier, args.formats)
+
     chiffrage = chiffrer(metre, plan.parametres)
     rendu = synthese(
         calepinage, nomenclature, metre, chiffrage, plan.parametres.masse_volumique_epicea
     )
     print(rendu)
     (dossier / "rapport.txt").write_text(_rapport_texte(rapport) + rendu, encoding="utf-8")
-    print(
-        f"Ecrit dans {dossier}/ : calepinage.json, nomenclature.csv, "
-        "nomenclature-par-mur.csv, metre.csv, debit.csv, rapport.txt"
-    )
+    fichiers = [
+        "calepinage.json",
+        "nomenclature.csv",
+        "nomenclature-par-mur.csv",
+        "metre.csv",
+        "debit.csv",
+        "rapport.txt",
+        *ecrits,
+    ]
+    print(f"Ecrit dans {dossier}/ : " + ", ".join(fichiers))
     return 0
+
+
+FORMATS = ("svg", "pdf", "dxf", "3d")
+
+
+def _dessiner(calepinage: Calepinage, plan: Plan, dossier: Path, formats: str) -> list[str]:
+    """Produit les planches dans les formats demandes. Retourne les intitules."""
+    demandes = [f.strip() for f in formats.split(",") if f.strip()]
+    if not demandes:
+        return []
+    planches = planches_du_dossier(calepinage, plan)
+    ecrits: list[str] = []
+
+    if "svg" in demandes:
+        cible = dossier / "plans"
+        cible.mkdir(parents=True, exist_ok=True)
+        for i, planche in enumerate(planches):
+            svg.ecrire(planche, cible / f"{i:02d}-{nom_de_fichier(planche.titre)}.svg")
+        ecrits.append(f"plans/*.svg ({len(planches)} planches)")
+    if "pdf" in demandes:
+        pdf.ecrire(planches, dossier / "dossier.pdf")
+        ecrits.append(f"dossier.pdf ({len(planches)} pages A3)")
+    if "dxf" in demandes:
+        cible = dossier / "dxf"
+        cible.mkdir(parents=True, exist_ok=True)
+        dxf.ecrire(planches, cible)
+        ecrits.append(f"dxf/*.dxf ({len(planches)} fichiers)")
+    if "3d" in demandes:
+        from briq.drawings import volume
+
+        cible = dossier / "3d"
+        cible.mkdir(parents=True, exist_ok=True)
+        volume.maison(calepinage, cible / "maison.glb")
+        volume.colonne_d_angle(calepinage, cible / "colonne-d-angle.glb")
+        ecrits.append("3d/maison.glb, 3d/colonne-d-angle.glb")
+    return ecrits
 
 
 def _rapport_texte(rapport: Rapport) -> str:
@@ -189,6 +236,11 @@ def main(argv: list[str] | None = None) -> int:
         type=float,
         default=20.0,
         help="temps maximal accorde a chaque phase du solveur exact",
+    )
+    p.add_argument(
+        "--formats",
+        default=",".join(FORMATS),
+        help="formats de plans a produire parmi svg, pdf, dxf, 3d ; vide pour aucun",
     )
     p.set_defaults(fonction=cmd_calepiner)
 

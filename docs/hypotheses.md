@@ -41,15 +41,21 @@ traverse l'allège, le remplissage d'allège entre les deux jambages mesure
 toujours un reste de 80 : **il n'est jamais calable sur la grille de 240**, quelle
 que soit la baie.
 
-## H2 — Jonction en T d'un refend
+## D2 — ✅ ACTÉ : le refend est en butée à ses deux extrémités
 
-Le §1.5 ne décrit le harpage que pour les angles à 90°. L'application suppose que
-le refend est **en butée à ses deux extrémités à tous les rangs** (le mur traversé
-file toujours), avec la même quincaillerie qu'un angle mais sans tenon P5-A,
-puisqu'il n'y a pas de rotation d'axe.
+**Décidé le 2026-09-01.** Le §1.5 ne décrit le harpage que pour les angles à 90°.
+Un refend est **en butée à ses deux extrémités à tous les rangs** : le mur
+traversé file toujours et n'est jamais interrompu. Même quincaillerie qu'un angle
+mais sans tenon P5-A, puisqu'il n'y a pas de rotation d'axe.
 
-**Question :** un refend doit-il au contraire harper alternativement dans le mur
-qu'il rejoint ? Cela changerait la longueur de sa course d'un rang à l'autre.
+L'alternative — harpage alterné, le refend pénétrant dans l'épaisseur du mur
+traversé un rang sur deux — donnerait une liaison mécanique bien meilleure, mais
+demanderait une brique de pénétration absente du catalogue et ferait perdre 240
+de course au mur extérieur un rang sur deux. La liaison repose donc sur le seul
+chevillage traversant : **c'est un point à signaler au bureau d'études.**
+
+Cette règle n'est plus émise à l'exécution : elle est documentée dans
+`engine/calepinage` et vérifiée par les tests.
 
 ## H3 — La 240-ANR n'existe pas au catalogue
 
@@ -83,15 +89,17 @@ de brique.
 courant en bout de mur) ? Le métré du jalon 2 comptera de toute façon chaque
 référence séparément, mais l'ordre de grandeur du brief sert de garde-fou.
 
-## Q1 — 21 pièces bois annoncées, 19 calculées
+## D3 — ✅ ACTÉ : les remplissages centraux sont 2 × 160, et l'écart de 2 pièces reste ouvert
 
-Pour la même longueur de 4,16 m, le §1.8 annonce 21 pièces bois et la structure
-du §1.2 en donne 19. Les deux pièces manquantes seraient donc de longueur nulle,
-ce qui est impossible — sauf si les **deux remplissages centraux de 160** (P6,
-lignes 3-4, couche 2) sont en réalité **quatre pièces de 80**, une par ligne et
-par parement. Le métré linéaire est identique, le compte passe à 21.
+**Décidé le 2026-09-01.** Les remplissages centraux (P6, lignes 3-4, couche 2)
+sont bien **2 pièces de 160**, comme l'écrit la table du §1.3.
 
-**Question :** les remplissages centraux sont-ils 2 × 160 ou 4 × 80 ?
+Conséquence assumée : pour la même longueur de 4,16 m, le §1.8 annonce 21 pièces
+bois et la structure du §1.2 en donne 19. Les deux pièces manquantes seraient de
+longueur nulle, ce qui est impossible — l'écart reste donc **inexpliqué**, et
+c'est le §1.8 qui est en cause, pas la nomenclature. Le test
+`test_ecart_documente_sur_le_nombre_de_pieces_d_une_480` le verrouille pour
+qu'il ne se referme pas silencieusement un jour.
 
 ## Q2 — 1,30 m de hêtre annoncés pour la demi-brique, 1,09 m calculés
 
@@ -102,23 +110,40 @@ de tenon C2 et 10 piges C3, on obtient 1,09 m. Atteindre 1,30 m demanderait
 
 **Question :** combien de piges exactement pour la demi-brique 240 ?
 
-## Q3 — Le carré P8 de l'angle est-il compté deux fois ?
+## D4 — ✅ ACTÉ : la brique en butée d'angle est une 480-A complète, plus un carré d'angle
 
-Le §2.5 impose un comptage d'angle de 1 P5-A / 1 raccord P6 / 1 carré P8 /
-2 chevilles par rang, et l'application le respecte à la lettre. Mais le §1.5 dit
-que « la poche intérieure de la brique en butée est fermée par un P8 », et cette
-brique en butée est une **480-A ordinaire** dont la fermeture d'about compte déjà
-deux P8 d'atelier.
+**Décidé le 2026-09-01.** La brique en butée d'angle est une **480-A ordinaire**
+(2 carrés P8 posés à l'atelier), et l'angle ajoute son propre carré au chantier —
+soit 3 carrés par rang d'angle. Le comptage d'acceptation du §2.5
+(1 P5-A / 1 raccord / 1 carré / 2 chevilles par rang) est donc respecté à la
+lettre, et la 480-A garde une définition unique quelle que soit sa position.
 
-Il y a donc peut-être un P8 compté à la fois en atelier et au chantier. Sur la
-maison d'exemple cela représente 44 carrés, soit 3,5 m de carrelet — négligeable
-au métré, mais faux dans la fiche de pose.
-
-**Question :** la brique en butée d'angle est-elle une 480-A complète (2 carrés)
-plus un carré d'angle, ou une 480-A dont une poche reste ouverte pour recevoir le
-raccord d'angle ?
+Le §1.5 (« la poche intérieure de la brique en butée est fermée par un P8 »)
+suggérait qu'un carré pouvait être compté à la fois en atelier et au chantier.
+Le choix retenu est de garder la marge : 88 carrés de plus sur la maison
+d'exemple, soit 7 m de carrelet sur 4 762 — 0,15 % du métré.
 
 ---
+
+## F2 — La vérification 3D a corrigé deux erreurs d'implémentation
+
+La table de géométrie interne d'une brique (`rules/geometrie_brique.py`) a été
+écrite **indépendamment** de la table de composition (`rules/catalogue.py`), puis
+les deux ont été comparées par un test. Cela a immédiatement révélé deux défauts
+de l'application — aucun des deux dans le brief :
+
+1. la 480-ANR se voyait attribuer **trois carrés P8 au lieu d'un**. Le §1.4 dit
+   que l'about d'angle est fermé comme une 480-A mais que le carré de la ligne 1,
+   rangée intérieure, est omis : c'est la mortaise de flanc qui reçoit le raccord
+   du mur perpendiculaire. Il ne reste donc qu'un carré, celui du parement
+   extérieur ;
+2. sur un mur orienté vers l'ouest ou vers le sud, le point de départ d'une pièce
+   est son bord **maximum**, pas son minimum. Sans corriger cela, tenons et
+   réceptions ne coïncidaient plus sur la moitié des murs.
+
+La vérification « tout tenon trouve-t-il sa réception au rang supérieur ? » est
+désormais un test permanent. Elle prouve que le harpage croisé alterné tombe
+juste, ce qu'aucune élévation 2D ne sait montrer.
 
 ## R1 — Recommandation : caler les dimensions sur 480, pas seulement sur 240
 
@@ -167,4 +192,4 @@ comme chute, dans une catégorie distincte (0,9 m sur la maison d'exemple).
 
 C'est ce qui rend le taux de chute honnête : confondre les deux masquait
 totalement la loi des 80/L. **Question :** veux-tu au contraire que le solveur
-interdise toute surproduction ?
+interdise toute surproduction ? Par défaut elle est autorisée et comptée à part.

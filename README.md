@@ -16,9 +16,12 @@ uv run briq valider exemples/maison.json       # contrôle le plan
 uv run briq calepiner exemples/maison.json -o sortie/
 ```
 
-`uv run briq calepiner` écrit `calepinage.json`, `nomenclature.csv`,
-`nomenclature-par-mur.csv`, `metre.csv`, `debit.csv` et `rapport.txt`, et affiche
-la synthèse. `--glouton` force le solveur de débit sans dépendance.
+`uv run briq calepiner` écrit le dossier complet : `calepinage.json`,
+`nomenclature.csv`, `nomenclature-par-mur.csv`, `metre.csv`, `debit.csv`,
+`rapport.txt`, les 17 planches en `plans/*.svg`, le `dossier.pdf` A3 relié, les
+`dxf/*.dxf` à l'échelle 1 et les `3d/*.glb`. `--glouton` force le solveur de
+débit sans dépendance ; `--formats svg,pdf` restreint les plans, `--formats ""`
+les supprime.
 
 `uv run briq schema` régénère `schemas/briq-plan-v1.schema.json`. Référencez-le
 depuis votre plan (`"$schema": "../schemas/briq-plan-v1.schema.json"`) pour
@@ -30,8 +33,8 @@ obtenir autocomplétion et validation en direct dans l'éditeur pendant la saisi
 |---|---|---|
 | 1 | modèle, règles, moteur de calepinage, tests | **livré** |
 | 2 | nomenclature, métré, débit optimisé | **livré** |
-| 3 | plans SVG / PDF A3 / DXF | à venir |
-| 4 | CLI complète, exemple, documentation | partiel (CLI minimale) |
+| 3 | plans SVG / PDF A3 / DXF, vue 3D de contrôle | **livré** |
+| 4 | CLI complète, exemple, documentation | partiel (CLI en argparse) |
 
 ## Architecture
 
@@ -49,6 +52,13 @@ src/briq/
                 debit.py         cutting-stock 1D, glouton et optimum exact
                 metre.py         métrés linéaires, masse, chiffrage
                 sorties.py       CSV et tableaux texte
+  drawings/     ir.py            modèle de dessin, indépendant du format
+                planches.py      élévations, plans de pose, instructions
+                mise_en_page.py  échelle, centrage, cartouche A3
+                svg.py           back-end SVG (bibliothèque standard)
+                pdf.py           back-end PDF A3 multi-pages (ReportLab)
+                dxf.py           back-end DXF à l'échelle 1 (ezdxf)
+                volume.py        export 3D et vérification des tenons
   cli.py
 ```
 
@@ -91,7 +101,8 @@ définit aucune référence (voir `docs/hypotheses.md`).
 ## Tests
 
 ```bash
-uv run pytest          # 66 tests
+uv run pytest                  # 83 tests, ~60 s
+uv run pytest -m "not lent"    # ~20 s : exclut les preuves d'optimalite du débit
 uv run ruff check src tests
 uv run mypy
 ```
@@ -100,6 +111,11 @@ Les tests unitaires vérifient des comptages faits à la main. Les tests à
 propriétés (Hypothesis) vérifient les **invariants** sur des milliers de murs
 tirés au hasard : une course exactement remplie, aucun recouvrement, et surtout
 aucun joint du rang *n* aligné avec un joint du rang *n+1*.
+
+Trois contrôles croisés protègent les règles métier, en comparant deux sources
+écrites indépendamment : la table de composition d'une brique contre sa table de
+géométrie interne, le métré contre la somme des pièces de la nomenclature, et les
+tenons contre les réceptions du rang supérieur.
 
 ## Le débit de matière
 
@@ -117,6 +133,45 @@ Le bois acheté se répartit en **trois** catégories, jamais deux : les pièces
 utiles, la **surproduction** (des pièces en trop, utilisables en rechange — un
 fond de barre rempli d'une pièce de plus ne gaspille rien) et la **chute**, seul
 vrai déchet. Les confondre masque complètement le rendement réel.
+
+## Les plans
+
+Un **modèle de dessin intermédiaire** (`drawings/ir.py`) décrit les planches en
+millimètres du modèle, sans rien savoir des formats. Trois back-ends s'en
+servent : le SVG n'utilise que la bibliothèque standard, le PDF passe par
+ReportLab (pur Python, A3 relié multi-pages, aucune dépendance système), et le
+DXF dessine à l'échelle 1 dans l'espace objet, comme l'attend un logiciel de CAO.
+On teste ainsi le dessin — « l'élévation du mur M2 contient 45 rectangles de
+brique et 2 cotes » — au lieu de comparer des chaînes de SVG, et la mention
+obligatoire est apposée par le back-end, donc impossible à oublier.
+
+Le dossier comprend une élévation par mur, un plan de pose par rang et une page
+d'instructions générée.
+
+## La vérification 3D
+
+Toutes les pièces du système sont des boîtes alignées sur les axes : le rendu 3D
+est presque gratuit. Il répond à la seule question que les élévations 2D ne
+savent pas trancher — **le harpage croisé alterné tombe-t-il juste ?**
+
+`drawings/volume.py` place chaque pièce dans le repère du plan et vérifie que
+tout tenon trouve sa réception au rang supérieur. Un test permanent prouve que
+les seuls tenons orphelins sont ceux qui tombent sous une baie ou hors de
+l'emprise d'un linteau — et l'application en tire la liste exacte des **tenons à
+couper à ras**, calculée sur la géométrie réelle des pièces plutôt que déduite de
+la position des baies :
+
+```
+TENONS A COUPER A RAS (60)
+  M1 rang R03 : u = 5360, 5600, 5840, 6080, 6320, 6560 mm
+  M1 rang R08 : u = 2720, 4160, 5120, 6800, 8960, 11600 mm
+  ...
+```
+
+Cette approche a déjà payé deux fois : elle a attrapé une erreur de composition
+de la 480-ANR (trois carrés P8 au lieu d'un) et un défaut de placement sur les
+murs orientés vers l'ouest ou le sud, où le point de départ d'une pièce est son
+bord maximum et non son minimum.
 
 ## Documentation
 
