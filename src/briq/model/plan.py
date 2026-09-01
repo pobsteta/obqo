@@ -117,6 +117,11 @@ class Refend(Base):
 
 class Parametres(Base):
     longueur_barre: Annotated[int, Field(gt=0)] = 4000
+    """Longueur d'approvisionnement du carrelet 80x80. Voir
+    docs/etudes/longueur-de-barre.md : 4 m est le choix le plus robuste."""
+
+    longueur_barre_madrier: Annotated[int, Field(gt=0)] = 4000
+    """Longueur d'approvisionnement du 80x240 : stock distinct du carrelet."""
     trait_de_scie: Annotated[int, Field(ge=0)] = 4
     chute_minimale_reutilisable: Annotated[int, Field(ge=0)] = 240
     hors_grille: Literal["refuser", "arrondir"] = "refuser"

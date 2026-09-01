@@ -16,6 +16,10 @@ uv run briq valider exemples/maison.json       # contrôle le plan
 uv run briq calepiner exemples/maison.json -o sortie/
 ```
 
+`uv run briq calepiner` écrit `calepinage.json`, `nomenclature.csv`,
+`nomenclature-par-mur.csv`, `metre.csv`, `debit.csv` et `rapport.txt`, et affiche
+la synthèse. `--glouton` force le solveur de débit sans dépendance.
+
 `uv run briq schema` régénère `schemas/briq-plan-v1.schema.json`. Référencez-le
 depuis votre plan (`"$schema": "../schemas/briq-plan-v1.schema.json"`) pour
 obtenir autocomplétion et validation en direct dans l'éditeur pendant la saisie.
@@ -25,7 +29,7 @@ obtenir autocomplétion et validation en direct dans l'éditeur pendant la saisi
 | Jalon | Contenu | État |
 |---|---|---|
 | 1 | modèle, règles, moteur de calepinage, tests | **livré** |
-| 2 | nomenclature, métré, débit optimisé | à venir |
+| 2 | nomenclature, métré, débit optimisé | **livré** |
 | 3 | plans SVG / PDF A3 / DXF | à venir |
 | 4 | CLI complète, exemple, documentation | partiel (CLI minimale) |
 
@@ -41,6 +45,10 @@ src/briq/
                 geometrie.py     contour → murs et angles, harpage
                 validation.py    contrôles et rapport
                 calepinage.py    le moteur
+  bom/          nomenclature.py  briques, pièces et chevilles, avec sous-totaux
+                debit.py         cutting-stock 1D, glouton et optimum exact
+                metre.py         métrés linéaires, masse, chiffrage
+                sorties.py       CSV et tableaux texte
   cli.py
 ```
 
@@ -83,7 +91,7 @@ définit aucune référence (voir `docs/hypotheses.md`).
 ## Tests
 
 ```bash
-uv run pytest          # 44 tests
+uv run pytest          # 66 tests
 uv run ruff check src tests
 uv run mypy
 ```
@@ -92,6 +100,23 @@ Les tests unitaires vérifient des comptages faits à la main. Les tests à
 propriétés (Hypothesis) vérifient les **invariants** sur des milliers de murs
 tirés au hasard : une course exactement remplie, aucun recouvrement, et surtout
 aucun joint du rang *n* aligné avec un joint du rang *n+1*.
+
+## Le débit de matière
+
+Le problème est un cutting-stock 1D, mais **petit et exactement soluble** : les
+longueurs demandées sont peu nombreuses, si bien qu'on énumère *tous* les patrons
+de découpe d'une barre (761 pour une barre de 4 m à 4 mm de trait) puis on résout
+un programme entier à l'optimum. Objectif lexicographique : minimiser les barres,
+puis les patrons distincts, puis maximiser les chutes réutilisables.
+
+Sur la maison d'exemple, l'optimum exact sort **1 215 barres en 3 patrons**, avec
+2,00 % de chute — contre 1 229 barres en 7 patrons pour un glouton. Il n'y a donc
+aucun arbitrage à faire entre économie de bois et simplicité d'atelier.
+
+Le bois acheté se répartit en **trois** catégories, jamais deux : les pièces
+utiles, la **surproduction** (des pièces en trop, utilisables en rechange — un
+fond de barre rempli d'une pièce de plus ne gaspille rien) et la **chute**, seul
+vrai déchet. Les confondre masque complètement le rendement réel.
 
 ## Documentation
 

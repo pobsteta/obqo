@@ -156,7 +156,17 @@ def _poser_rang(
 
 
 def _poser_baie(mur: Mur, o: Ouverture, rapport: Rapport) -> list[ElementPose]:
-    """Jambages, madriers et montants de linteau d'une baie."""
+    """Jambages, madriers et montants de linteau d'une baie.
+
+    **Regle actee (D1)** : le jambage P10 court sur la seule hauteur de la baie,
+    du dessus de l'allege a la sous-face du linteau, et non « du soubassement au
+    chainage ». Un jambage de 80 traversant l'allege laisserait entre les deux
+    jambages un remplissage de `largeur - 160` : comme `largeur` est un multiple
+    de 240, ce reste vaut toujours 80 et n'est jamais calable sur la grille.
+    Avec cette regle l'allege est maconnee sur toute la largeur de la tremie,
+    le madrier prend appui 240 de chaque cote sur cette maconnerie, et la
+    relation `P9 = portee + 480` du paragraphe 1.3 est verifiee.
+    """
     elements: list[ElementPose] = []
     epaisseur_jambage = 2 if o.largeur > LARGEUR_BAIE_JAMBAGE_DOUBLE else 1
     for cote, u in (("gauche", o.position), ("droite", o.fin - 80 * epaisseur_jambage)):
@@ -227,16 +237,6 @@ def calepiner(plan: Plan) -> tuple[Calepinage | None, Rapport]:
             "le refend est suppose en butee aux deux extremites a tous les rangs, "
             "avec la meme quincaillerie qu'un angle mais sans tenon P5-A",
         )
-    if plan.ouvertures:
-        rapport.ajouter(
-            Gravite.HYPOTHESE,
-            "JAMBAGE-HAUTEUR-BAIE",
-            "ouvertures",
-            "le jambage P10 est pose sur la seule hauteur de la baie, non « du "
-            "soubassement au chainage » : un jambage de 80 traversant l'allege "
-            "laisserait un remplissage de largeur-160, jamais multiple de 240",
-        )
-
     calepinage = Calepinage(nom=plan.nom)
     par_mur: dict[str, list[Ouverture]] = {}
     for o in ouvertures:

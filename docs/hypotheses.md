@@ -4,16 +4,24 @@ Le brief demande de poser la question plutôt que d'inventer : « c'est un syst�
 constructif réel, une hypothèse silencieuse fausse coûte des heures d'atelier ».
 Ce document liste tout ce que l'application interprète, et pourquoi.
 
-Les hypothèses **H** sont émises à l'exécution par le rapport de validation : on
-ne peut pas les rater. Les constats **F** sont des faits vérifiés par des tests.
-Les questions **Q** attendent ta réponse.
+Les décisions **D** sont actées et verrouillées par des tests. Les hypothèses
+**H** sont émises à l'exécution par le rapport de validation : on ne peut pas les
+rater. Les constats **F** sont des faits vérifiés par des tests. Les questions
+**Q** attendent ta réponse.
 
 ---
 
-## H1 — Le jambage est posé sur la hauteur de la baie, pas du soubassement au chaînage
+## D1 — ✅ ACTÉ : le jambage est posé sur la hauteur de la baie
 
-Le §1.6 dit « Jambages P10 pleine hauteur de chaque côté […] du soubassement au
-chaînage ». L'application les pose sur la **seule hauteur de la baie**.
+**Décidé le 2026-09-01.** Le §1.6 dit « Jambages P10 pleine hauteur de chaque
+côté […] du soubassement au chaînage ». L'application les pose sur la **seule
+hauteur de la baie**, du dessus de l'allège à la sous-face du linteau.
+
+Cette règle n'est plus une hypothèse émise à l'exécution : elle est documentée
+dans `engine/calepinage._poser_baie` et verrouillée par le test
+`test_les_jambages_font_la_hauteur_de_la_baie`. Conséquence sur le métré : un
+jambage mesure `hauteur de baie`, et non `hauteur de mur` — soit 24 pièces P10
+totalisant 33,8 m sur la maison d'exemple, contre 63,4 m dans l'autre lecture.
 
 Raison, purement arithmétique : un jambage fait 80 mm le long du mur. S'il
 traverse l'allège, le remplissage d'allège entre les deux jambages mesure
@@ -27,8 +35,11 @@ Poser le jambage sur la hauteur de la baie fait tout retomber sur la grille :
 l'allège est maçonnée sur toute la largeur de la trémie, le madrier prend appui
 240 mm de chaque côté sur cette maçonnerie, et `P9 = portée + 480` est vérifié.
 
-**Question :** confirmes-tu ? Sinon, quelle pièce comble les 80 mm résiduels de
-l'allège ?
+Pour mémoire, le raisonnement : un jambage fait 80 mm le long du mur. S'il
+traverse l'allège, le remplissage d'allège entre les deux jambages mesure
+`largeur − 160`. Or `largeur` est un multiple de 240, donc `largeur − 160` laisse
+toujours un reste de 80 : **il n'est jamais calable sur la grille de 240**, quelle
+que soit la baie.
 
 ## H2 — Jonction en T d'un refend
 
@@ -131,15 +142,29 @@ C'est pourquoi `exemples/maison.json` fait 13,92 × 10,56 m plutôt que les
 10,80 × 13,92 suggérés au §2.1. **Question :** cette contrainte est-elle
 acceptable sur ton plan réel ?
 
-## Q4 — Paramètres de débit (jalon 2)
+## Q4 — Paramètres de débit
 
-Voir `docs/etudes/longueur-de-barre.md` pour l'analyse complète.
+Voir `docs/etudes/longueur-de-barre.md` pour l'analyse complète. Le jalon 2 est
+livré avec les valeurs par défaut ci-dessous, toutes paramétrables dans le plan.
 
-1. **Trait de scie** : je propose 4 mm explicites, en remplacement de la « marge
-   de chute » globale du §2.1. Quelle est la valeur réelle de ta lame ?
-2. **Chute minimale réutilisable** : 240 mm proposés (une demi-brique).
-3. **Lisibilité contre optimalité** : acceptes-tu quelques barres de plus en
-   échange d'un nombre de patrons de découpe nettement plus faible ? Cela change
-   la fonction objectif du solveur.
-4. **Longueurs d'approvisionnement des 80 × 240** (madriers P9, jambages P10,
-   lisses) : elles forment un stock distinct du carrelet 80 × 80.
+1. **Trait de scie** : 4 mm par défaut, en remplacement de la « marge de chute »
+   globale du §2.1. Quelle est la valeur réelle de ta lame ?
+2. **Chute minimale réutilisable** : 240 mm par défaut (une demi-brique).
+3. **Lisibilité contre optimalité** : la question ne se pose finalement pas. Sur
+   la maison d'exemple, l'objectif lexicographique (minimiser les barres, puis
+   les patrons distincts, puis maximiser les chutes réutilisables) donne
+   **1 215 barres en 3 patrons seulement**. Il n'y a rien à sacrifier : la
+   solution la plus économique est aussi la plus simple à l'atelier.
+4. **Longueur d'approvisionnement des 80 × 240** : 4 000 mm par défaut
+   (`parametres.longueur_barre_madrier`), stock distinct du carrelet.
+
+## Q5 — La surproduction est-elle un rebut ou une rechange ?
+
+Le solveur exact peut, à nombre de barres constant, sortir quelques pièces de
+plus que nécessaire — par exemple une pièce de 240 supplémentaire dans un fond de
+barre qui serait sinon perdu. L'application les compte comme **rechanges** et non
+comme chute, dans une catégorie distincte (0,9 m sur la maison d'exemple).
+
+C'est ce qui rend le taux de chute honnête : confondre les deux masquait
+totalement la loi des 80/L. **Question :** veux-tu au contraire que le solveur
+interdise toute surproduction ?

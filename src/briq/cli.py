@@ -9,6 +9,21 @@ from dataclasses import asdict, is_dataclass
 from pathlib import Path
 from typing import Any
 
+from briq.bom.debit import GloutonDecroissant, solveur_par_defaut
+from briq.bom.metre import chiffrer, metrer
+from briq.bom.nomenclature import nomenclaturer
+from briq.bom.sorties import (
+    ENTETES_DEBIT,
+    ENTETES_METRE,
+    ENTETES_NOMENCLATURE,
+    ENTETES_PAR_MUR,
+    ecrire_csv,
+    lignes_debit,
+    lignes_metre,
+    lignes_nomenclature,
+    lignes_par_mur,
+    synthese,
+)
 from briq.engine.calepinage import calepiner
 from briq.engine.validation import Constat, Gravite, Rapport
 from briq.model.plan import Plan
@@ -92,23 +107,50 @@ def cmd_valider(args: argparse.Namespace) -> int:
 
 
 def cmd_calepiner(args: argparse.Namespace) -> int:
-    calepinage, rapport = calepiner(charger(args.plan))
+    plan = charger(args.plan)
+    calepinage, rapport = calepiner(plan)
     afficher_rapport(rapport)
     if calepinage is None:
         print("\nCalepinage impossible : corriger les erreurs ci-dessus.", file=sys.stderr)
         return 1
+
     dossier: Path = args.sortie
     dossier.mkdir(parents=True, exist_ok=True)
-    cible = dossier / "calepinage.json"
-    cible.write_text(
+    (dossier / "calepinage.json").write_text(
         json.dumps(serialiser(calepinage), indent=2, ensure_ascii=False, default=_brut) + "\n",
         encoding="utf-8",
     )
-    total = len(calepinage.briques)
-    print(f"\n{total} briques posees sur {len(calepinage.murs)} murs -> {cible}")
-    for ref, n in sorted(calepinage.compte_briques().items()):
-        print(f"  {ref.value:8} {n:5}")
+
+    nomenclature = nomenclaturer(calepinage)
+    ecrire_csv(
+        dossier / "nomenclature.csv", ENTETES_NOMENCLATURE, lignes_nomenclature(nomenclature)
+    )
+    ecrire_csv(dossier / "nomenclature-par-mur.csv", ENTETES_PAR_MUR, lignes_par_mur(nomenclature))
+
+    solveur = GloutonDecroissant() if args.glouton else solveur_par_defaut(args.secondes)
+    metre = metrer(calepinage, nomenclature, plan.parametres, solveur)
+    ecrire_csv(dossier / "metre.csv", ENTETES_METRE, lignes_metre(metre))
+    ecrire_csv(dossier / "debit.csv", ENTETES_DEBIT, lignes_debit(metre))
+
+    chiffrage = chiffrer(metre, plan.parametres)
+    rendu = synthese(
+        calepinage, nomenclature, metre, chiffrage, plan.parametres.masse_volumique_epicea
+    )
+    print(rendu)
+    (dossier / "rapport.txt").write_text(_rapport_texte(rapport) + rendu, encoding="utf-8")
+    print(
+        f"Ecrit dans {dossier}/ : calepinage.json, nomenclature.csv, "
+        "nomenclature-par-mur.csv, metre.csv, debit.csv, rapport.txt"
+    )
     return 0
+
+
+def _rapport_texte(rapport: Rapport) -> str:
+    from io import StringIO
+
+    flux = StringIO()
+    afficher_rapport(rapport, flux)
+    return flux.getvalue()
 
 
 def cmd_schema(args: argparse.Namespace) -> int:
@@ -137,6 +179,17 @@ def main(argv: list[str] | None = None) -> int:
     p = sous.add_parser("calepiner", help="calepiner un plan et ecrire le modele")
     p.add_argument("plan", type=Path)
     p.add_argument("-o", "--sortie", type=Path, default=Path("sortie"))
+    p.add_argument(
+        "--glouton",
+        action="store_true",
+        help="forcer le solveur de debit sans dependance au lieu de l'optimum exact",
+    )
+    p.add_argument(
+        "--secondes",
+        type=float,
+        default=20.0,
+        help="temps maximal accorde a chaque phase du solveur exact",
+    )
     p.set_defaults(fonction=cmd_calepiner)
 
     p = sous.add_parser("schema", help="exporter le schema JSON du format de plan")
