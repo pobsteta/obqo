@@ -1,0 +1,7 @@
+<div class="planche" data-index="{{ index }}">
+  <div class="planche__barre">
+    <strong>{{ dessin.titre }}</strong>
+    <a href="/etude/{{ cle }}/planche/{{ index }}.svg" download>télécharger le SVG</a>
+  </div>
+  <div class="planche__dessin">{{ svg | safe }}</div>
+</div>

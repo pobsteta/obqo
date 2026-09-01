@@ -318,6 +318,12 @@ une erreur d'arrondi.
 
 ## 8. Interface web (jalon ultérieur)
 
+> **Livré, avec une correction.** FastAPI et Jinja2 ont été retenus. HTMX **ne
+> l'a pas été** : l'application n'ayant que trois interactions et le serveur
+> renvoyant du HTML déjà rendu, une trentaine de lignes de JavaScript ont suffi,
+> sans bibliothèque à maintenir ni CDN à joindre depuis un atelier hors ligne.
+> HTMX redeviendra le bon choix si l'interface grossit.
+
 Le brief dit Flask. **Recommandation : FastAPI + HTMX + Jinja2**, pas de SPA.
 
 - Le SVG est déjà généré côté serveur : on l'injecte dans la page, HTMX

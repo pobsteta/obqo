@@ -1,0 +1,65 @@
+<div class="etude" data-cle="{{ etude.cle }}">
+  {% include "fragments/constats.html" %}
+
+  <div class="chiffres">
+    <div class="chiffre"><span class="valeur">{{ total_briques }}</span><span class="intitule">briques</span></div>
+    <div class="chiffre"><span class="valeur">{{ etude.calepinage.murs | length }}</span><span class="intitule">murs</span></div>
+    <div class="chiffre"><span class="valeur">{{ etude.plan.rangs }}</span><span class="intitule">rangs</span></div>
+    <div class="chiffre"><span class="valeur">{{ masse }}</span><span class="intitule">kg d'ossature</span></div>
+  </div>
+
+  <h2>Briques</h2>
+  <table>
+    <thead><tr><th>référence</th><th>désignation</th><th class="nombre">quantité</th><th>localisation</th></tr></thead>
+    <tbody>
+      {% for b in briques %}
+      <tr><td><code>{{ b.ref }}</code></td><td>{{ b.designation }}</td><td class="nombre">{{ b.quantite }}</td><td class="discret">{{ b.localisation }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h2>Métré matière</h2>
+  <table>
+    <thead><tr><th>stock</th><th class="nombre">linéaire</th><th class="nombre">barres</th></tr></thead>
+    <tbody>
+      {% for nom, millimetres, barres in stocks %}
+      <tr><td>{{ nom }}</td><td class="nombre">{{ "%.1f" | format(millimetres / 1000) }} m</td><td class="nombre">{{ barres or "—" }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% for d in debits %}
+  <h2>Débit {{ d.stock.designation }}</h2>
+  <p class="aide">
+    {{ d.nombre_de_barres }} barres de {{ d.stock.longueur_barre }} mm —
+    chute {{ "%.2f" | format(100 * d.taux_de_chute) }} %,
+    {{ d.patrons_distincts }} patron{{ "s" if d.patrons_distincts > 1 }},
+    {{ "%.1f" | format(d.surproduction / 1000) }} m de rechange
+    <em>({{ d.solveur }}{{ ", optimum prouvé" if d.optimal else ", solution approchée" }})</em>
+  </p>
+  <table>
+    <thead><tr><th>patron de découpe</th><th class="nombre">barres</th><th class="nombre">chute</th></tr></thead>
+    <tbody>
+      {% for barre in d.barres %}
+      {% set chute = barre.patron.chute(d.stock) %}
+      <tr class="{{ 'reutilisable' if chute >= d.stock.chute_minimale_reutilisable }}">
+        <td><code>{{ barre.patron }}</code></td>
+        <td class="nombre">{{ barre.repetitions }}</td>
+        <td class="nombre">{{ chute }} mm</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endfor %}
+
+  <h2>Plans</h2>
+  <div class="commandes">
+    <select id="choix-planche" aria-label="Choisir une planche">
+      {% for index, dessin in planches %}
+      <option value="{{ index }}">{{ dessin.titre }}</option>
+      {% endfor %}
+    </select>
+    <a class="bouton" href="/etude/{{ etude.cle }}/dossier.zip">Télécharger le dossier</a>
+  </div>
+  <div id="planche"></div>
+</div>

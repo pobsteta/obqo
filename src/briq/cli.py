@@ -389,6 +389,29 @@ def debit(
 
 
 @app.command()
+def web(
+    hote: Annotated[str, typer.Option(help="Adresse d'ecoute.")] = "127.0.0.1",
+    port: Annotated[int, typer.Option(help="Port d'ecoute.")] = 8000,
+    rechargement: Annotated[
+        bool, typer.Option("--rechargement", help="Recharger a chaud pendant le developpement.")
+    ] = False,
+) -> None:
+    """Lancer l'interface web (extra « web » requis)."""
+    try:
+        import uvicorn
+    except ImportError:
+        erreurs.print(
+            "[bold red]Interface web indisponible[/bold red] : "
+            "installer l'extra avec [bold]uv sync --extra web[/bold]."
+        )
+        raise typer.Exit(code=1) from None
+    console.print(
+        f"[green]BRIQ[/green] sur [bold]http://{hote}:{port}[/bold] — Ctrl+C pour quitter"
+    )
+    uvicorn.run("briq.web.app:app", host=hote, port=port, reload=rechargement, log_level="warning")
+
+
+@app.command()
 def schema(
     sortie: Annotated[Path, typer.Option("-o", "--sortie")] = Path("schemas"),
 ) -> None:

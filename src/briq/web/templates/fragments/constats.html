@@ -1,0 +1,20 @@
+{% if constats %}
+<div class="constats">
+  {% for gravite, intitule in [('erreur', 'Erreurs'), ('avertissement', 'Avertissements'), ('hypothese', 'Hypothèses')] %}
+    {% set lot = constats | selectattr('gravite.value', 'equalto', gravite) | list %}
+    {% if lot %}
+      <h3 class="constat constat--{{ gravite }}">{{ intitule }} ({{ lot | length }})</h3>
+      <ul class="constats__liste">
+        {% for c in lot %}
+        <li class="constat constat--{{ gravite }}">
+          <code>{{ c.code }}</code> <span class="ou">{{ c.ou }}</span> {{ c.message }}
+        </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endfor %}
+</div>
+{% endif %}
+{% if bloquant %}
+<p class="attente">Le calepinage s'arrête tant que ces erreurs ne sont pas corrigées.</p>
+{% endif %}

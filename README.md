@@ -22,6 +22,7 @@ uv run briq calepiner exemples/maison.json -o sortie/   # dossier complet
 | `briq calepiner PLAN -o DOSSIER` | le dossier complet : modèle, nomenclature, métré, débit, plans |
 | `briq nomenclature PLAN` | la nomenclature à l'écran, sans rien écrire |
 | `briq debit PLAN` | le plan de découpe optimisé, sans rien écrire |
+| `briq web` | interface web sur http://127.0.0.1:8000 |
 | `briq schema -o DOSSIER` | régénère le schéma JSON du format de plan |
 
 Options utiles de `calepiner` : `-f svg` (répétable) restreint les formats de
@@ -47,6 +48,7 @@ schéma commité suit le modèle : sans cela l'autocomplétion mentirait.
 | 2 | nomenclature, métré, débit optimisé | **livré** |
 | 3 | plans SVG / PDF A3 / DXF, vue 3D de contrôle | **livré** |
 | 4 | CLI complète, exemple, documentation | **livré** |
+| — | interface web légère (option du brief) | **livrée** |
 
 ## Architecture
 
@@ -64,6 +66,8 @@ src/briq/
                 debit.py         cutting-stock 1D, glouton et optimum exact
                 metre.py         métrés linéaires, masse, chiffrage
                 sorties.py       CSV et tableaux texte
+  web/          app.py           routes FastAPI, gabarits Jinja2
+                etude.py         cache borné des études en mémoire
   drawings/     ir.py            modèle de dessin, indépendant du format
                 planches.py      élévations, plans de pose, instructions
                 mise_en_page.py  échelle, centrage, cartouche A3
@@ -76,8 +80,9 @@ src/briq/
 
 `engine/`, `rules/` et `bom/` n'ont **aucune dépendance** : ils s'importent avec
 la seule bibliothèque standard. Pydantic ne sert qu'à la frontière d'entrée,
-Typer et Rich qu'à la CLI, OR-Tools qu'au solveur exact (avec un repli glouton),
-ReportLab, ezdxf et trimesh qu'aux back-ends de dessin.
+Typer et Rich qu'à la CLI, FastAPI et Jinja2 qu'à l'interface web, OR-Tools qu'au
+solveur exact (avec un repli glouton), ReportLab, ezdxf et trimesh qu'aux
+back-ends de dessin. La CLI et le web sont deux clients du même cœur.
 
 ### Trois principes
 
@@ -115,8 +120,8 @@ définit aucune référence (voir `docs/hypotheses.md`).
 ## Tests
 
 ```bash
-uv run pytest                  # 98 tests, ~60 s
-uv run pytest -m "not lent"    # ~25 s : exclut les preuves d'optimalité du débit
+uv run pytest                  # 111 tests, ~65 s
+uv run pytest -m "not lent"    # ~30 s : exclut les preuves d'optimalité du débit
 uv run ruff check src tests
 uv run mypy
 ```
@@ -192,6 +197,30 @@ Cette approche a déjà payé deux fois : elle a attrapé une erreur de composit
 de la 480-ANR (trois carrés P8 au lieu d'un) et un défaut de placement sur les
 murs orientés vers l'ouest ou le sud, où le point de départ d'une pièce est son
 bord maximum et non son minimum.
+
+## L'interface web
+
+```bash
+uv sync --extra web
+uv run briq web            # http://127.0.0.1:8000
+```
+
+Saisie du plan à gauche, résultat à droite : rapport de validation coloré par
+gravité, nomenclature, métré, plan de découpe, et les 17 planches consultables
+une à une. Le dossier complet se télécharge en un zip.
+
+Le solveur glouton est le défaut ici — l'interface doit répondre tout de suite —
+et l'optimum exact reste à une case à cocher. Les études sont gardées en mémoire,
+indexées par l'empreinte du plan, les huit plus récentes ; rien n'est persisté,
+il n'y a pas de base de données.
+
+**Pas de HTMX ni de framework front**, contrairement à ce que recommandait
+`docs/00-choix-techniques.md`. L'application n'a que trois interactions —
+soumettre un plan, changer de planche, télécharger — et le serveur renvoie du
+HTML déjà rendu. Une trentaine de lignes de JavaScript suffisent, sans
+bibliothèque à maintenir ni CDN à joindre depuis un atelier hors ligne. Si
+l'interface grossit (édition graphique du plan, comparaison de variantes), HTMX
+redeviendra le bon choix.
 
 ## Documentation
 

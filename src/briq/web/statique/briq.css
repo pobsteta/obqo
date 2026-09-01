@@ -1,0 +1,119 @@
+:root {
+  color-scheme: light;
+  --encre: #1f1d1a;
+  --encre-douce: #6b655c;
+  --papier: #faf8f4;
+  --carte: #ffffff;
+  --bord: #ddd6c9;
+  --bois: #8a6a3c;
+  --bois-clair: #f2ece1;
+  --erreur: #a32d1e;
+  --avertissement: #8a6410;
+  --hypothese: #1f5d7a;
+  --vert: #3f6212;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--papier);
+  color: var(--encre);
+  font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+header {
+  padding: 1.2rem 1.6rem 1rem;
+  border-bottom: 1px solid var(--bord);
+  background: var(--carte);
+}
+header h1 { margin: 0; font-size: 1.35rem; letter-spacing: .14em; }
+header p { margin: .2rem 0 0; color: var(--encre-douce); font-size: .9rem; }
+
+main {
+  display: grid;
+  grid-template-columns: minmax(320px, 26rem) 1fr;
+  gap: 1.2rem;
+  padding: 1.2rem 1.6rem;
+  align-items: start;
+}
+@media (max-width: 60rem) { main { grid-template-columns: 1fr; } }
+
+.volet {
+  background: var(--carte);
+  border: 1px solid var(--bord);
+  border-radius: 6px;
+  padding: 1rem 1.1rem 1.2rem;
+}
+.volet--saisie { position: sticky; top: 1.2rem; }
+.volet h2 { margin: 0 0 .3rem; font-size: 1rem; }
+.volet--resultat { min-height: 60vh; }
+
+textarea {
+  width: 100%;
+  height: 26rem;
+  margin-top: .6rem;
+  padding: .7rem .8rem;
+  border: 1px solid var(--bord);
+  border-radius: 4px;
+  background: #fdfcfa;
+  color: var(--encre);
+  font: 12.5px/1.5 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  resize: vertical;
+}
+textarea:focus-visible { outline: 2px solid var(--bois); outline-offset: 1px; }
+
+.commandes { display: flex; flex-wrap: wrap; gap: .8rem; align-items: center; margin-top: .8rem; }
+button, .bouton {
+  padding: .5rem 1.1rem;
+  border: 1px solid var(--bois);
+  border-radius: 4px;
+  background: var(--bois);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+button:hover, .bouton:hover { background: #755733; }
+button[disabled] { opacity: .55; cursor: progress; }
+.bouton { background: var(--carte); color: var(--bois); }
+.bouton:hover { background: var(--bois-clair); color: var(--bois); }
+.bascule { display: flex; align-items: center; gap: .4rem; font-size: .88rem; white-space: nowrap; }
+
+.aide, .attente { color: var(--encre-douce); font-size: .86rem; }
+.attente { padding: 2rem 0; }
+.discret { color: var(--encre-douce); font-size: .85rem; }
+
+h2 { margin: 1.6rem 0 .5rem; font-size: 1rem; border-bottom: 1px solid var(--bord); padding-bottom: .3rem; }
+
+table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+th, td { padding: .32rem .5rem; text-align: left; border-bottom: 1px solid var(--bord); }
+th { font-weight: 600; color: var(--encre-douce); font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; }
+.nombre { text-align: right; font-variant-numeric: tabular-nums; }
+tr.reutilisable td:last-child { color: var(--vert); font-weight: 600; }
+code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .92em; }
+
+.chiffres { display: flex; flex-wrap: wrap; gap: 1.6rem; margin: .2rem 0 .4rem; }
+.chiffre { display: flex; flex-direction: column; }
+.chiffre .valeur { font-size: 1.7rem; font-weight: 600; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.chiffre .intitule { color: var(--encre-douce); font-size: .82rem; }
+
+.constats { margin: .4rem 0 1rem; }
+.constats h3 { margin: .8rem 0 .3rem; font-size: .85rem; text-transform: uppercase; letter-spacing: .05em; }
+.constats__liste { margin: 0; padding-left: 1.1rem; font-size: .87rem; }
+.constats__liste li { margin-bottom: .25rem; }
+.constat--erreur { color: var(--erreur); }
+.constat--avertissement { color: var(--avertissement); }
+.constat--hypothese { color: var(--hypothese); }
+.constat .ou { color: var(--encre-douce); }
+.message-erreur { white-space: pre-wrap; font-size: .8rem; background: #fdf3f1; padding: .7rem; border-radius: 4px; }
+
+select { padding: .45rem .6rem; border: 1px solid var(--bord); border-radius: 4px; background: var(--carte); font: inherit; }
+
+.planche { margin-top: .8rem; border: 1px solid var(--bord); border-radius: 6px; overflow: hidden; }
+.planche__barre { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: .5rem .8rem; background: var(--bois-clair); font-size: .87rem; }
+.planche__dessin { background: #fff; }
+.planche__dessin svg { display: block; width: 100%; height: auto; }
+
+footer { padding: 1rem 1.6rem 2rem; color: var(--encre-douce); font-size: .8rem; }

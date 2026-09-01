@@ -149,15 +149,21 @@ def _legende(racine: ET.Element, dessin: Dessin, feuille: Feuille) -> None:
         y += 5.5
 
 
-def rendre(dessin: Dessin, feuille: Feuille = A3) -> str:
-    """Rend une planche en SVG, a l'echelle, avec cartouche et legende."""
+def rendre(dessin: Dessin, feuille: Feuille = A3, pour_ecran: bool = False) -> str:
+    """Rend une planche en SVG, a l'echelle, avec cartouche et legende.
+
+    `pour_ecran` omet les dimensions en millimetres : la planche s'adapte alors
+    a son conteneur au lieu de s'imprimer a l'echelle exacte.
+    """
     cadrage = cadrer(dessin, feuille)
+    dimensions = (
+        {} if pour_ecran else {"width": f"{feuille.largeur}mm", "height": f"{feuille.hauteur}mm"}
+    )
     racine = ET.Element(
         "svg",
         {
             "xmlns": "http://www.w3.org/2000/svg",
-            "width": f"{feuille.largeur}mm",
-            "height": f"{feuille.hauteur}mm",
+            **dimensions,
             "viewBox": f"0 0 {feuille.largeur} {feuille.hauteur}",
         },
     )

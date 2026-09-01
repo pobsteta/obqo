@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block contenu %}
+<main>
+  <section class="volet volet--saisie">
+    <h2>Plan</h2>
+    <p class="aide">
+      Format JSON, cotes en millimètres sur la grille de 240.
+      <a href="/schema.json">Schéma</a> — référencez-le par <code>$schema</code>
+      pour obtenir l'autocomplétion dans votre éditeur.
+    </p>
+    <textarea id="plan" spellcheck="false" aria-label="Plan au format JSON">{{ plan }}</textarea>
+    <div class="commandes">
+      <button id="calepiner" type="button">Calepiner</button>
+      <label class="bascule" title="Résout le cutting-stock à l'optimum prouvé plutôt qu'avec le glouton. Quelques secondes.">
+        <input type="checkbox" id="exact"> débit à l'optimum exact
+      </label>
+    </div>
+  </section>
+
+  <section class="volet volet--resultat">
+    <div id="resultat">
+      <p class="attente">Lancez le calepinage pour voir la nomenclature, le métré et les plans.</p>
+    </div>
+  </section>
+</main>
+{% endblock %}
