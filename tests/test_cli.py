@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 from typer.testing import CliRunner
 
-from briq.cli import app
+from obqo.cli import app
 
 RACINE = Path(__file__).resolve().parents[1]
 EXEMPLE = RACINE / "exemples" / "maison.json"
@@ -116,7 +116,7 @@ def test_debit_affiche_le_plan_de_decoupe(tmp_path: Path, monkeypatch) -> None:
 def test_schema_exporte_un_schema_json_valide(tmp_path: Path) -> None:
     resultat = runner.invoke(app, ["schema", "-o", str(tmp_path)])
     assert resultat.exit_code == 0, resultat.output
-    document = json.loads((tmp_path / "briq-plan-v1.schema.json").read_text())
+    document = json.loads((tmp_path / "obqo-plan-v1.schema.json").read_text())
     assert document["title"] == "Plan BRIQ, version 1"
     assert "contour" in document["properties"]
     assert "$schema" in document["properties"], "l'editeur doit pouvoir s'y accrocher"
@@ -124,13 +124,13 @@ def test_schema_exporte_un_schema_json_valide(tmp_path: Path) -> None:
 
 def test_le_schema_du_depot_est_a_jour() -> None:
     """Le schema commite doit suivre le modele, sinon l'autocompletion ment."""
-    from briq.model.plan import Plan
+    from obqo.model.plan import Plan
 
     attendu = Plan.model_json_schema(by_alias=True)
     attendu["$schema"] = "https://json-schema.org/draft/2020-12/schema"
     attendu["title"] = "Plan BRIQ, version 1"
-    publie = json.loads((RACINE / "schemas" / "briq-plan-v1.schema.json").read_text())
-    assert publie == attendu, "lancer `uv run briq schema`"
+    publie = json.loads((RACINE / "schemas" / "obqo-plan-v1.schema.json").read_text())
+    assert publie == attendu, "lancer `uv run obqo schema`"
 
 
 # --- lecture YAML et gabarit --------------------------------------------------
@@ -138,7 +138,7 @@ def test_le_schema_du_depot_est_a_jour() -> None:
 
 def test_un_plan_yaml_donne_le_meme_calepinage_que_le_json(tmp_path: Path) -> None:
     """Le YAML n'est qu'une facon d'ecrire la meme structure, commentaires en plus."""
-    from briq.model.lecture import depuis_texte
+    from obqo.model.lecture import depuis_texte
 
     source = """
     # Maison d'essai, commentee
@@ -170,13 +170,13 @@ def test_un_plan_yaml_donne_le_meme_calepinage_que_le_json(tmp_path: Path) -> No
 
 
 def test_un_json_reste_lisible_apres_l_ajout_du_yaml() -> None:
-    from briq.model.lecture import depuis_texte
+    from obqo.model.lecture import depuis_texte
 
     assert depuis_texte(EXEMPLE.read_text()).nom.startswith("Maison d'exemple")
 
 
 def test_une_source_illisible_donne_le_message_le_plus_precis() -> None:
-    from briq.model.lecture import depuis_texte
+    from obqo.model.lecture import depuis_texte
 
     with pytest.raises(ValueError, match=r"line|column|ligne|colonne|Expecting"):
         depuis_texte('{"hauteur_sous_chainage": 2640,,}')

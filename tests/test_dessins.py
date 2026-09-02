@@ -9,20 +9,20 @@ from xml.etree import ElementTree as ET
 
 import pytest
 
-from briq.drawings import dxf, pdf, svg
-from briq.drawings.ir import MENTION, Calque, Dessin, Rect, echelle_adaptee
-from briq.drawings.mise_en_page import A3, ECHELLE_DE_LISIBILITE, cadrer, paginer
-from briq.drawings.planches import dossier, elevation, instructions, plan_de_rang
-from briq.drawings.volume import (
+from obqo.drawings import dxf, pdf, svg
+from obqo.drawings.ir import MENTION, Calque, Dessin, Rect, echelle_adaptee
+from obqo.drawings.mise_en_page import A3, ECHELLE_DE_LISIBILITE, cadrer, paginer
+from obqo.drawings.planches import dossier, elevation, instructions, plan_de_rang
+from obqo.drawings.volume import (
     receptions_globales,
     tenons_globaux,
     tenons_sans_reception,
 )
-from briq.engine.calepinage import calepiner, vide_du_rang
-from briq.model.plan import Plan
-from briq.model.systeme import Ref
-from briq.rules.catalogue import PIECES, composition
-from briq.rules.geometrie_brique import cellules_vides, pieces_de
+from obqo.engine.calepinage import calepiner, vide_du_rang
+from obqo.model.plan import Plan
+from obqo.model.systeme import Ref
+from obqo.rules.catalogue import PIECES, composition
+from obqo.rules.geometrie_brique import cellules_vides, pieces_de
 
 from .conftest import plan_rectangle
 
@@ -154,7 +154,7 @@ def test_les_instructions_listent_les_tenons_a_couper(maison: Plan, maison_calep
 
 def test_le_plan_de_rang_place_les_murs_dans_le_plan(maison: Plan, maison_calepinee) -> None:
     """Les briques couvrent exactement le contour ; les reperes debordent."""
-    from briq.drawings.ir import Polyligne
+    from obqo.drawings.ir import Polyligne
 
     dessin = plan_de_rang(maison_calepinee, maison, 0)
     points = [pt for p in dessin.primitives if isinstance(p, Polyligne) for pt in p.points]
@@ -306,7 +306,7 @@ def test_les_pages_partagent_le_meme_cadre_vertical() -> None:
 
 
 def test_la_maison_s_exporte_en_glb(tmp_path: Path, maison_calepinee) -> None:
-    from briq.drawings import volume
+    from obqo.drawings import volume
 
     cible = tmp_path / "maison.glb"
     boites = volume.maison(maison_calepinee, cible)
@@ -317,7 +317,7 @@ def test_la_maison_s_exporte_en_glb(tmp_path: Path, maison_calepinee) -> None:
 def test_la_colonne_d_angle_s_exporte_piece_par_piece(tmp_path: Path, maison_calepinee) -> None:
     """C'est l'outil de debogage du harpage : il doit sortir les pieces, pas les
     briques, sinon il ne montre rien de plus qu'une elevation."""
-    from briq.drawings import volume
+    from obqo.drawings import volume
 
     cible = tmp_path / "angle.glb"
     boites = volume.colonne_d_angle(maison_calepinee, cible, rangs=3)
@@ -326,7 +326,7 @@ def test_la_colonne_d_angle_s_exporte_piece_par_piece(tmp_path: Path, maison_cal
 
 
 def test_l_eclatement_ecarte_les_rangs(tmp_path: Path, maison_calepinee) -> None:
-    from briq.drawings import volume
+    from obqo.drawings import volume
 
     serre = volume.colonne_d_angle(maison_calepinee, tmp_path / "a.glb", rangs=2, eclatement=0)
     eclate = volume.colonne_d_angle(maison_calepinee, tmp_path / "b.glb", rangs=2, eclatement=480)
@@ -335,15 +335,15 @@ def test_l_eclatement_ecarte_les_rangs(tmp_path: Path, maison_calepinee) -> None
 
 
 def test_une_maison_sans_angle_n_a_pas_de_colonne(tmp_path: Path) -> None:
-    from briq.drawings import volume
-    from briq.model.systeme import Calepinage
+    from obqo.drawings import volume
+    from obqo.model.systeme import Calepinage
 
     assert volume.colonne_d_angle(Calepinage(nom="vide"), tmp_path / "rien.glb") == 0
 
 
 def test_les_pieces_placees_restent_dans_l_emprise_du_mur(maison_calepinee) -> None:
     """Une piece qui sortirait du mur signalerait une erreur de repere."""
-    from briq.drawings.volume import pieces_globales
+    from obqo.drawings.volume import pieces_globales
 
     mur = maison_calepinee.murs[0]
     rang = mur.rangs[0]

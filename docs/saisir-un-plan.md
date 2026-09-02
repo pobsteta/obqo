@@ -5,11 +5,11 @@ l'application sait calepiner. La méthode tient en cinq étapes, et le principe 
 une phrase : **on ne dessine pas puis on cale sur la grille, on cale d'abord.**
 
 ```bash
-uv run briq gabarit -o ma-maison.yaml   # un plan de départ commenté
-uv run briq valider ma-maison.yaml      # après chaque modification
+uv run obqo gabarit -o ma-maison.yaml   # un plan de départ commenté
+uv run obqo valider ma-maison.yaml      # après chaque modification
 ```
 
-**Ou dessinez-le.** `uv run briq web` puis l'onglet *Esquisse* : posez les pièces
+**Ou dessinez-le.** `uv run obqo web` puis l'onglet *Esquisse* : posez les pièces
 à la souris, puis les baies en glissant le long d'un mur (porte, fenêtre ou
 porte-fenêtre). L'application cale le dessin sur la grille, en déduit le contour
 et les refends, et rend un plan qui se calepine tel quel. Les étapes 1 à 5
@@ -186,16 +186,16 @@ Elle ne les contourne jamais : elle s'arrête et dit laquelle, où, et de combie
 
 ## La boucle de travail
 
-1. `briq gabarit -o ma-maison.yaml`
-2. Modifier le contour, puis `briq valider ma-maison.yaml`
+1. `obqo gabarit -o ma-maison.yaml`
+2. Modifier le contour, puis `obqo valider ma-maison.yaml`
 3. Ajouter les refends, valider. Ajouter les baies une par une, valider.
-4. Quand le rapport dit « Plan valide » : `briq calepiner ma-maison.yaml -o dossier/`
+4. Quand le rapport dit « Plan valide » : `obqo calepiner ma-maison.yaml -o dossier/`
 
 Valider après **chaque** ajout, pas à la fin : un message qui désigne la seule
 baie que vous venez d'écrire se corrige en dix secondes, une liste de quinze
 erreurs se démêle en une heure.
 
-L'interface web (`briq web`) fait la même boucle sans quitter le navigateur, et
+L'interface web (`obqo web`) fait la même boucle sans quitter le navigateur, et
 montre immédiatement les plans.
 
 ## Partir d'un plan d'architecte

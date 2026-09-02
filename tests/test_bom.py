@@ -7,13 +7,13 @@ from pathlib import Path
 
 import pytest
 
-from briq.bom.debit import GloutonDecroissant
-from briq.bom.metre import chiffrer, metrer
-from briq.bom.nomenclature import nomenclaturer
-from briq.bom.sorties import lignes_debit, lignes_metre, lignes_nomenclature, tableau
-from briq.engine.calepinage import calepiner
-from briq.model.plan import Plan
-from briq.rules.catalogue import PIECES, REFERENCE_BRIEF, composition, longueur_carrelet
+from obqo.bom.debit import GloutonDecroissant
+from obqo.bom.metre import chiffrer, metrer
+from obqo.bom.nomenclature import nomenclaturer
+from obqo.bom.sorties import lignes_debit, lignes_metre, lignes_nomenclature, tableau
+from obqo.engine.calepinage import calepiner
+from obqo.model.plan import Plan
+from obqo.rules.catalogue import PIECES, REFERENCE_BRIEF, composition, longueur_carrelet
 
 
 @pytest.fixture(scope="module")
@@ -72,7 +72,7 @@ def test_les_jambages_font_la_hauteur_de_la_baie(maison: Plan, dossier) -> None:
 
     Deux jambages par baie, quatre au-dela de 1 800 mm de tremie (doubles).
     """
-    from briq.units import LARGEUR_BAIE_JAMBAGE_DOUBLE
+    from obqo.units import LARGEUR_BAIE_JAMBAGE_DOUBLE
 
     calepinage, _, _ = dossier
     attendues: Counter[int] = Counter()
@@ -126,8 +126,8 @@ def test_les_sorties_csv_sont_completes(dossier) -> None:
 
 
 def test_toutes_les_briques_du_catalogue_ont_une_designation() -> None:
-    from briq.bom.nomenclature import DESIGNATIONS
-    from briq.model.systeme import Ref
+    from obqo.bom.nomenclature import DESIGNATIONS
+    from obqo.model.systeme import Ref
 
     for ref in Ref:
         assert ref.value in DESIGNATIONS
@@ -136,7 +136,7 @@ def test_toutes_les_briques_du_catalogue_ont_une_designation() -> None:
 
 def test_le_csv_porte_la_marque_qui_fait_lire_les_accents_a_excel(tmp_path: Path) -> None:
     """Sans la BOM, Excel sous Windows lit le fichier en cp1252 et abime les accents."""
-    from briq.bom.sorties import ecrire_csv
+    from obqo.bom.sorties import ecrire_csv
 
     cible = tmp_path / "essai.csv"
     ecrire_csv(cible, ("référence", "désignation"), [("480-S", "brique standard")])

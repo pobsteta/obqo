@@ -8,8 +8,8 @@ masquer la difference derriere une tolerance.
 
 from __future__ import annotations
 
-from briq.model.systeme import Ref
-from briq.rules.catalogue import (
+from obqo.model.systeme import Ref
+from obqo.rules.catalogue import (
     JOINT_COURANT,
     REFERENCE_BRIEF,
     composition,

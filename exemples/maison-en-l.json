@@ -1,5 +1,5 @@
 {
-  "$schema": "../schemas/briq-plan-v1.schema.json",
+  "$schema": "../schemas/obqo-plan-v1.schema.json",
   "version": "1",
   "nom": "Maison en L — 9,60 × 7,20 m avec encoche 4,80 × 2,88 m",
   "hauteur_sous_chainage": 2640,

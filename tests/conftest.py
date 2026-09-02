@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from briq.model.plan import Plan
+from obqo.model.plan import Plan
 
 RACINE = Path(__file__).resolve().parents[1]
 

@@ -1,4 +1,4 @@
-# BRIQ — Choix techniques recommandés
+# obqo — Choix techniques recommandés
 
 Document de décision préalable à l'implémentation. Il répond à la question :
 *quelles technologies pour construire l'application de calepinage BRIQ ?*
@@ -37,7 +37,7 @@ Trois conséquences directes, qui valent plus que n'importe quel choix de librai
 | Choix | Recommandation | Pourquoi |
 |---|---|---|
 | Langage | **Python 3.12** (3.13 possible) | Le brief a raison. C'est le seul écosystème où l'on trouve *au même endroit* un solveur industriel (OR-Tools), l'export DXF (ezdxf), le PDF vectoriel (ReportLab) et le test à propriétés (Hypothesis). TypeScript ferait le calepinage mais pas le débit optimal ni le DXF. |
-| Packaging / venv / lock | **uv** | Standard de fait aujourd'hui, résolution en millisecondes, `uv.lock` reproductible, `uv run briq …` sans activer d'environnement. Remplace pip + venv + pip-tools + pipx. |
+| Packaging / venv / lock | **uv** | Standard de fait aujourd'hui, résolution en millisecondes, `uv.lock` reproductible, `uv run obqo …` sans activer d'environnement. Remplace pip + venv + pip-tools + pipx. |
 | Lint + format | **ruff** (`ruff check`, `ruff format`) | Un seul outil au lieu de flake8 + isort + black. |
 | Typage | **mypy --strict** (ou pyright) sur `model/` et `engine/` | Sur un domaine où l'on manipule des `Millimetres`, des `Module` et des `IndiceDeRang` qui sont tous des `int`, le typage nominal (`NewType`) attrape les inversions d'unités à la compilation. |
 | CI | GitHub Actions : `ruff` + `mypy` + `pytest` + génération de la maison d'exemple | Le test d'intégration doit tourner à chaque commit : c'est lui qui protège les ~1 000 briques. |
@@ -64,7 +64,7 @@ Grille = NewType("Grille", int)  # multiples de 240 (grille de calepinage)
 Ce que Pydantic apporte ici, et qui n'est pas du confort :
 
 - **Le JSON Schema versionné du brief est gratuit** : `Plan.model_json_schema()`
-  produit `schemas/briq-plan-v1.schema.json`. On le commite, et la CI vérifie
+  produit `schemas/obqo-plan-v1.schema.json`. On le commite, et la CI vérifie
   qu'il est à jour. Le fichier plan porte alors un `"$schema": "…v1.schema.json"`
   → **autocomplétion et validation en direct dans VS Code pendant qu'on saisit le
   plan à la main.** Pour un format saisi au clavier par un autoconstructeur,
@@ -120,7 +120,7 @@ Structure interne conseillée (au-delà du découpage `model / engine / bom /
 drawings / cli` du brief, qui est correct) :
 
 ```
-briq/
+obqo/
   model/        types du plan (Pydantic) + types du système (dataclasses gelées)
   rules/        LES RÈGLES MÉTIER, isolées : catalogue de briques, tables de
                 pièces par référence, constantes de métré (§1.8), tenons,
@@ -262,7 +262,7 @@ colossale, temps de calcul, aucun gain — on n'a que des boîtes), et IFC
 
 | Besoin | Choix | Note |
 |---|---|---|
-| CLI | **Typer** | Sous-commandes (`briq valider`, `briq calepiner`, `briq debiter`), aide générée, complétion shell. `argparse` conviendrait aussi si tu tiens au zéro-dépendance. |
+| CLI | **Typer** | Sous-commandes (`obqo valider`, `obqo calepiner`, `obqo debiter`), aide générée, complétion shell. `argparse` conviendrait aussi si tu tiens au zéro-dépendance. |
 | Affichage terminal | **Rich** | Le « tableau lisible » du §2.3.1 et le rapport de validation en couleur (erreur/avertissement). Vient avec Typer. |
 | CSV | `csv` (stdlib) | Rien de plus. |
 | Classeur XLSX | **openpyxl** *(optionnel)* | Un classeur à onglets (nomenclature / débit / métré / chiffrage) est bien plus commode qu'un CSV pour aller discuter prix chez le scieur. Vaut la dépendance. |
@@ -338,7 +338,7 @@ Le brief dit Flask. **Recommandation : FastAPI + HTMX + Jinja2**, pas de SPA.
   fragile). À utiliser comme jouet d'exploration, pas comme cible.
 
 Contrainte à tenir : **le cœur ne doit rien savoir du web.** La CLI et le web sont
-deux clients du même `briq.engine`. C'est déjà ce que dit le brief, c'est juste.
+deux clients du même `obqo.engine`. C'est déjà ce que dit le brief, c'est juste.
 
 ---
 
@@ -364,7 +364,7 @@ dev     = ["pytest", "hypothesis", "syrupy", "mypy", "ruff"]
 
 Le SVG n'a **aucune** dépendance (`xml.etree` de la stdlib). `engine/` et `rules/`
 n'en ont aucune non plus. Tout le reste est optionnel : l'application doit
-fonctionner en mode dégradé (`pip install briq` seul) et produire nomenclature,
+fonctionner en mode dégradé (`pip install obqo` seul) et produire nomenclature,
 métré FFD et plans SVG.
 
 ---

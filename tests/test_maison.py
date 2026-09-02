@@ -5,10 +5,10 @@ from __future__ import annotations
 import json
 from itertools import pairwise
 
-from briq.cli import serialiser
-from briq.engine.calepinage import calepiner
-from briq.model.plan import Plan
-from briq.units import HAUTEUR_RANG
+from obqo.cli import serialiser
+from obqo.engine.calepinage import calepiner
+from obqo.model.plan import Plan
+from obqo.units import HAUTEUR_RANG
 
 
 def test_la_maison_d_exemple_calepine_sans_erreur(maison: Plan) -> None:

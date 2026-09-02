@@ -21,7 +21,7 @@ pousser.
 La couverture se mesure avec :
 
 ```bash
-uv run pytest -m "not lent" --cov=briq --cov-report=term-missing
+uv run pytest -m "not lent" --cov=obqo --cov-report=term-missing
 ```
 
 96 % au dernier passage. Le chiffre global ne dit rien d'utile : ce qui compte
@@ -52,8 +52,8 @@ un défaut d'installation. Il faut donc partir de zéro.
 ```bash
 git clone <dépôt> /tmp/essai && cd /tmp/essai
 uv sync
-uv run briq valider exemples/maison.json
-uv run briq calepiner exemples/maison.json -o sortie/
+uv run obqo valider exemples/maison.json
+uv run obqo calepiner exemples/maison.json -o sortie/
 ```
 
 `uv sync` installe l'application **complète** : le groupe `complet` de
@@ -69,10 +69,10 @@ les extras.
 
 ```bash
 python -m venv .venv && .venv/bin/pip install -e .
-.venv/bin/briq valider exemples/maison.json
-.venv/bin/briq calepiner exemples/maison.json -o sortie/
-.venv/bin/briq debit exemples/maison.json
-.venv/bin/briq web
+.venv/bin/obqo valider exemples/maison.json
+.venv/bin/obqo calepiner exemples/maison.json -o sortie/
+.venv/bin/obqo debit exemples/maison.json
+.venv/bin/obqo web
 ```
 
 Attention : `uv run` resynchronise l'environnement depuis `pyproject.toml` et
@@ -97,7 +97,7 @@ l'intérieur des fonctions qui s'en servent, et jamais au chargement du module.
 C'est le niveau qui trouve le plus de bugs, et aucun test ne le remplace.
 
 ```bash
-uv run briq web        # http://127.0.0.1:8000
+uv run obqo web        # http://127.0.0.1:8000
 ```
 
 Le parcours à refaire après toute modification de l'éditeur :
@@ -179,8 +179,8 @@ Ensuite, quel que soit le chemin pris :
 git clone <dépôt> $env:TEMP\essai
 cd $env:TEMP\essai
 uv sync
-uv run briq valider exemples\maison.json
-uv run briq calepiner exemples\maison.json -o sortie\
+uv run obqo valider exemples\maison.json
+uv run obqo calepiner exemples\maison.json -o sortie\
 ```
 
 `uv sync` règle tout : Python, les dépendances, les roues Windows d'OR-Tools,
@@ -196,13 +196,13 @@ et la base d'une installation Anaconda est souvent en dessous.
 python --version                       # 3.12 ou plus, sinon restez sur uv
 python -m venv .venv
 .venv\Scripts\pip install -e ".[solveur,dessins,volume,web]"
-.venv\Scripts\briq valider exemples\maison.json
+.venv\Scripts\obqo valider exemples\maison.json
 ```
 
 En dessous de 3.12, pip refuse net :
 
 ```
-ERROR: Package 'briq' requires a different Python: 3.11.15 not in '>=3.12'
+ERROR: Package 'obqo' requires a different Python: 3.11.15 not in '>=3.12'
 ```
 
 Gardez alors `uv` : il télécharge son propre Python et ne touche pas à votre
@@ -215,19 +215,19 @@ complet, PDF, DXF et GLB compris, exactement comme `uv sync`.
 |---|---|
 | suite de tests | `uv run pytest -m "not lent"` |
 | clone neuf | `git clone <dépôt> $env:TEMP\essai` puis `uv sync` |
-| installation minimale | `python -m venv .venv` ; `.venv\Scripts\pip install -e .` ; `.venv\Scripts\briq.exe valider exemples\maison.json` |
-| navigateur | `uv run briq web` puis <http://127.0.0.1:8000> |
+| installation minimale | `python -m venv .venv` ; `.venv\Scripts\pip install -e .` ; `.venv\Scripts\obqo.exe valider exemples\maison.json` |
+| navigateur | `uv run obqo web` puis <http://127.0.0.1:8000> |
 
 Le seul vrai piège est le troisième : sous Windows l'environnement virtuel range
 ses exécutables dans **`.venv\Scripts\`** et non `.venv/bin/`, et le binaire
-s'appelle `briq.exe`. Le reste de la consigne tient : appelez-le directement,
+s'appelle `obqo.exe`. Le reste de la consigne tient : appelez-le directement,
 `uv run` réinstallerait tous les extras et l'essai ne voudrait plus rien dire.
 
 ### Lancer l'interface web
 
 ```powershell
 cd $env:TEMP\essai
-uv run briq web
+uv run obqo web
 Start-Process http://127.0.0.1:8000    # ou collez l'adresse dans Edge
 ```
 
@@ -237,8 +237,8 @@ ouvrez-en une seconde pour continuer à taper des commandes.
 | Situation | Réponse |
 |---|---|
 | demande de pare-feu au premier lancement | refuser — le serveur n'écoute que sur `127.0.0.1` |
-| port 8000 déjà pris (fréquent avec Anaconda) | `uv run briq web --port 8080` |
-| y accéder depuis un téléphone ou un autre poste | `uv run briq web --hote 0.0.0.0`, et accepter le pare-feu |
+| port 8000 déjà pris (fréquent avec Anaconda) | `uv run obqo web --port 8080` |
+| y accéder depuis un téléphone ou un autre poste | `uv run obqo web --hote 0.0.0.0`, et accepter le pare-feu |
 | `Interface web indisponible` | `uv sync --extra web` |
 
 Rien n'est persisté : les études vivent en mémoire, les huit dernières, et

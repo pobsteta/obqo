@@ -8,13 +8,13 @@ import pytest
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
-from briq.engine.calepinage import calepiner
-from briq.engine.esquisse import PAS_RECOMMANDE, caler, vers_plan
-from briq.model.ecriture import esquisse_en_yaml
-from briq.model.esquisse import Baie, Esquisse, Piece
-from briq.model.lecture import esquisse_depuis_texte
-from briq.model.plan import Ouverture
-from briq.units import GRILLE
+from obqo.engine.calepinage import calepiner
+from obqo.engine.esquisse import PAS_RECOMMANDE, caler, vers_plan
+from obqo.model.ecriture import esquisse_en_yaml
+from obqo.model.esquisse import Baie, Esquisse, Piece
+from obqo.model.lecture import esquisse_depuis_texte
+from obqo.model.plan import Ouverture
+from obqo.units import GRILLE
 
 
 def esquisse(*pieces: dict[str, Any], **extra: Any) -> Esquisse:

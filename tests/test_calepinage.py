@@ -7,11 +7,11 @@ from itertools import pairwise
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
-from briq.engine.calepinage import calepiner
-from briq.model.plan import Plan
-from briq.model.systeme import Ref
-from briq.rules.catalogue import ANGLE_PAR_RANG
-from briq.units import EPAISSEUR_MUR, GRILLE, LONGUEUR_BRIQUE
+from obqo.engine.calepinage import calepiner
+from obqo.model.plan import Plan
+from obqo.model.systeme import Ref
+from obqo.rules.catalogue import ANGLE_PAR_RANG
+from obqo.units import EPAISSEUR_MUR, GRILLE, LONGUEUR_BRIQUE
 
 from .conftest import plan_rectangle
 

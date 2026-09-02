@@ -1,5 +1,5 @@
 {
-  "$schema": "../schemas/briq-plan-v1.schema.json",
+  "$schema": "../schemas/obqo-plan-v1.schema.json",
   "version": "1",
   "nom": "Maison d'exemple — rectangle 13,92 × 10,56 m",
   "hauteur_sous_chainage": 2640,

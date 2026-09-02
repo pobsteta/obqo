@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from briq.engine.calepinage import calepiner
-from briq.engine.validation import Gravite
+from obqo.engine.calepinage import calepiner
+from obqo.engine.validation import Gravite
 
 from .conftest import plan_rectangle
 
@@ -154,7 +154,7 @@ def test_trumeau_insuffisant_entre_deux_baies() -> None:
 
 
 def test_contour_non_ferme_refuse() -> None:
-    from briq.model.plan import Plan
+    from obqo.model.plan import Plan
 
     with pytest.raises(ValueError, match="ne se referme pas"):
         Plan.model_validate(

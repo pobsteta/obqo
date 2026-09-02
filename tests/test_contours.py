@@ -16,12 +16,12 @@ import pytest
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
-from briq.drawings.volume import tenons_sans_reception
-from briq.engine.calepinage import calepiner, vide_du_rang
-from briq.engine.geometrie import squelette
-from briq.model.plan import Plan
-from briq.model.systeme import Calepinage
-from briq.units import EPAISSEUR_MUR, GRILLE
+from obqo.drawings.volume import tenons_sans_reception
+from obqo.engine.calepinage import calepiner, vide_du_rang
+from obqo.engine.geometrie import squelette
+from obqo.model.plan import Plan
+from obqo.model.systeme import Calepinage
+from obqo.units import EPAISSEUR_MUR, GRILLE
 
 
 def plan(nom: str, segments: list[tuple[str, int]], **extra: Any) -> Plan:

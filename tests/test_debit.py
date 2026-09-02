@@ -8,7 +8,7 @@ import pytest
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
-from briq.bom.debit import (
+from obqo.bom.debit import (
     CpSat,
     GloutonDecroissant,
     PlanDeDebit,

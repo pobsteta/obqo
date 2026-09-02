@@ -1,4 +1,4 @@
-# BRIQ — calepinage du système constructif en briques de bois chevillées
+# obqo — calepinage du système constructif BRIQ
 
 Calcule, à partir d'un plan de maison, tout ce qu'il faut pour la construire avec
 le système BRIQ : calepinage rang par rang, nomenclature, plans de montage et
@@ -12,19 +12,19 @@ métré de matière première.
 
 ```bash
 uv sync                                          # installe tout
-uv run briq valider exemples/maison.json         # contrôle le plan
-uv run briq calepiner exemples/maison.json -o sortie/   # dossier complet
+uv run obqo valider exemples/maison.json         # contrôle le plan
+uv run obqo calepiner exemples/maison.json -o sortie/   # dossier complet
 ```
 
 | Commande | Effet |
 |---|---|
-| `briq valider PLAN` | rapport de validation seul ; sort en 1 s'il y a une erreur |
-| `briq calepiner PLAN -o DOSSIER` | le dossier complet : modèle, nomenclature, métré, débit, plans |
-| `briq nomenclature PLAN` | la nomenclature à l'écran, sans rien écrire |
-| `briq debit PLAN` | le plan de découpe optimisé, sans rien écrire |
-| `briq web` | interface web sur http://127.0.0.1:8000 |
-| `briq gabarit -o FICHIER` | écrit un plan de départ commenté, à modifier |
-| `briq schema -o DOSSIER` | régénère le schéma JSON du format de plan |
+| `obqo valider PLAN` | rapport de validation seul ; sort en 1 s'il y a une erreur |
+| `obqo calepiner PLAN -o DOSSIER` | le dossier complet : modèle, nomenclature, métré, débit, plans |
+| `obqo nomenclature PLAN` | la nomenclature à l'écran, sans rien écrire |
+| `obqo debit PLAN` | le plan de découpe optimisé, sans rien écrire |
+| `obqo web` | interface web sur http://127.0.0.1:8000 |
+| `obqo gabarit -o FICHIER` | écrit un plan de départ commenté, à modifier |
+| `obqo schema -o DOSSIER` | régénère le schéma JSON du format de plan |
 
 Options utiles de `calepiner` : `-f svg` (répétable) restreint les formats de
 plans, aucune occurrence produisant les quatre ; `--glouton` remplace le solveur
@@ -37,7 +37,7 @@ solveur exact.
 l'échelle 1 et les `3d/*.glb`.
 
 Référencez le schéma depuis votre plan
-(`"$schema": "../schemas/briq-plan-v1.schema.json"`) pour obtenir autocomplétion
+(`"$schema": "../schemas/obqo-plan-v1.schema.json"`) pour obtenir autocomplétion
 et validation en direct dans l'éditeur pendant la saisie. Un test vérifie que le
 schéma commité suit le modèle : sans cela l'autocomplétion mentirait.
 
@@ -56,7 +56,7 @@ schéma commité suit le modèle : sans cela l'autocomplétion mentirait.
 ## Architecture
 
 ```
-src/briq/
+src/obqo/
   units.py      constantes de grille — tout est un entier de millimètres
   model/        plan.py    schéma d'entrée validé (Pydantic, JSON Schema versionné)
                 lecture.py lecture d'un plan, JSON ou YAML
@@ -166,7 +166,7 @@ vrai déchet. Les confondre masque complètement le rendement réel.
 
 ## L'esquisse : dessiner les pièces, l'application en tire le plan
 
-`briq web` ouvre aussi un **éditeur d'esquisse** (`/esquisse`) : on pose les
+`obqo web` ouvre aussi un **éditeur d'esquisse** (`/esquisse`) : on pose les
 pièces à la souris, l'application cale le dessin sur la grille et en déduit le
 contour et les refends.
 
@@ -301,7 +301,7 @@ bord maximum et non son minimum.
 
 ```bash
 uv sync --extra web
-uv run briq web            # http://127.0.0.1:8000
+uv run obqo web            # http://127.0.0.1:8000
 ```
 
 Saisie du plan à gauche, résultat à droite : rapport de validation coloré par

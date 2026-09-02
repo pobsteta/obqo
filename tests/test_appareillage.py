@@ -11,8 +11,8 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from briq.engine.appareillage import decouper, joints, parite_du_rang
-from briq.units import GRILLE, LONGUEUR_BRIQUE, LONGUEUR_DEMI
+from obqo.engine.appareillage import decouper, joints, parite_du_rang
+from obqo.units import GRILLE, LONGUEUR_BRIQUE, LONGUEUR_DEMI
 
 courses = st.tuples(
     st.integers(min_value=0, max_value=40).map(lambda n: n * GRILLE),

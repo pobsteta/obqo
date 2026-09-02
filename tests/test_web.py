@@ -12,8 +12,8 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-from briq.web.app import app
-from briq.web.etude import Depot, EchecDeValidation, empreinte
+from obqo.web.app import app
+from obqo.web.etude import Depot, EchecDeValidation, empreinte
 
 RACINE = Path(__file__).resolve().parents[1]
 EXEMPLE = (RACINE / "exemples" / "maison.json").read_text(encoding="utf-8")
@@ -179,7 +179,7 @@ def test_le_plan_derive_est_relisible_par_l_application(client: TestClient) -> N
     """Ce que l'esquisse ecrit doit repasser par la porte d'entree normale."""
     import re
 
-    from briq.model.lecture import depuis_texte
+    from obqo.model.lecture import depuis_texte
 
     reponse = client.post("/esquisse/plan", json=DEUX_PIECES)
     source = re.search(r'<textarea id="source-derivee"[^>]*>(.*?)</textarea>', reponse.text, re.S)
@@ -291,8 +291,8 @@ def test_le_plan_derive_reprend_les_baies_posees(client: TestClient) -> None:
 def test_le_plan_derive_avec_baies_repasse_par_la_porte_d_entree(client: TestClient) -> None:
     import re
 
-    from briq.engine.calepinage import calepiner
-    from briq.model.lecture import depuis_texte
+    from obqo.engine.calepinage import calepiner
+    from obqo.model.lecture import depuis_texte
 
     reponse = client.post(
         "/esquisse/plan",
@@ -465,7 +465,7 @@ def test_un_plan_incomplet_ne_propose_que_de_l_ouvrir(client: TestClient) -> Non
 
 
 def test_le_plan_derive_se_retrouve_dans_l_onglet_plan(client: TestClient) -> None:
-    from briq.model.lecture import depuis_texte
+    from obqo.model.lecture import depuis_texte
 
     cle_brouillon = _brouillon(client, ESQUISSE_COMPLETE)
     page = client.get("/", params={"depuis": cle_brouillon})
@@ -491,7 +491,7 @@ def test_un_brouillon_oublie_le_dit_au_lieu_de_servir_l_exemple(client: TestClie
 
 
 def test_le_depot_de_brouillons_oublie_les_plus_anciens() -> None:
-    from briq.web.etude import Brouillons
+    from obqo.web.etude import Brouillons
 
     brouillons = Brouillons(capacite=2)
     premier = brouillons.deposer("un")
