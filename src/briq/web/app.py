@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import io
 import json
+import tempfile
 import zipfile
 from pathlib import Path
 from typing import Annotated, Any
@@ -34,7 +35,7 @@ from briq.bom.sorties import (
     lignes_nomenclature,
     lignes_par_mur,
 )
-from briq.drawings import dxf, pdf, svg
+from briq.drawings import svg
 from briq.drawings.ir import nom_de_fichier
 from briq.drawings.mise_en_page import Feuille
 from briq.drawings.planches import apercu
@@ -212,12 +213,15 @@ def dossier_zip(cle: str) -> Response:
             archive.writestr(
                 f"plans/{index:02d}-{nom_de_fichier(dessin.titre)}.svg", svg.rendre(dessin)
             )
-        papier = io.BytesIO()
-        chemin = Path("/tmp") / f"briq-{etude.cle}.pdf"
-        pdf.ecrire(etude.planches, chemin)
-        papier.write(chemin.read_bytes())
-        chemin.unlink(missing_ok=True)
-        archive.writestr("dossier.pdf", papier.getvalue())
+        try:
+            from briq.drawings import pdf
+        except ImportError:  # extra « dessins » absent : le zip garde les SVG
+            pass
+        else:
+            chemin = Path(tempfile.gettempdir()) / f"briq-{etude.cle}.pdf"
+            pdf.ecrire(etude.planches, chemin)
+            archive.writestr("dossier.pdf", chemin.read_bytes())
+            chemin.unlink(missing_ok=True)
 
     return Response(
         tampon.getvalue(),
@@ -429,4 +433,3 @@ def schema() -> JSONResponse:
 
 # Le gabarit a besoin de reconnaitre la gravite d'un constat pour le colorer.
 gabarits.env.globals["Gravite"] = Gravite
-gabarits.env.globals["dxf_disponible"] = dxf is not None

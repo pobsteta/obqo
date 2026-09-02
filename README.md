@@ -127,11 +127,15 @@ définit aucune référence (voir `docs/hypotheses.md`).
 ## Tests
 
 ```bash
-uv run pytest                  # 174 tests, ~85 s
+uv run pytest                  # 178 tests, ~85 s
 uv run pytest -m "not lent"    # ~40 s : exclut les preuves d'optimalité du débit
 uv run ruff check src tests
 uv run mypy
 ```
+
+96 % de couverture. La marche à suivre complète — clone neuf, installation
+minimale, essai en navigateur — est dans
+[`docs/tester.md`](docs/tester.md).
 
 Les tests unitaires vérifient des comptages faits à la main. Les tests à
 propriétés (Hypothesis) vérifient les **invariants** sur des milliers de murs
@@ -308,3 +312,5 @@ redeviendra le bon choix.
   ou d'un plan d'architecte au fichier que l'application calepine
 - `docs/hypotheses.md` — les points du brief que l'application interprète, et les
   questions à trancher
+- [`docs/tester.md`](docs/tester.md) — comment vérifier que l'application marche,
+  et ce que les tests automatiques ne voient pas

@@ -34,7 +34,7 @@ from briq.bom.sorties import (
     lignes_par_mur,
     synthese,
 )
-from briq.drawings import dxf, pdf, svg
+from briq.drawings import svg
 from briq.drawings.ir import nom_de_fichier
 from briq.drawings.planches import dossier as planches_du_dossier
 from briq.engine.calepinage import calepiner as calepiner_le_plan
@@ -176,8 +176,44 @@ def serialiser(calepinage: Calepinage) -> dict[str, Any]:
     }
 
 
+EXTRAS: dict[Format, tuple[str, str]] = {
+    Format.PDF: ("dessins", "reportlab"),
+    Format.DXF: ("dessins", "ezdxf"),
+    Format.TROIS_D: ("volume", "trimesh"),
+}
+"""Format de plan -> (extra a installer, module qui doit etre importable)."""
+
+
+def formats_servables(formats: list[Format]) -> list[Format]:
+    """Ecarte les formats dont l'extra manque, en disant lequel installer.
+
+    Le SVG n'utilise que la bibliotheque standard ; le PDF, le DXF et la 3D
+    reposent sur des extras. Une installation minimale doit produire le reste
+    sans broncher plutot que de s'arreter sur un ImportError.
+    """
+    servables: list[Format] = []
+    for demande in formats:
+        extra = EXTRAS.get(demande)
+        if extra is None:
+            servables.append(demande)
+            continue
+        nom, module = extra
+        try:
+            __import__(module)
+        except ImportError:
+            erreurs.print(
+                f"[yellow]Format {demande.value} ignore[/yellow] : "
+                f"installer avec [bold]uv sync --extra {nom}[/bold] "
+                f"(ou pip install 'briq[{nom}]')."
+            )
+        else:
+            servables.append(demande)
+    return servables
+
+
 def dessiner(calepinage: Calepinage, plan: Plan, dossier: Path, formats: list[Format]) -> list[str]:
     """Produit les planches dans les formats demandes. Retourne les intitules."""
+    formats = formats_servables(formats)
     if not formats:
         return []
     planches = planches_du_dossier(calepinage, plan)
@@ -190,9 +226,13 @@ def dessiner(calepinage: Calepinage, plan: Plan, dossier: Path, formats: list[Fo
             svg.ecrire(planche, cible / f"{index:02d}-{nom_de_fichier(planche.titre)}.svg")
         ecrits.append(f"plans/*.svg ({len(planches)} planches)")
     if Format.PDF in formats:
+        from briq.drawings import pdf
+
         pdf.ecrire(planches, dossier / "dossier.pdf")
         ecrits.append(f"dossier.pdf ({len(planches)} pages A3)")
     if Format.DXF in formats:
+        from briq.drawings import dxf
+
         cible = dossier / "dxf"
         cible.mkdir(parents=True, exist_ok=True)
         dxf.ecrire(planches, cible)

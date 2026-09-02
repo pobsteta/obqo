@@ -300,3 +300,54 @@ def test_les_pages_partagent_le_meme_cadre_vertical() -> None:
     pages = paginer(elevation(calepinage.murs[0], long_, []))
     hauteurs = {(p.emprise[1], p.emprise[3]) for p in pages}
     assert len(hauteurs) == 1, "les pages doivent rester comparables"
+
+
+# --- export 3D ----------------------------------------------------------------
+
+
+def test_la_maison_s_exporte_en_glb(tmp_path: Path, maison_calepinee) -> None:
+    from briq.drawings import volume
+
+    cible = tmp_path / "maison.glb"
+    boites = volume.maison(maison_calepinee, cible)
+    assert boites == len(maison_calepinee.briques), "une boite par brique posee"
+    assert cible.read_bytes()[:4] == b"glTF"
+
+
+def test_la_colonne_d_angle_s_exporte_piece_par_piece(tmp_path: Path, maison_calepinee) -> None:
+    """C'est l'outil de debogage du harpage : il doit sortir les pieces, pas les
+    briques, sinon il ne montre rien de plus qu'une elevation."""
+    from briq.drawings import volume
+
+    cible = tmp_path / "angle.glb"
+    boites = volume.colonne_d_angle(maison_calepinee, cible, rangs=3)
+    assert boites > 3 * 17, "une brique 480 compte deja 17 pieces"
+    assert cible.read_bytes()[:4] == b"glTF"
+
+
+def test_l_eclatement_ecarte_les_rangs(tmp_path: Path, maison_calepinee) -> None:
+    from briq.drawings import volume
+
+    serre = volume.colonne_d_angle(maison_calepinee, tmp_path / "a.glb", rangs=2, eclatement=0)
+    eclate = volume.colonne_d_angle(maison_calepinee, tmp_path / "b.glb", rangs=2, eclatement=480)
+    assert serre == eclate, "l'eclatement deplace les pieces, il n'en ajoute pas"
+    assert (tmp_path / "a.glb").stat().st_size > 0
+
+
+def test_une_maison_sans_angle_n_a_pas_de_colonne(tmp_path: Path) -> None:
+    from briq.drawings import volume
+    from briq.model.systeme import Calepinage
+
+    assert volume.colonne_d_angle(Calepinage(nom="vide"), tmp_path / "rien.glb") == 0
+
+
+def test_les_pieces_placees_restent_dans_l_emprise_du_mur(maison_calepinee) -> None:
+    """Une piece qui sortirait du mur signalerait une erreur de repere."""
+    from briq.drawings.volume import pieces_globales
+
+    mur = maison_calepinee.murs[0]
+    rang = mur.rangs[0]
+    for brique in rang.briques[:6]:
+        for _, coin, taille in pieces_globales(brique, mur, rang):
+            assert min(coin[0], coin[1]) >= -240
+            assert all(dimension > 0 for dimension in taille)
