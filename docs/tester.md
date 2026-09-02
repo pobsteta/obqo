@@ -223,9 +223,27 @@ ses exécutables dans **`.venv\Scripts\`** et non `.venv/bin/`, et le binaire
 s'appelle `briq.exe`. Le reste de la consigne tient : appelez-le directement,
 `uv run` réinstallerait tous les extras et l'essai ne voudrait plus rien dire.
 
-Au premier `briq web`, Windows ouvre une **demande de pare-feu**. Refuser suffit
-pour un usage local : le serveur n'écoute que sur `127.0.0.1`, l'autorisation ne
-sert qu'à y accéder depuis une autre machine du réseau.
+### Lancer l'interface web
+
+```powershell
+cd $env:TEMP\essai
+uv run briq web
+Start-Process http://127.0.0.1:8000    # ou collez l'adresse dans Edge
+```
+
+`Ctrl+C` arrête le serveur. Tant qu'il tourne il occupe la fenêtre PowerShell :
+ouvrez-en une seconde pour continuer à taper des commandes.
+
+| Situation | Réponse |
+|---|---|
+| demande de pare-feu au premier lancement | refuser — le serveur n'écoute que sur `127.0.0.1` |
+| port 8000 déjà pris (fréquent avec Anaconda) | `uv run briq web --port 8080` |
+| y accéder depuis un téléphone ou un autre poste | `uv run briq web --hote 0.0.0.0`, et accepter le pare-feu |
+| `Interface web indisponible` | `uv sync --extra web` |
+
+Rien n'est persisté : les études vivent en mémoire, les huit dernières, et
+fermer le serveur les efface. C'est à cela que sert le bouton *Enregistrer* de
+l'esquisse, qui rend un fichier YAML à garder.
 
 ### Ce qui a été corrigé pour Windows
 
