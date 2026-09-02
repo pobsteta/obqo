@@ -33,8 +33,22 @@ def cle(client: TestClient) -> str:
     return trouve.group(1)
 
 
-def test_l_accueil_prefigure_le_plan_d_exemple(client: TestClient) -> None:
+def test_l_accueil_ouvre_sur_l_esquisse(client: TestClient) -> None:
+    """On dessine d'abord : la page d'accueil est l'editeur, pas le calepinage."""
     reponse = client.get("/")
+    assert reponse.status_code == 200
+    assert "esquisse.js" in reponse.text
+    assert "Document de calepinage" in reponse.text, "la mention obligatoire est partout"
+
+
+def test_l_ancienne_adresse_de_l_esquisse_mene_a_l_accueil(client: TestClient) -> None:
+    reponse = client.get("/esquisse", follow_redirects=False)
+    assert reponse.status_code == 308
+    assert reponse.headers["location"] == "/"
+
+
+def test_la_page_de_plan_prefigure_le_plan_d_exemple(client: TestClient) -> None:
+    reponse = client.get("/plan")
     assert reponse.status_code == 200
     assert "hauteur_sous_chainage" in reponse.text
     assert "Document de calepinage" in reponse.text, "la mention obligatoire est partout"
@@ -151,7 +165,7 @@ DEUX_PIECES = {
 
 
 def test_la_page_d_esquisse_s_affiche(client: TestClient) -> None:
-    reponse = client.get("/esquisse")
+    reponse = client.get("/")
     assert reponse.status_code == 200
     assert "esquisse.js" in reponse.text
     assert "Document de calepinage" in reponse.text
@@ -286,6 +300,64 @@ def test_le_plan_derive_reprend_les_baies_posees(client: TestClient) -> None:
     assert "ouvertures:" in reponse.text and "ouvertures: []" not in reponse.text
     assert "passage libre" in reponse.text, "la trémie n'est pas le passage"
     assert "Plan complet" in reponse.text, "ce plan doit se calepiner tel quel"
+
+
+def test_les_cotes_de_baie_se_saisissent_au_clavier(client: TestClient) -> None:
+    """Glisser pose la baie a peu pres ; les deux champs la posent exactement."""
+    reponse = client.get("/")
+    assert 'id="baie-hauteur"' in reponse.text
+    assert 'id="baie-largeur"' in reponse.text
+
+
+def _esquisse_avec_baie(baie: dict[str, object]) -> dict[str, object]:
+    return {
+        "hauteur_sous_chainage": 2640,
+        "pieces": [
+            {"nom": "a", "x": 0, "y": 0, "largeur": 4800, "hauteur": 4800},
+            {"nom": "b", "x": 4800, "y": 0, "largeur": 3840, "hauteur": 4800},
+        ],
+        "baies": [baie],
+    }
+
+
+def test_une_baie_redimensionnee_garde_ses_deux_cotes(client: TestClient) -> None:
+    """Ce qui est tape dans l'editeur doit se retrouver tel quel dans le plan."""
+    reponse = client.post(
+        "/esquisse/plan",
+        json=_esquisse_avec_baie(
+            {
+                "id": "baie vitrée",
+                "type": "porte_fenetre",
+                "depart": [1920, 0],
+                "arrivee": [3840, 0],
+                "allege": 0,
+                "hauteur": 2400,
+            }
+        ),
+    )
+    assert reponse.status_code == 200
+    assert "largeur: 1920" in reponse.text
+    assert "hauteur: 2400" in reponse.text
+
+
+def test_une_baie_trop_haute_est_dite_au_lieu_d_etre_calepinee(client: TestClient) -> None:
+    """960 + 1680 + le rang de linteau depassent les 2640 sous chainage."""
+    reponse = client.post(
+        "/esquisse/plan",
+        json=_esquisse_avec_baie(
+            {
+                "id": "F1",
+                "type": "fenetre",
+                "depart": [1920, 0],
+                "arrivee": [3360, 0],
+                "allege": 960,
+                "hauteur": 1680,
+            }
+        ),
+    )
+    assert reponse.status_code == 200
+    assert "BAIE-TROP-HAUTE" in reponse.text
+    assert "Plan complet" not in reponse.text
 
 
 def test_le_plan_derive_avec_baies_repasse_par_la_porte_d_entree(client: TestClient) -> None:
@@ -438,7 +510,7 @@ ESQUISSE_COMPLETE: dict[str, object] = {
 def _brouillon(client: TestClient, esquisse: dict[str, object]) -> str:
     reponse = client.post("/esquisse/plan", json=esquisse)
     assert reponse.status_code == 200, reponse.text
-    trouve = re.search(r'href="/\?depuis=([0-9a-f]+)"', reponse.text)
+    trouve = re.search(r'href="/plan\?depuis=([0-9a-f]+)"', reponse.text)
     assert trouve is not None, reponse.text
     return trouve.group(1)
 
@@ -468,7 +540,7 @@ def test_le_plan_derive_se_retrouve_dans_l_onglet_plan(client: TestClient) -> No
     from obqo.model.lecture import depuis_texte
 
     cle_brouillon = _brouillon(client, ESQUISSE_COMPLETE)
-    page = client.get("/", params={"depuis": cle_brouillon})
+    page = client.get("/plan", params={"depuis": cle_brouillon})
     assert page.status_code == 200
     source = re.search(r'<textarea id="plan"[^>]*>(.*?)</textarea>', page.text, re.S)
     assert source is not None
@@ -479,12 +551,12 @@ def test_le_plan_derive_se_retrouve_dans_l_onglet_plan(client: TestClient) -> No
 
 def test_le_lien_calepiner_demande_le_lancement_automatique(client: TestClient) -> None:
     cle_brouillon = _brouillon(client, ESQUISSE_COMPLETE)
-    page = client.get("/", params={"depuis": cle_brouillon, "calepiner": 1})
+    page = client.get("/plan", params={"depuis": cle_brouillon, "calepiner": 1})
     assert 'data-lancer="1"' in page.text
 
 
 def test_un_brouillon_oublie_le_dit_au_lieu_de_servir_l_exemple(client: TestClient) -> None:
-    page = client.get("/", params={"depuis": "0" * 16, "calepiner": 1})
+    page = client.get("/plan", params={"depuis": "0" * 16, "calepiner": 1})
     assert page.status_code == 200
     assert "plus en mémoire" in page.text
     assert 'data-lancer="1"' not in page.text, "rien a lancer : ce n'est pas le plan demande"

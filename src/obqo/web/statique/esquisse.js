@@ -19,6 +19,9 @@ let selection = null;
 let baieActive = null;
 let geste = null;
 const LARGEUR_MINI_BAIE = 720;
+const HAUTEUR_MINI_BAIE = 240; // un rang
+const RECUL_MINI_ANGLE = 480; // 240 d'appui de linteau + 240 de maconnerie
+const HAUTEUR_RANG = 240;
 const LIBELLES = { porte: "porte", fenetre: "fenêtre", porte_fenetre: "porte-fenêtre" };
 
 // « porte 1 » se relit dans une nomenclature ; « B1 » ne dit rien a personne.
@@ -206,6 +209,89 @@ function largeurDe(baie) {
   );
 }
 
+// Le mur qui porte la baie : celui dont le segment la contient entierement.
+// Une baie relue d'un fichier ne connait que ses deux points, et un calage a pu
+// deplacer le mur qu'elle citait : on le retrouve sur la geometrie du moment,
+// celle que le serveur a rendue.
+function murPorteur(baie) {
+  const vertical = baie.depart[0] === baie.arrivee[0];
+  const axe = vertical ? 1 : 0;
+  const travers = vertical ? 0 : 1;
+  const porteur = murs.find((mur) => {
+    if ((mur.depart[0] === mur.arrivee[0]) !== vertical) return false;
+    if (mur.depart[travers] !== baie.depart[travers]) return false;
+    const min = Math.min(mur.depart[axe], mur.arrivee[axe]);
+    const max = Math.max(mur.depart[axe], mur.arrivee[axe]);
+    return [baie.depart[axe], baie.arrivee[axe]].every((v) => v >= min && v <= max);
+  });
+  return porteur || null;
+}
+
+// La largeur se saisit au clavier comme la hauteur : glisser a la souris donne
+// la baie a peu pres, le champ la donne exactement. La rive gauche reste en
+// place ; si la baie ne tient plus jusqu'au bout du mur, elle recule le long de
+// celui-ci plutot que d'en sortir — un mur trop court est le seul cas ou la
+// largeur demandee n'est pas tenue, et il se dit.
+function redimensionnerBaie(baie, voulue) {
+  const axe = baie.depart[0] === baie.arrivee[0] ? 1 : 0;
+  const mur = murPorteur(baie);
+  let largeur = Math.max(LARGEUR_MINI_BAIE, caler(voulue));
+  let debut = Math.min(baie.depart[axe], baie.arrivee[axe]);
+  let avis = "";
+  if (mur) {
+    const min = Math.min(mur.depart[axe], mur.arrivee[axe]);
+    const max = Math.max(mur.depart[axe], mur.arrivee[axe]);
+    if (largeur > max - min) {
+      largeur = Math.max(LARGEUR_MINI_BAIE, max - min);
+      avis = `Le mur ${mur.id} ne fait que ${max - min} mm : baie ramenée à ${largeur} mm.`;
+    }
+    debut = Math.min(Math.max(debut, min), max - largeur);
+    baie.mur = mur.id;
+  }
+  const fixe = axe ? baie.depart[0] : baie.depart[1];
+  baie.depart = axe ? [fixe, debut] : [debut, fixe];
+  baie.arrivee = axe ? [fixe, debut + largeur] : [debut + largeur, fixe];
+  return avis;
+}
+
+// Ce que la baie coute vraiment : le passage libre une fois les jambages poses,
+// et les regles qu'elle enfreint deja — un plan refuse a la generation aurait
+// pu se dire ici, au moment ou l'on tape la cote.
+function resumeDeLaBaie(baie) {
+  const tremie = largeurDe(baie);
+  const passage = tremie - (tremie > 1800 ? 320 : 160);
+  const mur = murPorteur(baie);
+  const lignes = [
+    `${baie.id} sur ${(mur && mur.id) || baie.mur || "un mur"} : trémie ` +
+      `${baie.hauteur} × ${tremie} mm (h × l), passage libre ${passage} mm`,
+  ];
+  if (tremie > 2400) lignes.push("au-delà de 2400, linteau en lamellé-collé");
+  const chainage = Number(document.getElementById("hauteur-chainage").value) || 2640;
+  const haut = baie.allege + baie.hauteur + HAUTEUR_RANG;
+  if (haut > chainage) {
+    lignes.push(
+      `allège + hauteur + linteau = ${haut} mm au-dessus des ${chainage} mm ` +
+        "sous chaînage : baissez la baie"
+    );
+  }
+  if (mur) {
+    const axe = baie.depart[0] === baie.arrivee[0] ? 1 : 0;
+    const bornes = [mur.depart[axe], mur.arrivee[axe]];
+    const reculs = [
+      Math.min(baie.depart[axe], baie.arrivee[axe]) - Math.min(...bornes),
+      Math.max(...bornes) - Math.max(baie.depart[axe], baie.arrivee[axe]),
+    ];
+    const serre = Math.min(...reculs);
+    if (serre < RECUL_MINI_ANGLE) {
+      lignes.push(
+        `rive à ${serre} mm de l'angle : ${RECUL_MINI_ANGLE} mm minimum pour ` +
+          "l'appui du linteau"
+      );
+    }
+  }
+  return lignes.join(" — ");
+}
+
 const ETIQUETTE = { hauteur: 240, parCaractere: 132, ecart: 300, marge: 120 };
 
 // Une etiquette posee toujours au-dessus de la baie se couche en travers du mur
@@ -217,7 +303,9 @@ function poserLesEtiquettes() {
   const centre = centreDuBati();
   const posees = boitesDesNoms();
   return baies.map((baie) => {
-    const texte = `${baie.id} ${largeurDe(baie)}`;
+    // H et L sont ecrits : sur un plan, « 2160 × 960 » se lit dans les deux
+    // sens, et une porte posee a l'envers se paie en menuiserie.
+    const texte = `${baie.id} H${baie.hauteur}×L${largeurDe(baie)}`;
     const largeur = texte.length * ETIQUETTE.parCaractere;
     const mx = (baie.depart[0] + baie.arrivee[0]) / 2;
     const my = (baie.depart[1] + baie.arrivee[1]) / 2;
@@ -410,6 +498,7 @@ toile.addEventListener("pointermove", (evenement) => {
       baie.depart = [Math.min(geste.origine[0], x), ay];
       baie.arrivee = [Math.max(geste.origine[0], x), ay];
     }
+    montrerFormeBaie(); // la cote se lit pendant le glissement, pas apres
     dessiner();
     return;
   }
@@ -454,16 +543,19 @@ toile.addEventListener("pointermove", (evenement) => {
 toile.addEventListener("pointerup", () => {
   if (geste && geste.type === "baie") {
     const baie = baies[baieActive];
+    let avis;
     if (largeurDe(baie) < LARGEUR_MINI_BAIE) {
       baies.splice(baieActive, 1);
       baieActive = null;
-      etat.textContent = `Une baie fait ${LARGEUR_MINI_BAIE} mm au minimum : glissez le long du mur.`;
+      avis = `Une baie fait ${LARGEUR_MINI_BAIE} mm au minimum : glissez le long du mur, ou tapez sa largeur.`;
     } else {
-      etat.textContent = `${baie.id} : ${largeurDe(baie)} mm de trémie, passage libre ${largeurDe(baie) - (largeurDe(baie) > 1800 ? 320 : 160)} mm.`;
+      avis = resumeDeLaBaie(baie);
     }
     geste = null;
     montrerFormeBaie();
     dessiner();
+    // Apres « dessiner », qui reecrit la barre d'etat avec le compte des pieces.
+    etat.textContent = avis;
     return;
   }
   if (geste && !geste.ne && selection !== null) {
@@ -528,31 +620,42 @@ function montrerFormeBaie() {
   document.getElementById("baie-type").value = baie.type;
   document.getElementById("baie-allege").value = baie.allege;
   document.getElementById("baie-hauteur").value = baie.hauteur;
+  document.getElementById("baie-largeur").value = largeurDe(baie);
   document.getElementById("baie-allege").disabled = baie.type !== "fenetre";
 
   // Les cotes portent sur la tremie : rappeler le passage libre evite la
   // porte de 800 qu'on croyait a 960.
-  const tremie = largeurDe(baie);
-  const passage = tremie - (tremie > 1800 ? 320 : 160);
-  const linteau = tremie > 2400 ? " — au-delà de 2400, linteau en lamellé-collé" : "";
-  document.getElementById("baie-resume").textContent =
-    `${baie.id} sur ${baie.mur || "un mur"} : trémie ${tremie} mm, passage libre ${passage} mm${linteau}`;
+  document.getElementById("baie-resume").textContent = resumeDeLaBaie(baie);
 }
 
-for (const champ of ["type", "allege", "hauteur"]) {
+// Une cote tapee au clavier passe par la grille de 240 comme celle tiree a la
+// souris : le pas du champ n'est qu'une aide aux fleches, rien n'empeche de
+// saisir 1 250 — que le plan derive refuserait ensuite (HORS-GRILLE).
+const MINIMA = { allege: 0, hauteur: HAUTEUR_MINI_BAIE, largeur: LARGEUR_MINI_BAIE };
+
+for (const champ of ["type", "allege", "hauteur", "largeur"]) {
   document.getElementById(`baie-${champ}`).addEventListener("change", (evenement) => {
     if (baieActive === null) return;
     const valeur = evenement.target.value;
     const baie = baies[baieActive];
     const nomAuto = Object.values(LIBELLES).some((l) => baie.id.startsWith(`${l} `));
-    baie[champ] = champ === "type" ? valeur : Number(valeur);
+    let avis = "";
     if (champ === "type") {
+      baie.type = valeur;
       if (valeur !== "fenetre") baie.allege = 0;
       // Un nom encore automatique suit le type ; un nom choisi ne bouge pas.
       if (nomAuto) baie.id = nomLibre(valeur);
+    } else {
+      const cote = Math.max(MINIMA[champ], caler(Number(valeur) || 0));
+      // La largeur n'est pas une propriete de la baie : c'est la longueur de son
+      // segment sur le mur. La regler, c'est deplacer sa rive droite.
+      if (champ === "largeur") avis = redimensionnerBaie(baie, cote);
+      else baie[champ] = cote;
     }
     montrerFormeBaie();
     dessiner();
+    // « dessiner » reecrit la barre d'etat : le mot du champ passe apres.
+    if (avis) etat.textContent = avis;
   });
 }
 

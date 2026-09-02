@@ -8,6 +8,9 @@ Pas de HTMX ni de framework front : l'application n'a que trois interactions
 (soumettre un plan, changer de planche, telecharger le dossier). Une trentaine de
 lignes de JavaScript suffisent, et evitent d'embarquer une bibliotheque a
 maintenir ou de dependre d'un CDN dans un atelier hors ligne.
+
+Deux pages, dans l'ordre du travail : « / » dessine l'esquisse, « /plan »
+calepine. La seconde s'atteint aussi depuis la premiere, chargee du plan derive.
 """
 
 from __future__ import annotations
@@ -20,7 +23,7 @@ from pathlib import Path
 from typing import Annotated, Any
 
 from fastapi import Body, FastAPI, HTTPException, Request
-from fastapi.responses import HTMLResponse, JSONResponse, Response
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import ValidationError
@@ -90,8 +93,8 @@ def _etude_ou_404(cle: str) -> Etude:
     return etude
 
 
-@app.get("/", response_class=HTMLResponse)
-def accueil(requete: Request, depuis: str = "", calepiner: int = 0) -> Any:
+@app.get("/plan", response_class=HTMLResponse)
+def page_de_plan(requete: Request, depuis: str = "", calepiner: int = 0) -> Any:
     """La page de calepinage, eventuellement chargee d'un plan derive d'esquisse.
 
     `depuis` porte la cle d'un brouillon depose par `/esquisse/plan` : c'est ce
@@ -257,11 +260,23 @@ def dossier_zip(cle: str) -> Response:
 # --- module d'esquisse --------------------------------------------------------
 
 
-@app.get("/esquisse", response_class=HTMLResponse)
-def editeur(requete: Request) -> Any:
+@app.get("/", response_class=HTMLResponse)
+def accueil(requete: Request) -> Any:
+    """L'editeur d'esquisse est la page d'accueil : on dessine, puis on calepine.
+
+    C'est l'ordre du travail reel. Arriver sur un plan JSON deja rempli suppose
+    qu'on en a un ; arriver sur une feuille a dessiner ne suppose rien, et le
+    plan derive mene ensuite a la page de calepinage tout seul.
+    """
     return gabarits.TemplateResponse(
         requete, "esquisse.html", {"titre": "obqo — esquisse", "pas": PAS_RECOMMANDE}
     )
+
+
+@app.get("/esquisse", include_in_schema=False)
+def esquisse_deplacee() -> RedirectResponse:
+    """L'ancienne adresse de l'editeur : un signet ne doit pas tomber sur un 404."""
+    return RedirectResponse("/", status_code=308)
 
 
 def _esquisse_depuis(corps: dict[str, Any]) -> Esquisse:

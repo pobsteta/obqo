@@ -22,7 +22,7 @@ uv run obqo calepiner exemples/maison.json -o sortie/   # dossier complet
 | `obqo calepiner PLAN -o DOSSIER` | le dossier complet : modèle, nomenclature, métré, débit, plans |
 | `obqo nomenclature PLAN` | la nomenclature à l'écran, sans rien écrire |
 | `obqo debit PLAN` | le plan de découpe optimisé, sans rien écrire |
-| `obqo web` | interface web sur http://127.0.0.1:8000 |
+| `obqo web` | interface web sur http://127.0.0.1:8000 — l'esquisse à l'accueil, le calepinage sur `/plan` |
 | `obqo gabarit -o FICHIER` | écrit un plan de départ commenté, à modifier |
 | `obqo schema -o DOSSIER` | régénère le schéma JSON du format de plan |
 
@@ -166,9 +166,13 @@ vrai déchet. Les confondre masque complètement le rendement réel.
 
 ## L'esquisse : dessiner les pièces, l'application en tire le plan
 
-`obqo web` ouvre aussi un **éditeur d'esquisse** (`/esquisse`) : on pose les
-pièces à la souris, l'application cale le dessin sur la grille et en déduit le
-contour et les refends.
+`obqo web` ouvre sur l'**éditeur d'esquisse** — c'est la page d'accueil, et
+l'ordre du travail réel : on dessine, puis on calepine. On pose les pièces à la
+souris, l'application cale le dessin sur la grille et en déduit le contour et les
+refends ; la page de calepinage (`/plan`) s'atteint ensuite d'un bouton, déjà
+chargée du plan dérivé. Arriver d'emblée sur un plan JSON suppose qu'on en a
+un ; arriver sur une feuille à dessiner ne suppose rien. L'ancienne adresse
+`/esquisse` redirige vers l'accueil : un signet ne tombe pas sur un 404.
 
 Deux pas distincts, et c'est volontaire. On **dessine** au pas de 240 mm, avec
 aimantation aux pièces voisines — un vide de 240 entre deux pièces ne se voit pas
@@ -200,6 +204,21 @@ long d'un mur, on choisit porte, fenêtre ou porte-fenêtre, on règle l'allège
 la hauteur. L'application rappelle en direct le passage libre — la trémie moins
 les jambages — et signale la portée qui dépasserait le linteau chevillé.
 
+**Et elles se redimensionnent au clavier** : les deux cotes de la trémie,
+*hauteur × largeur*, se tapent dans le formulaire de la baie sélectionnée.
+Glisser donne la baie à peu près, le champ la donne exactement — une porte de
+2 160 × 960, une baie vitrée de 2 400 × 2 400. La largeur s'applique le long du
+mur, rive gauche fixe ; si la baie ne tient plus jusqu'au bout, elle recule
+d'elle-même au lieu d'en sortir, et un mur trop court le dit. Toute cote tapée
+passe par la grille de 240, comme celle tirée à la souris : le pas du champ
+n'est qu'une aide aux flèches, et 1 250 mm ferait refuser le plan dérivé.
+
+Le résumé sous les champs ne se contente plus du passage libre : il annonce
+aussi la baie qui dépasse la hauteur sous chaînage (allège + hauteur + le rang
+de linteau) et la rive à moins de 480 mm d'un angle. Ces deux règles étaient
+déjà vérifiées — mais à la génération du plan, une fois la baie posée, au lieu
+du moment où l'on tape la cote.
+
 Les murs sur lesquels on pose les baies viennent du serveur, pas d'un calcul
 refait côté navigateur : une seule source de vérité pour la géométrie.
 
@@ -221,7 +240,7 @@ gratuit — c'est ce qui fait marcher le transfert en navigation privée, surviv
 
 **Les cotes des baies se placent toutes seules.** Une étiquette posée au-dessus
 de la baie se couche en travers du mur dès qu'il est vertical : « porte
-d'entrée 1200 » fait 2,5 m de long pour un mur de 240. Elle est donc décalée
+d'entrée H2160×L1200 » fait plusieurs mètres de long pour un mur de 240. Elle est donc décalée
 perpendiculairement au mur, vers l'extérieur du bâtiment, rentrée du côté
 intérieur quand le mur touche le bord du cadre, et écartée d'une ligne tant
 qu'elle mord sur une voisine ou sur un nom de pièce. Le cran d'échappement vaut

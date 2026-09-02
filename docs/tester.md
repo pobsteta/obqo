@@ -102,27 +102,38 @@ uv run obqo web        # http://127.0.0.1:8000
 
 Le parcours à refaire après toute modification de l'éditeur :
 
-1. **Onglet Plan** — coller `exemples/maison.json`, calepiner, ouvrir plusieurs
+1. **L'accueil** — l'adresse nue doit ouvrir l'esquisse, pas le plan ; `/esquisse`
+   doit y rediriger, et l'onglet *Plan* mener au calepinage.
+2. **Onglet Plan** — coller `exemples/maison.json`, calepiner, ouvrir plusieurs
    planches, télécharger le zip et vérifier qu'il contient bien le PDF.
-2. **Onglet Esquisse** — dessiner trois ou quatre pièces contiguës, en glissant
+3. **Esquisse** — dessiner trois ou quatre pièces contiguës, en glissant
    (un simple clic ne doit rien créer), caler sur 480, lire le rapport de ce qui
    a bougé.
-3. Créer volontairement un **recouvrement** de deux pièces : le message doit
+4. Créer volontairement un **recouvrement** de deux pièces : le message doit
    être en français et désigner les pièces, pas remonter une trace Pydantic.
-4. Laisser volontairement un **vide de 240** entre deux pièces : l'application
+5. Laisser volontairement un **vide de 240** entre deux pièces : l'application
    doit refuser et donner la position de chaque bloc.
-5. **Onglet Baies** — poser une porte de 1 200 sur un mur, vérifier qu'elle
+6. **Onglet Baies** — poser une porte de 1 200 sur un mur, vérifier qu'elle
    reste à 1 200 après calage (les baies se calent sur 240, pas sur 480), lire
    le passage libre annoncé.
-6. Poser **deux baies côte à côte** sur un mur vertical, puis deux autres sur
+7. **Redimensionner au clavier** — sur cette même porte, taper 2 160 en hauteur
+   et 1 440 en largeur : l'étiquette du dessin doit suivre. Taper 1 250 : la
+   largeur doit retomber sur 1 200. Élargir une baie posée près d'un angle
+   au-delà de ce que le mur porte encore : elle doit reculer le long du mur, pas
+   en sortir. Demander plus large que le mur entier : la baie prend le mur et
+   l'application le dit.
+8. **Les avertissements de cote** — donner à une fenêtre une allège de 960 et
+   une hauteur de 1 680 sous un chaînage à 2 640 : le résumé doit annoncer le
+   dépassement avant même de générer le plan.
+9. Poser **deux baies côte à côte** sur un mur vertical, puis deux autres sur
    un mur horizontal : chaque étiquette doit rester à côté de sa baie, sans
    recouvrir sa voisine ni sortir du cadre.
-7. Renommer une baie, **enregistrer** l'esquisse, rafraîchir la page, la
-   **rouvrir** : le nom choisi doit revenir tel quel.
-8. Générer le plan, puis cliquer **« Calepiner ce plan »** : l'onglet Plan doit
-   s'ouvrir déjà rempli et lancer le calepinage tout seul. Sur un plan
-   incomplet, ce bouton ne doit pas apparaître.
-9. Vérifier que les baies apparaissent sur les élévations.
+10. Renommer une baie, **enregistrer** l'esquisse, rafraîchir la page, la
+    **rouvrir** : le nom choisi doit revenir tel quel.
+11. Générer le plan, puis cliquer **« Calepiner ce plan »** : l'onglet Plan doit
+    s'ouvrir déjà rempli et lancer le calepinage tout seul. Sur un plan
+    incomplet, ce bouton ne doit pas apparaître.
+12. Vérifier que les baies apparaissent sur les élévations, aux cotes tapées.
 
 Sont sortis de ce parcours, et d'aucun test : le clic simple qui créait une
 pièce fantôme de 240 × 240, la porte de 1 200 réduite à 960 par un calage sur

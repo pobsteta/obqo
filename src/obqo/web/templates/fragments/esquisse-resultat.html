@@ -39,9 +39,9 @@
   </p>
   <div class="commandes">
     {% if pret %}
-    <a class="bouton bouton--fort" href="/?depuis={{ brouillon }}&amp;calepiner=1">Calepiner ce plan</a>
+    <a class="bouton bouton--fort" href="/plan?depuis={{ brouillon }}&amp;calepiner=1">Calepiner ce plan</a>
     {% endif %}
-    <a class="bouton" href="/?depuis={{ brouillon }}">Ouvrir dans l'onglet Plan</a>
+    <a class="bouton" href="/plan?depuis={{ brouillon }}">Ouvrir dans l'onglet Plan</a>
     <button type="button" id="copier" class="bouton">Copier la source</button>
   </div>
   <textarea id="source-derivee" class="source" spellcheck="false" readonly>{{ source }}</textarea>

@@ -9,7 +9,7 @@ uv run obqo gabarit -o ma-maison.yaml   # un plan de départ commenté
 uv run obqo valider ma-maison.yaml      # après chaque modification
 ```
 
-**Ou dessinez-le.** `uv run obqo web` puis l'onglet *Esquisse* : posez les pièces
+**Ou dessinez-le.** `uv run obqo web` ouvre directement l'*Esquisse* : posez les pièces
 à la souris, puis les baies en glissant le long d'un mur (porte, fenêtre ou
 porte-fenêtre). L'application cale le dessin sur la grille, en déduit le contour
 et les refends, et rend un plan qui se calepine tel quel. Les étapes 1 à 5

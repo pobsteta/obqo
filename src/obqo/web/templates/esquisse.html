@@ -35,10 +35,18 @@
           <option value="porte_fenetre">porte-fenêtre</option>
         </select>
       </label>
-      <label>allège <input id="baie-allege" type="number" step="240" min="0" value="960"></label>
       <label>hauteur <input id="baie-hauteur" type="number" step="240" min="240" value="1200"></label>
+      <label class="cote-fois">× largeur
+        <input id="baie-largeur" type="number" step="240" min="720" value="1200">
+      </label>
+      <label>allège <input id="baie-allege" type="number" step="240" min="0" value="960"></label>
       <button type="button" id="baie-supprimer" class="bouton">Supprimer</button>
       <p class="aide" id="baie-resume"></p>
+      <p class="aide">
+        Les cotes portent sur la trémie et se saisissent en hauteur × largeur,
+        au pas de 240&nbsp;mm. La largeur s'applique le long du mur, rive gauche
+        fixe ; la baie recule d'elle-même si elle ne tient plus au bout du mur.
+      </p>
     </fieldset>
     <div class="commandes">
       <button id="generer" type="button">Générer le plan</button>

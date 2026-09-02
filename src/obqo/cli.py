@@ -471,7 +471,8 @@ def web(
         )
         raise typer.Exit(code=1) from None
     console.print(
-        f"[green]obqo[/green] sur [bold]http://{hote}:{port}[/bold] — Ctrl+C pour quitter"
+        f"[green]obqo[/green] sur [bold]http://{hote}:{port}[/bold] — l'esquisse a "
+        f"l'accueil, le calepinage sur /plan — Ctrl+C pour quitter"
     )
     uvicorn.run("obqo.web.app:app", host=hote, port=port, reload=rechargement, log_level="warning")
 
