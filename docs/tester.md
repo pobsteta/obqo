@@ -136,6 +136,41 @@ versions passaient les tests serveur sans broncher, mais la capture d'écran
 montrait d'abord deux étiquettes disparues hors du cadre, puis une étiquette
 partie à huit mètres de sa baie. Rien qu'un `assert` n'aurait vu.
 
+## Sous Ubuntu
+
+C'est le système sur lequel tout ce document a été vérifié — Ubuntu 24.04 LTS.
+Les commandes des quatre niveaux ci-dessus s'appliquent telles quelles ; il ne
+reste qu'à installer `uv` et à lancer l'application.
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+source ~/.local/bin/env          # ou rouvrez le terminal
+
+git clone <dépôt> /tmp/essai && cd /tmp/essai
+uv sync
+uv run obqo valider exemples/maison.json
+uv run obqo web                  # puis xdg-open http://127.0.0.1:8000
+```
+
+`uv sync` installe aussi Python : rien à prendre dans `apt`, pas de
+`python3-venv` ni de `build-essential`, aucune dépendance système pour
+ReportLab, ezdxf ou trimesh.
+
+| Situation | Réponse |
+|---|---|
+| port 8000 déjà pris | `uv run obqo web --port 8010` |
+| y accéder depuis un autre poste | `uv run obqo web --hote 0.0.0.0` |
+| `Interface web indisponible` | `uv sync --extra web` |
+
+**Sans `uv`**, à condition que `python3 --version` affiche 3.12 ou plus —
+Ubuntu 24.04 le fournit, 22.04 est en 3.10 et ne suffit pas :
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -e ".[solveur,dessins,volume,web]"
+.venv/bin/obqo web
+```
+
 ## Sous Windows 11
 
 Tout ce qui précède marche à l'identique, à trois différences près : le shell,
@@ -270,8 +305,8 @@ uv run pytest -m "not lent"       # les 186 tests doivent passer tels quels
 
 ### Ce qui reste à vérifier sur une vraie machine
 
-Cette section vient d'un audit du code et des équivalents PowerShell, pas d'une
-exécution sous Windows 11 — l'application n'y a pas encore tourné. Restent donc
+Contrairement à la section Ubuntu, celle-ci vient d'un audit du code et des
+équivalents PowerShell, pas d'une exécution sous Windows 11 — l'application n'y a pas encore tourné. Restent donc
 à confirmer par quelqu'un qui l'a sous la main : le rendu des accents dans
 Windows Terminal, l'ouverture des CSV dans un Excel réellement installé, et
 l'affichage des SVG dans Edge.
