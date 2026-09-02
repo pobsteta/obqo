@@ -19,6 +19,15 @@ let selection = null;
 let baieActive = null;
 let geste = null;
 const LARGEUR_MINI_BAIE = 720;
+const LIBELLES = { porte: "porte", fenetre: "fenêtre", porte_fenetre: "porte-fenêtre" };
+
+// « porte 1 » se relit dans une nomenclature ; « B1 » ne dit rien a personne.
+function nomLibre(type) {
+  const base = LIBELLES[type];
+  let numero = 1;
+  while (baies.some((b) => b.id === `${base} ${numero}`)) numero += 1;
+  return `${base} ${numero}`;
+}
 
 const PAS_DESSIN = 240; // on dessine fin, on cale ensuite : voir le bouton « Caler »
 const pas = () => Number(document.getElementById("pas").value);
@@ -140,6 +149,8 @@ function dessiner() {
     toile.appendChild(groupe);
   });
 
+  if (typeof memoriser === "function") memoriser();
+
   if (conflits.size) {
     const noms = [...conflits].map((i) => `« ${pieces[i].nom} »`).join(", ");
     etat.textContent = `${noms} se chevauchent : déplacez-en une. Une pièce ne peut pas empiéter sur sa voisine, elles se partagent un mur.`;
@@ -236,7 +247,8 @@ toile.addEventListener("pointerdown", (evenement) => {
     if (surBaie !== undefined && surBaie !== null && surBaie !== "") {
       baieActive = Number(surBaie);
       montrerFormeBaie();
-      dessiner();
+      restaurer();
+dessiner();
       return;
     }
     const ancre = surLeMur(point);
@@ -248,7 +260,7 @@ toile.addEventListener("pointerdown", (evenement) => {
     }
     baieActive = baies.length;
     baies.push({
-      id: `B${baies.length + 1}`,
+      id: nomLibre("fenetre"),
       type: "fenetre",
       mur: ancre.mur.id,
       depart: [ancre.x, ancre.y],
@@ -369,6 +381,19 @@ toile.addEventListener("pointerup", () => {
 });
 
 toile.addEventListener("dblclick", (evenement) => {
+  if (mode === "baies") {
+    const cible = evenement.target.dataset && evenement.target.dataset.baie;
+    if (cible === undefined || cible === null || cible === "") return;
+    const index = Number(cible);
+    const nom = window.prompt("Nom de la baie", baies[index].id);
+    if (nom && !baies.some((b, i) => i !== index && b.id === nom.trim())) {
+      baies[index].id = nom.trim();
+      baieActive = index;
+      montrerFormeBaie();
+      dessiner();
+    }
+    return;
+  }
   const index = pieceSous(evenement);
   if (index === null) return;
   const nom = window.prompt("Nom de la pièce", pieces[index].nom);
@@ -403,6 +428,7 @@ function montrerFormeBaie() {
   }
   const baie = baies[baieActive];
   forme.hidden = false;
+  document.getElementById("baie-nom").value = baie.id;
   document.getElementById("baie-type").value = baie.type;
   document.getElementById("baie-allege").value = baie.allege;
   document.getElementById("baie-hauteur").value = baie.hauteur;
@@ -421,12 +447,36 @@ for (const champ of ["type", "allege", "hauteur"]) {
   document.getElementById(`baie-${champ}`).addEventListener("change", (evenement) => {
     if (baieActive === null) return;
     const valeur = evenement.target.value;
-    baies[baieActive][champ] = champ === "type" ? valeur : Number(valeur);
-    if (champ === "type" && valeur !== "fenetre") baies[baieActive].allege = 0;
+    const baie = baies[baieActive];
+    const nomAuto = Object.values(LIBELLES).some((l) => baie.id.startsWith(`${l} `));
+    baie[champ] = champ === "type" ? valeur : Number(valeur);
+    if (champ === "type") {
+      if (valeur !== "fenetre") baie.allege = 0;
+      // Un nom encore automatique suit le type ; un nom choisi ne bouge pas.
+      if (nomAuto) baie.id = nomLibre(valeur);
+    }
     montrerFormeBaie();
     dessiner();
   });
 }
+
+document.getElementById("baie-nom").addEventListener("change", (evenement) => {
+  if (baieActive === null) return;
+  const nom = evenement.target.value.trim();
+  if (!nom) {
+    etat.textContent = "Une baie doit porter un nom.";
+    montrerFormeBaie();
+    return;
+  }
+  if (baies.some((b, i) => i !== baieActive && b.id === nom)) {
+    etat.textContent = `« ${nom} » est déjà pris par une autre baie.`;
+    montrerFormeBaie();
+    return;
+  }
+  baies[baieActive].id = nom;
+  montrerFormeBaie();
+  dessiner();
+});
 
 document.getElementById("baie-supprimer").addEventListener("click", () => {
   if (baieActive === null) return;
@@ -459,10 +509,18 @@ function basculer(nouveau) {
 document.getElementById("mode-pieces").addEventListener("click", () => basculer("pieces"));
 document.getElementById("mode-baies").addEventListener("click", () => basculer("baies"));
 
+const MEMOIRE = "briq.esquisse";
+
+function identite() {
+  return {
+    nom: document.getElementById("nom-esquisse").value.trim() || "esquisse",
+    hauteur_sous_chainage: Number(document.getElementById("hauteur-chainage").value) || 2640,
+  };
+}
+
 function corps() {
   return {
-    nom: "esquisse",
-    hauteur_sous_chainage: 2640,
+    ...identite(),
     pas: pas(),
     pieces: pieces.map((p) => ({
       nom: p.nom,
@@ -533,9 +591,89 @@ document.getElementById("generer").addEventListener("click", async () => {
 });
 
 document.getElementById("vider").addEventListener("click", () => {
+  if (pieces.length && !window.confirm("Effacer toutes les pièces et les baies ?")) return;
   pieces = [];
+  baies = [];
   selection = null;
+  baieActive = null;
+  montrerFormeBaie();
   dessiner();
 });
 
+// Un rafraichissement de page ne doit pas coûter une demi-heure de dessin.
+function memoriser() {
+  try {
+    window.localStorage.setItem(MEMOIRE, JSON.stringify({ ...identite(), pieces, baies }));
+  } catch (erreur) {
+    // Navigation privee ou stockage plein : l'editeur marche quand meme.
+  }
+}
+
+function restaurer() {
+  try {
+    const garde = window.localStorage.getItem(MEMOIRE);
+    if (!garde) return false;
+    const donnees = JSON.parse(garde);
+    if (!Array.isArray(donnees.pieces) || !donnees.pieces.length) return false;
+    pieces = donnees.pieces;
+    baies = donnees.baies || [];
+    document.getElementById("nom-esquisse").value = donnees.nom || "Ma maison";
+    document.getElementById("hauteur-chainage").value = donnees.hauteur_sous_chainage || 2640;
+    return true;
+  } catch (erreur) {
+    return false;
+  }
+}
+
+function appliquer(donnees) {
+  pieces = donnees.pieces || [];
+  baies = donnees.baies || [];
+  document.getElementById("nom-esquisse").value = donnees.nom || "Ma maison";
+  document.getElementById("hauteur-chainage").value = donnees.hauteur_sous_chainage || 2640;
+  selection = null;
+  baieActive = null;
+  montrerFormeBaie();
+  if (mode === "baies") chargerMurs();
+  else dessiner();
+}
+
+document.getElementById("enregistrer").addEventListener("click", async () => {
+  const reponse = await poster("/esquisse/fichier");
+  if (!reponse.ok) {
+    const donnees = await reponse.json();
+    etat.textContent = donnees.erreur || "enregistrement impossible";
+    return;
+  }
+  const texte = await reponse.text();
+  const lien = document.createElement("a");
+  lien.href = URL.createObjectURL(new Blob([texte], { type: "application/yaml" }));
+  lien.download = `${identite().nom.replace(/[^\w-]+/g, "-").toLowerCase()}.esquisse.yaml`;
+  lien.click();
+  URL.revokeObjectURL(lien.href);
+  etat.textContent = `Esquisse enregistrée sous ${lien.download}.`;
+});
+
+document.getElementById("ouvrir").addEventListener("change", async (evenement) => {
+  const fichier = evenement.target.files[0];
+  if (!fichier) return;
+  const reponse = await fetch("/esquisse/ouvrir", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ source: await fichier.text() }),
+  });
+  const donnees = await reponse.json();
+  if (!reponse.ok) {
+    etat.textContent = donnees.erreur || "fichier illisible";
+    return;
+  }
+  appliquer(donnees);
+  etat.textContent = `« ${donnees.nom} » ouverte : ${pieces.length} pièces, ${baies.length} baies.`;
+  evenement.target.value = "";
+});
+
+for (const champ of ["nom-esquisse", "hauteur-chainage"]) {
+  document.getElementById(champ).addEventListener("change", memoriser);
+}
+
+restaurer();
 dessiner();

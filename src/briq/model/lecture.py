@@ -15,6 +15,7 @@ from typing import Any
 
 import yaml
 
+from briq.model.esquisse import Esquisse
 from briq.model.plan import Plan
 
 SUFFIXES_YAML = (".yaml", ".yml")
@@ -52,3 +53,14 @@ def depuis_texte(source: str) -> Plan:
 
 def depuis_fichier(chemin: Path) -> Plan:
     return depuis_texte(chemin.read_text(encoding="utf-8"))
+
+
+def esquisse_depuis_texte(source: str) -> Esquisse:
+    """Relit une esquisse enregistree, dans le meme format que les plans."""
+    structure = analyser(source)
+    if not isinstance(structure, dict):
+        raise ValueError(
+            "l'esquisse doit etre un objet (accolades en JSON, cles en YAML), "
+            f"pas un {type(structure).__name__}"
+        )
+    return Esquisse.model_validate(structure)

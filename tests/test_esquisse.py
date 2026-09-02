@@ -10,7 +10,9 @@ from hypothesis import strategies as st
 
 from briq.engine.calepinage import calepiner
 from briq.engine.esquisse import PAS_RECOMMANDE, caler, vers_plan
+from briq.model.ecriture import esquisse_en_yaml
 from briq.model.esquisse import Baie, Esquisse, Piece
+from briq.model.lecture import esquisse_depuis_texte
 from briq.model.plan import Ouverture
 from briq.units import GRILLE
 
@@ -362,3 +364,57 @@ def test_une_esquisse_complete_se_calepine_sans_retouche() -> None:
     calepinage, controle = calepiner(plan)
     assert calepinage is not None, [str(e) for e in controle.erreurs]
     assert len(calepinage.briques) > 400
+
+
+# --- enregistrer et rouvrir ---------------------------------------------------
+
+
+def test_une_esquisse_se_relit_a_l_identique() -> None:
+    croquis = Esquisse(
+        nom="Maison Obstetar",
+        pieces=[
+            Piece(nom="séjour", x=1920, y=1920, largeur=4800, hauteur=3840),
+            Piece(nom="cuisine", x=6720, y=1920, largeur=3840, hauteur=3840),
+        ],
+        baies=[
+            baie(
+                id="porte d'entrée",
+                type="porte",
+                depart=(2880, 1920),
+                arrivee=(4080, 1920),
+                hauteur=2160,
+            ),
+            baie(id="fenêtre séjour", depart=(1920, 2880), arrivee=(1920, 4320)),
+        ],
+    )
+    assert esquisse_depuis_texte(esquisse_en_yaml(croquis)) == croquis
+
+
+def test_les_noms_delicats_survivent_a_l_ecriture() -> None:
+    """Un nom avec « : » ou « # » casserait un scalaire YAML nu."""
+    croquis = Esquisse(
+        nom="Maison : le projet",
+        pieces=[Piece(nom="séjour # sud", x=0, y=0, largeur=4800, hauteur=4800)],
+        baies=[baie(id="- porte {bizarre}", depart=(1920, 0), arrivee=(3360, 0))],
+    )
+    relu = esquisse_depuis_texte(esquisse_en_yaml(croquis))
+    assert relu == croquis
+    assert relu.pieces[0].nom == "séjour # sud"
+
+
+def test_une_porte_n_a_pas_d_allege_des_le_modele() -> None:
+    """Normalise au modele, pour que fichier, formulaire et plan concordent."""
+    assert baie(id="P", type="porte", depart=(0, 0), arrivee=(1200, 0), allege=960).allege == 0
+    assert (
+        baie(id="PF", type="porte_fenetre", depart=(0, 0), arrivee=(2400, 0), allege=960).allege
+        == 0
+    )
+    assert baie(id="F", type="fenetre", depart=(0, 0), arrivee=(1440, 0), allege=960).allege == 960
+
+
+def test_deux_baies_du_meme_nom_sont_refusees() -> None:
+    with pytest.raises(ValueError, match="meme identifiant"):
+        deux_pieces(
+            baie(id="fenêtre 1", depart=(1920, 0), arrivee=(3360, 0)),
+            baie(id="fenêtre 1", depart=(4800, 0), arrivee=(6240, 0)),
+        )

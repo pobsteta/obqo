@@ -16,6 +16,9 @@ et les refends, et rend un plan qui se calepine tel quel. Les étapes 1 à 5
 ci-dessous sont alors faites pour vous — mais lisez quand même le §4 : l'éditeur
 rappelle le passage libre, il ne choisit pas la trémie à votre place.
 
+L'esquisse s'enregistre en YAML et se rouvre ; le travail en cours survit aussi
+à un rafraîchissement de page.
+
 Le format accepte le **YAML** aussi bien que le JSON. Pour un plan saisi à la
 main, prenez le YAML : on peut y écrire `# fenêtre de la cuisine, alignée sur
 l'évier` à côté d'une cote, et se relire six mois plus tard.

@@ -344,3 +344,47 @@ def test_le_plan_derive_avec_baies_repasse_par_la_porte_d_entree(client: TestCli
     calepinage, rapport = calepiner(plan)
     assert calepinage is not None, [str(e) for e in rapport.erreurs]
     assert len(plan.ouvertures) == 4
+
+
+def test_une_esquisse_s_enregistre_et_se_rouvre(client: TestClient) -> None:
+    croquis = {
+        "nom": "Maison Obstetar",
+        "hauteur_sous_chainage": 2640,
+        "pieces": [
+            {"nom": "séjour", "x": 0, "y": 0, "largeur": 4800, "hauteur": 4800},
+            {"nom": "cuisine", "x": 4800, "y": 0, "largeur": 3840, "hauteur": 4800},
+        ],
+        "baies": [
+            {
+                "id": "porte d'entrée",
+                "type": "porte",
+                "depart": [1920, 0],
+                "arrivee": [3120, 0],
+                "allege": 0,
+                "hauteur": 2160,
+            },
+        ],
+    }
+    fichier = client.post("/esquisse/fichier", json=croquis)
+    assert fichier.status_code == 200
+    assert "maison-obstetar.esquisse.yaml" in fichier.headers["content-disposition"]
+    # L'apostrophe est doublee : c'est ainsi qu'un scalaire YAML quote la porte.
+    assert "'porte d''entrée'" in fichier.text
+
+    rouvert = client.post("/esquisse/ouvrir", json={"source": fichier.text})
+    assert rouvert.status_code == 200
+    donnees = rouvert.json()
+    assert donnees["nom"] == "Maison Obstetar"
+    assert [p["nom"] for p in donnees["pieces"]] == ["séjour", "cuisine"]
+    assert donnees["baies"][0]["id"] == "porte d'entrée"
+    assert donnees["baies"][0]["depart"] == [1920, 0]
+
+
+def test_un_fichier_d_esquisse_illisible_est_explique(client: TestClient) -> None:
+    reponse = client.post("/esquisse/ouvrir", json={"source": "juste du texte"})
+    assert reponse.status_code == 422
+    assert "objet" in reponse.json()["erreur"]
+
+    casse = client.post("/esquisse/ouvrir", json={"source": "pieces: []"})
+    assert casse.status_code == 422
+    assert "pydantic" not in casse.json()["erreur"]

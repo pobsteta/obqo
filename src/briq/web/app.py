@@ -41,7 +41,9 @@ from briq.drawings.planches import apercu
 from briq.engine.calepinage import calepiner
 from briq.engine.esquisse import PAS_RECOMMANDE, caler, murs_du_plan, vers_plan
 from briq.engine.validation import Gravite
+from briq.model.ecriture import esquisse_en_yaml, texte
 from briq.model.esquisse import Baie, Esquisse, Piece
+from briq.model.lecture import esquisse_depuis_texte
 from briq.model.plan import Plan
 from briq.web.etude import Depot, EchecDeValidation, Etude
 
@@ -304,6 +306,46 @@ def murs_de_l_esquisse(corps: Annotated[dict[str, Any], Body()]) -> JSONResponse
     )
 
 
+@app.post("/esquisse/fichier")
+def enregistrer_esquisse(corps: Annotated[dict[str, Any], Body()]) -> Response:
+    """Rend l'esquisse en YAML, a garder et a rouvrir plus tard."""
+    try:
+        esquisse = _esquisse_depuis(corps)
+    except ValueError as erreur:
+        return JSONResponse({"erreur": str(erreur)}, status_code=422)
+    nom = nom_de_fichier(esquisse.nom) or "esquisse"
+    return Response(
+        esquisse_en_yaml(esquisse),
+        media_type="application/yaml",
+        headers={"Content-Disposition": f'attachment; filename="{nom}.esquisse.yaml"'},
+    )
+
+
+@app.post("/esquisse/ouvrir")
+def ouvrir_esquisse(corps: Annotated[dict[str, Any], Body()]) -> JSONResponse:
+    """Relit une esquisse enregistree et la rend a l'editeur."""
+    try:
+        esquisse = esquisse_depuis_texte(str(corps.get("source", "")))
+    except ValidationError as erreur:
+        details = "; ".join(
+            str(d.get("msg", "")).removeprefix("Value error, ") for d in erreur.errors()
+        )
+        return JSONResponse({"erreur": details or "esquisse invalide"}, status_code=422)
+    except ValueError as erreur:
+        return JSONResponse({"erreur": str(erreur)}, status_code=422)
+    return JSONResponse(
+        {
+            "nom": esquisse.nom,
+            "hauteur_sous_chainage": esquisse.hauteur_sous_chainage,
+            "pieces": [p.model_dump() for p in esquisse.pieces],
+            "baies": [
+                {**b.model_dump(), "depart": list(b.depart), "arrivee": list(b.arrivee)}
+                for b in esquisse.baies
+            ],
+        }
+    )
+
+
 @app.post("/esquisse/plan", response_class=HTMLResponse)
 def plan_depuis_esquisse(requete: Request, corps: Annotated[dict[str, Any], Body()]) -> Any:
     """Convertit le dessin en plan BRIQ et rend le fragment de resultat."""
@@ -346,7 +388,7 @@ def _en_yaml(plan: Plan, esquisse: Esquisse) -> str:
         "# Les cotes des baies portent sur la tremie, pas sur le passage libre :",
         "# les jambages en retirent 160 mm, 320 au-dela de 1800.",
         "# Voir docs/saisir-un-plan.md.",
-        f"nom: {plan.nom}",
+        f"nom: {texte(plan.nom)}",
         f"hauteur_sous_chainage: {plan.hauteur_sous_chainage}",
         "contour:",
         "  points:",
@@ -368,7 +410,7 @@ def _en_yaml(plan: Plan, esquisse: Esquisse) -> str:
             passage = o.largeur - (320 if o.largeur > 1800 else 160)
             allege = f", allege: {o.allege}" if o.allege else ""
             lignes.append(
-                f"  - {{id: {o.id}, mur: {o.mur}, type: {o.type}, "
+                f"  - {{id: {texte(o.id)}, mur: {o.mur}, type: {o.type}, "
                 f"position: {o.position}, largeur: {o.largeur}{allege}, "
                 f"hauteur: {o.hauteur}}}   # passage libre {passage} mm"
             )

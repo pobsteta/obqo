@@ -51,7 +51,7 @@ schéma commité suit le modèle : sans cela l'autocomplétion mentirait.
 | 4 | CLI complète, exemple, documentation | **livré** |
 | — | interface web légère (option du brief) | **livrée** |
 | — | contours en L, U, T et escalier (angles rentrants) | **livré** |
-| — | module d'esquisse : dessiner les pièces **et les baies** | **livré** |
+| — | esquisse : dessiner pièces et baies, enregistrer, rouvrir | **livré** |
 
 ## Architecture
 
@@ -73,6 +73,7 @@ src/briq/
   web/          app.py           routes FastAPI, gabarits Jinja2
                 etude.py         cache borné des études en mémoire
   model/        esquisse.py      les pièces dessinées, avant tout calepinage
+                ecriture.py      écriture d'une esquisse en YAML commenté
   engine/       esquisse.py      calage sur la grille, contour, refends
   drawings/     ir.py            modèle de dessin, indépendant du format
                 planches.py      élévations, plans de pose, instructions
@@ -126,7 +127,7 @@ définit aucune référence (voir `docs/hypotheses.md`).
 ## Tests
 
 ```bash
-uv run pytest                  # 168 tests, ~85 s
+uv run pytest                  # 174 tests, ~85 s
 uv run pytest -m "not lent"    # ~40 s : exclut les preuves d'optimalité du débit
 uv run ruff check src tests
 uv run mypy
@@ -204,6 +205,14 @@ passage.
 
 Une esquisse complète — pièces et baies — produit un plan qui se calepine tel
 quel, sans passer par le YAML.
+
+**Les baies portent un nom**, pas un code : « porte d'entrée », « fenêtre
+cuisine ». Le nom par défaut suit le type (`porte 1`, `fenêtre 2`) et se met à
+jour tant qu'on ne l'a pas choisi soi-même. C'est ce nom qu'on retrouve dans la
+nomenclature et sur les élévations.
+
+**L'esquisse s'enregistre et se rouvre** — un YAML commenté, lisible et
+rechargeable — et le travail en cours survit à un rafraîchissement de page.
 
 ## Les contours non rectangulaires
 

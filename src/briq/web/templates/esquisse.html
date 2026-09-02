@@ -4,6 +4,12 @@
   <section class="volet volet--dessin">
     <div class="entete-volet">
       <h2>Esquisse</h2>
+      <div class="identite">
+        <label>nom <input id="nom-esquisse" type="text" value="Ma maison"></label>
+        <label>hauteur sous chaînage
+          <input id="hauteur-chainage" type="number" step="240" min="1440" value="2640">
+        </label>
+      </div>
       <p class="aide">
         Glissez sur le fond pour créer une pièce, sur une pièce pour la déplacer,
         sur sa poignée pour la redimensionner. <kbd>Suppr</kbd> efface,
@@ -21,6 +27,7 @@
          role="application" aria-label="Zone de dessin des pièces" tabindex="0"></svg>
     <fieldset id="forme-baie" hidden>
       <legend>Baie sélectionnée</legend>
+      <label>nom <input id="baie-nom" type="text"></label>
       <label>type
         <select id="baie-type">
           <option value="porte">porte</option>
@@ -43,6 +50,11 @@
         </select>
       </label>
       <button id="vider" type="button" class="bouton">Vider</button>
+    </div>
+    <div class="commandes">
+      <button id="enregistrer" type="button" class="bouton">Enregistrer l'esquisse</button>
+      <label class="bouton" for="ouvrir">Ouvrir une esquisse</label>
+      <input id="ouvrir" type="file" accept=".yaml,.yml,.json" hidden>
     </div>
     <p class="aide" id="etat"></p>
   </section>

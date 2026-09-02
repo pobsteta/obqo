@@ -79,6 +79,18 @@ class Baie(Base):
     allege: Annotated[int, Field(ge=0)] = 960
     hauteur: Annotated[int, Field(gt=0)] = 1200
 
+    @model_validator(mode="before")
+    @classmethod
+    def _sans_allege_pour_une_porte(cls, valeurs: object) -> object:
+        """Une porte et une porte-fenetre partent du sol : l'allege vaut zero.
+
+        Normalise ici plutot qu'a la conversion, pour que le modele, le fichier
+        enregistre et le formulaire disent tous la meme chose.
+        """
+        if isinstance(valeurs, dict) and valeurs.get("type") in ("porte", "porte_fenetre"):
+            return {**valeurs, "allege": 0}
+        return valeurs
+
     @model_validator(mode="after")
     def _segment_axial(self) -> Self:
         if self.depart == self.arrivee:
