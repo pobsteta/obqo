@@ -15,6 +15,15 @@ EXEMPLE = RACINE / "exemples" / "maison.json"
 runner = CliRunner()
 
 
+def test_la_version_s_affiche_et_sort_aussitot() -> None:
+    """Le numero que la chaine de publication ecrit doit se lire quelque part."""
+    import obqo
+
+    resultat = runner.invoke(app, ["--version"])
+    assert resultat.exit_code == 0, resultat.output
+    assert obqo.__version__ in resultat.output
+
+
 def test_valider_un_plan_correct_sort_en_zero() -> None:
     resultat = runner.invoke(app, ["valider", str(EXEMPLE)])
     assert resultat.exit_code == 0, resultat.output

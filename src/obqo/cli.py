@@ -19,6 +19,7 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
+import obqo
 from obqo.bom.debit import GloutonDecroissant, PlanDeDebit, Solveur, solveur_par_defaut
 from obqo.bom.metre import Metre, chiffrer, metrer
 from obqo.bom.nomenclature import Nomenclature, nomenclaturer
@@ -51,6 +52,29 @@ app = typer.Typer(
 )
 console = Console()
 erreurs = Console(stderr=True)
+
+
+
+def _version(demandee: bool) -> None:
+    """Repond a `--version` et sort, avant toute sous-commande.
+
+    Le numero vient du module, que la chaine de publication ecrit en meme temps
+    que `pyproject.toml` — un test verifie qu'ils ne se separent pas.
+    """
+    if demandee:
+        console.print(f"obqo {obqo.__version__}")
+        raise typer.Exit()
+
+
+@app.callback()
+def racine(
+    version: Annotated[
+        bool,
+        typer.Option("--version", callback=_version, is_eager=True, help="Afficher la version."),
+    ] = False,
+) -> None:
+    """Calepinage, nomenclature et metre du systeme constructif obqo."""
+
 
 COULEURS = {
     Gravite.ERREUR: "bold red",
