@@ -51,6 +51,7 @@ schéma commité suit le modèle : sans cela l'autocomplétion mentirait.
 | 4 | CLI complète, exemple, documentation | **livré** |
 | — | interface web légère (option du brief) | **livrée** |
 | — | contours en L, U, T et escalier (angles rentrants) | **livré** |
+| — | module d'esquisse : dessiner les pièces, l'app en tire le plan | **livré** |
 
 ## Architecture
 
@@ -71,6 +72,8 @@ src/briq/
                 sorties.py       CSV et tableaux texte
   web/          app.py           routes FastAPI, gabarits Jinja2
                 etude.py         cache borné des études en mémoire
+  model/        esquisse.py      les pièces dessinées, avant tout calepinage
+  engine/       esquisse.py      calage sur la grille, contour, refends
   drawings/     ir.py            modèle de dessin, indépendant du format
                 planches.py      élévations, plans de pose, instructions
                 mise_en_page.py  échelle, centrage, cartouche A3
@@ -123,7 +126,7 @@ définit aucune référence (voir `docs/hypotheses.md`).
 ## Tests
 
 ```bash
-uv run pytest                  # 135 tests, ~75 s
+uv run pytest                  # 156 tests, ~80 s
 uv run pytest -m "not lent"    # ~40 s : exclut les preuves d'optimalité du débit
 uv run ruff check src tests
 uv run mypy
@@ -155,6 +158,40 @@ Le bois acheté se répartit en **trois** catégories, jamais deux : les pièces
 utiles, la **surproduction** (des pièces en trop, utilisables en rechange — un
 fond de barre rempli d'une pièce de plus ne gaspille rien) et la **chute**, seul
 vrai déchet. Les confondre masque complètement le rendement réel.
+
+## L'esquisse : dessiner les pièces, l'application en tire le plan
+
+`briq web` ouvre aussi un **éditeur d'esquisse** (`/esquisse`) : on pose les
+pièces à la souris, l'application cale le dessin sur la grille et en déduit le
+contour et les refends.
+
+Deux pas distincts, et c'est volontaire. On **dessine** au pas de 240 mm, avec
+aimantation aux pièces voisines — un vide de 240 entre deux pièces ne se voit pas
+à l'écran et couperait le bâtiment en deux. On **cale** ensuite sur 480, la cote
+qui évite les demi-briques, et l'application dit ce qui a bougé, pièce par pièce.
+
+Le calage porte sur les **lignes de coordonnées**, pas sur les pièces : deux
+pièces qui se touchaient se touchent encore après calage, la topologie du plan
+est préservée par construction.
+
+Ce que le moteur sait calepiner borne le résultat, et l'application le dit au
+lieu de produire un plan infaisable :
+
+| Situation | Réponse |
+|---|---|
+| mur intérieur qui traverse tout le bâtiment | **refend BRIQ** |
+| mur intérieur qui s'arrête en chemin | cloison légère, hors calepinage |
+| deux refends qui se croisent | le sens le plus long l'emporte, l'autre devient cloison |
+| pièces en deux blocs séparés | refus, avec la position de chaque bloc |
+| pièces qui ne se touchent que par un coin | refus : le contour serait ambigu |
+
+Une ligne du treillis n'est d'ailleurs pas forcément un mur : elle naît du bord
+d'une pièce et peut traverser la voisine de part en part. Sans distinguer les
+deux, l'application posait un mur porteur au milieu du séjour, que personne
+n'avait dessiné.
+
+L'esquisse s'arrête au gros œuvre : le plan dérivé n'a pas encore de baies. On
+les ajoute dans l'éditeur de plan, puis on calepine.
 
 ## Les contours non rectangulaires
 

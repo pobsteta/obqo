@@ -9,6 +9,12 @@ uv run briq gabarit -o ma-maison.yaml   # un plan de départ commenté
 uv run briq valider ma-maison.yaml      # après chaque modification
 ```
 
+**Ou dessinez-le.** `uv run briq web` puis l'onglet *Esquisse* : posez les pièces
+à la souris, l'application cale le dessin sur la grille de 480 et en déduit le
+contour et les refends. Vous reprenez ensuite le plan produit ici pour y ajouter
+les baies. Les étapes 1 à 3 ci-dessous sont alors faites pour vous — mais lisez
+quand même le §4 sur les trémies, que rien ne devine à votre place.
+
 Le format accepte le **YAML** aussi bien que le JSON. Pour un plan saisi à la
 main, prenez le YAML : on peut y écrire `# fenêtre de la cuisine, alignée sur
 l'évier` à côté d'une cote, et se relire six mois plus tard.

@@ -134,3 +134,86 @@ def test_un_plan_fautif_leve_un_echec_de_validation() -> None:
     with pytest.raises(EchecDeValidation) as echec:
         Depot().etudier(json.dumps(fautif))
     assert echec.value.rapport.erreurs
+
+
+# --- module d'esquisse --------------------------------------------------------
+
+DEUX_PIECES = {
+    "nom": "essai",
+    "hauteur_sous_chainage": 2640,
+    "pas": 480,
+    "pieces": [
+        {"nom": "séjour", "x": 0, "y": 0, "largeur": 5000, "hauteur": 4000},
+        {"nom": "cuisine", "x": 5000, "y": 0, "largeur": 3500, "hauteur": 4000},
+    ],
+}
+
+
+def test_la_page_d_esquisse_s_affiche(client: TestClient) -> None:
+    reponse = client.get("/esquisse")
+    assert reponse.status_code == 200
+    assert "esquisse.js" in reponse.text
+    assert "Document de calepinage" in reponse.text
+
+
+def test_caler_renvoie_les_pieces_recalees_et_les_ecarts(client: TestClient) -> None:
+    reponse = client.post("/esquisse/caler", json=DEUX_PIECES)
+    assert reponse.status_code == 200
+    donnees = reponse.json()
+    assert [p["largeur"] for p in donnees["pieces"]] == [4800, 3840]
+    assert len(donnees["ajustements"]) == 2
+    assert "5000 x 4000 -> 4800 x 3840" in donnees["ajustements"][0]
+
+
+def test_le_plan_derive_contient_contour_refend_et_apercu(client: TestClient) -> None:
+    reponse = client.post("/esquisse/plan", json=DEUX_PIECES)
+    assert reponse.status_code == 200
+    assert "contour:" in reponse.text
+    assert "refends:" in reponse.text
+    assert "ouvertures: []" in reponse.text, "les baies restent a poser"
+    assert "<svg" in reponse.text
+
+
+def test_le_plan_derive_est_relisible_par_l_application(client: TestClient) -> None:
+    """Ce que l'esquisse ecrit doit repasser par la porte d'entree normale."""
+    import re
+
+    from briq.model.lecture import depuis_texte
+
+    reponse = client.post("/esquisse/plan", json=DEUX_PIECES)
+    source = re.search(r'<textarea id="source-derivee"[^>]*>(.*?)</textarea>', reponse.text, re.S)
+    assert source is not None
+    plan = depuis_texte(source.group(1))
+    assert plan.contour.sommets() == [(0, 0), (8640, 0), (8640, 3840), (0, 3840)]
+    assert len(plan.refends) == 1
+
+
+def test_des_pieces_qui_se_chevauchent_donnent_un_message_lisible(client: TestClient) -> None:
+    reponse = client.post(
+        "/esquisse/caler",
+        json={
+            "pieces": [
+                {"nom": "a", "x": 0, "y": 0, "largeur": 4000, "hauteur": 4000},
+                {"nom": "b", "x": 2000, "y": 2000, "largeur": 4000, "hauteur": 4000},
+            ]
+        },
+    )
+    assert reponse.status_code == 422
+    message = reponse.json()["erreur"]
+    assert "chevauchent" in message
+    assert "pydantic" not in message and "input_value" not in message
+
+
+def test_une_esquisse_en_morceaux_est_refusee_avec_ses_reperes(client: TestClient) -> None:
+    reponse = client.post(
+        "/esquisse/plan",
+        json={
+            "pieces": [
+                {"nom": "avant", "x": 0, "y": 0, "largeur": 4800, "hauteur": 3840},
+                {"nom": "arriere", "x": 0, "y": 4080, "largeur": 4800, "hauteur": 3840},
+            ]
+        },
+    )
+    assert reponse.status_code == 422
+    assert "PLAN-EN-PLUSIEURS-MORCEAUX" in reponse.text
+    assert "avant" in reponse.text

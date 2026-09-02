@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block contenu %}
+<main class="esquisse">
+  <section class="volet volet--dessin">
+    <div class="entete-volet">
+      <h2>Esquisse</h2>
+      <p class="aide">
+        Glissez sur le fond pour créer une pièce, sur une pièce pour la déplacer,
+        sur sa poignée pour la redimensionner. <kbd>Suppr</kbd> efface,
+        double-clic renomme. Vous dessinez au pas de 240&nbsp;mm et les bords
+        s'aimantent aux pièces voisines ; « Caler » ramène ensuite tout le plan
+        sur 480, la cote qui évite les demi-briques. Les pièces doivent se
+        toucher sans se chevaucher : chaque ligne partagée devient un mur.
+      </p>
+    </div>
+    <svg id="toile" viewBox="0 0 19200 14400" preserveAspectRatio="xMidYMid meet"
+         role="application" aria-label="Zone de dessin des pièces" tabindex="0"></svg>
+    <div class="commandes">
+      <button id="generer" type="button">Générer le plan</button>
+      <button id="caler" type="button" class="bouton">Caler sur le pas</button>
+      <label class="bascule">caler sur
+        <select id="pas">
+          <option value="480" selected>480 mm (recommandé)</option>
+          <option value="240">240 mm</option>
+        </select>
+      </label>
+      <button id="vider" type="button" class="bouton">Vider</button>
+    </div>
+    <p class="aide" id="etat"></p>
+  </section>
+
+  <section class="volet volet--resultat">
+    <div id="resultat">
+      <p class="attente">
+        Dessinez au moins une pièce, puis « Générer le plan ».
+        L'application cale le dessin sur la grille, en déduit le contour et les
+        refends, et vous rend un plan à compléter par ses baies.
+      </p>
+    </div>
+  </section>
+</main>
+{% endblock %}
+{% block script %}<script src="/statique/esquisse.js"></script>{% endblock %}

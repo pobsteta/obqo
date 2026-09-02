@@ -281,3 +281,49 @@ def dossier(calepinage: Calepinage, plan: Plan) -> list[Dessin]:
     planches += [plan_de_rang(calepinage, plan, r) for r in range(plan.rangs)]
     planches.append(instructions(calepinage, plan))
     return planches
+
+
+def apercu(plan: Plan) -> Dessin:
+    """Vue de dessus schematique d'un plan : contour et refends, sans calepinage.
+
+    Sert a montrer immediatement ce qu'une esquisse a produit, y compris quand le
+    plan n'est pas encore calepinable — il lui manque en general ses baies.
+    """
+    dessin = Dessin(
+        titre=f"Apercu — {plan.nom}",
+        sous_titre=(
+            f"{len(plan.contour.sommets())} murs, {len(plan.refends)} refend"
+            f"{'s' if len(plan.refends) > 1 else ''}, "
+            f"hauteur sous chainage {plan.hauteur_sous_chainage} mm"
+        ),
+    )
+    sommets = plan.contour.sommets()
+    dessin.ajouter(Polyligne(tuple(sommets), Calque.BRIQUE, ferme=True))
+    for i, (x, y) in enumerate(sommets):
+        suivant = sommets[(i + 1) % len(sommets)]
+        longueur = abs(suivant[0] - x) + abs(suivant[1] - y)
+        dessin.ajouter(
+            Texte(
+                (x + suivant[0]) / 2,
+                (y + suivant[1]) / 2,
+                f"M{i + 1} — {longueur}",
+                Calque.TEXTE,
+                taille_mm=2.4,
+            )
+        )
+    for refend in plan.refends:
+        (x0, y0), (x1, y1) = refend.depart, refend.arrivee
+        horizontal = y0 == y1
+        demi = EPAISSEUR_MUR // 2
+        dessin.ajouter(
+            Rect(
+                min(x0, x1) - (0 if horizontal else demi),
+                min(y0, y1) - (demi if horizontal else 0),
+                abs(x1 - x0) or EPAISSEUR_MUR,
+                abs(y1 - y0) or EPAISSEUR_MUR,
+                Calque.REFEND,
+            ),
+            Texte((x0 + x1) / 2, (y0 + y1) / 2, refend.id, Calque.REPERE, taille_mm=2.6),
+        )
+    dessin.legende = [(c.value, c) for c in dessin.calques_de_legende()]
+    return dessin

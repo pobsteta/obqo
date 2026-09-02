@@ -22,6 +22,7 @@ from fastapi import Body, FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from pydantic import ValidationError
 
 from briq.bom.sorties import (
     ENTETES_DEBIT,
@@ -35,7 +36,12 @@ from briq.bom.sorties import (
 )
 from briq.drawings import dxf, pdf, svg
 from briq.drawings.ir import nom_de_fichier
+from briq.drawings.mise_en_page import Feuille
+from briq.drawings.planches import apercu
+from briq.engine.calepinage import calepiner
+from briq.engine.esquisse import PAS_RECOMMANDE, caler, vers_plan
 from briq.engine.validation import Gravite
+from briq.model.esquisse import Esquisse, Piece
 from briq.model.plan import Plan
 from briq.web.etude import Depot, EchecDeValidation, Etude
 
@@ -46,6 +52,10 @@ app = FastAPI(title="BRIQ — calepinage", docs_url="/api")
 app.mount("/statique", StaticFiles(directory=RACINE / "statique"), name="statique")
 gabarits = Jinja2Templates(directory=RACINE / "templates")
 depot = Depot()
+
+FEUILLE_APERCU = Feuille(largeur=240.0, hauteur=170.0, marge=6.0, cartouche=18.0, legende=0.0)
+"""Feuille compacte pour l'apercu a l'ecran : le dessin remplit son cadre au lieu
+de flotter au milieu d'un A3 destine a l'impression."""
 
 
 def plan_d_exemple() -> str:
@@ -212,6 +222,114 @@ def dossier_zip(cle: str) -> Response:
         media_type="application/zip",
         headers={"Content-Disposition": 'attachment; filename="dossier-briq.zip"'},
     )
+
+
+# --- module d'esquisse --------------------------------------------------------
+
+
+@app.get("/esquisse", response_class=HTMLResponse)
+def editeur(requete: Request) -> Any:
+    return gabarits.TemplateResponse(
+        requete, "esquisse.html", {"titre": "BRIQ — esquisse", "pas": PAS_RECOMMANDE}
+    )
+
+
+def _esquisse_depuis(corps: dict[str, Any]) -> Esquisse:
+    """Construit l'esquisse, en traduisant les erreurs de schema en francais.
+
+    Le message brut de Pydantic cite le type d'entree et une URL de
+    documentation : illisible dans une barre d'etat.
+    """
+    try:
+        return Esquisse(
+            nom=str(corps.get("nom") or "esquisse"),
+            hauteur_sous_chainage=int(corps.get("hauteur_sous_chainage") or 2640),
+            pieces=[Piece(**p) for p in corps.get("pieces", [])],
+        )
+    except ValidationError as erreur:
+        details = "; ".join(
+            str(d.get("msg", "")).removeprefix("Value error, ") for d in erreur.errors()
+        )
+        raise ValueError(details or "esquisse invalide") from erreur
+
+
+@app.post("/esquisse/caler")
+def caler_esquisse(corps: Annotated[dict[str, Any], Body()]) -> JSONResponse:
+    """Recale le dessin sur le pas demande et dit ce qui a bouge."""
+    try:
+        esquisse = _esquisse_depuis(corps)
+    except ValueError as erreur:
+        return JSONResponse({"erreur": str(erreur)}, status_code=422)
+    pas = int(corps.get("pas") or PAS_RECOMMANDE)
+    calee, ajustements = caler(esquisse, pas)
+    return JSONResponse(
+        {
+            "pieces": [p.model_dump() for p in calee.pieces],
+            "ajustements": [str(a) for a in ajustements],
+        }
+    )
+
+
+@app.post("/esquisse/plan", response_class=HTMLResponse)
+def plan_depuis_esquisse(requete: Request, corps: Annotated[dict[str, Any], Body()]) -> Any:
+    """Convertit le dessin en plan BRIQ et rend le fragment de resultat."""
+    try:
+        esquisse = _esquisse_depuis(corps)
+    except ValueError as erreur:
+        return gabarits.TemplateResponse(
+            requete, "fragments/schema-invalide.html", {"message": str(erreur)}, status_code=422
+        )
+    calee, ajustements = caler(esquisse, int(corps.get("pas") or PAS_RECOMMANDE))
+    plan, rapport = vers_plan(calee)
+    if plan is None:
+        return gabarits.TemplateResponse(
+            requete,
+            "fragments/constats.html",
+            {"constats": rapport.constats, "bloquant": True},
+            status_code=422,
+        )
+
+    _, controle = calepiner(plan)
+    return gabarits.TemplateResponse(
+        requete,
+        "fragments/esquisse-resultat.html",
+        {
+            "ajustements": [str(a) for a in ajustements],
+            "constats": rapport.constats,
+            "controle": controle.constats,
+            "source": _en_yaml(plan, calee),
+            "apercu": svg.rendre(apercu(plan), FEUILLE_APERCU, pour_ecran=True),
+        },
+    )
+
+
+def _en_yaml(plan: Plan, esquisse: Esquisse) -> str:
+    """Plan derive, ecrit en YAML commente et pret a etre complete."""
+    sommets = plan.contour.sommets()
+    lignes = [
+        f"# Plan derive de l'esquisse « {esquisse.nom} ».",
+        "# Il ne contient pas encore de baies : ajoutez-les sous « ouvertures »,",
+        "# puis validez. Voir docs/saisir-un-plan.md.",
+        f"nom: {plan.nom}",
+        f"hauteur_sous_chainage: {plan.hauteur_sous_chainage}",
+        "contour:",
+        "  points:",
+    ]
+    for i, (x, y) in enumerate(sommets):
+        suivant = sommets[(i + 1) % len(sommets)]
+        longueur = abs(suivant[0] - x) + abs(suivant[1] - y)
+        lignes.append(f"    - [{x}, {y}]      # M{i + 1} — {longueur} mm")
+    if plan.refends:
+        lignes.append("refends:")
+        for refend in plan.refends:
+            lignes.append(
+                f"  - {{id: {refend.id}, depart: [{refend.depart[0]}, {refend.depart[1]}], "
+                f"arrivee: [{refend.arrivee[0]}, {refend.arrivee[1]}]}}"
+            )
+    lignes += [
+        "ouvertures: []   # a completer : au moins une par mur de plus de 6 m",
+    ]
+    return "\n".join(lignes) + "\n"
 
 
 @app.get("/schema.json")

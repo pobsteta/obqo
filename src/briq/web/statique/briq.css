@@ -23,10 +23,18 @@ body {
 }
 
 header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: baseline;
+  justify-content: space-between;
   padding: 1.2rem 1.6rem 1rem;
   border-bottom: 1px solid var(--bord);
   background: var(--carte);
 }
+header nav { display: flex; gap: 1.2rem; font-size: .92rem; }
+header nav a { color: var(--bois); text-decoration: none; font-weight: 600; }
+header nav a:hover { text-decoration: underline; }
 header h1 { margin: 0; font-size: 1.35rem; letter-spacing: .14em; }
 header p { margin: .2rem 0 0; color: var(--encre-douce); font-size: .9rem; }
 
@@ -117,3 +125,61 @@ select { padding: .45rem .6rem; border: 1px solid var(--bord); border-radius: 4p
 .planche__dessin svg { display: block; width: 100%; height: auto; }
 
 footer { padding: 1rem 1.6rem 2rem; color: var(--encre-douce); font-size: .8rem; }
+
+/* --- module d'esquisse --- */
+
+main.esquisse { grid-template-columns: minmax(360px, 1.15fr) 1fr; }
+.volet--dessin { position: sticky; top: 1.2rem; }
+.entete-volet .aide { margin: .3rem 0 .6rem; }
+
+#toile {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  background: #fdfcfa;
+  border: 1px solid var(--bord);
+  border-radius: 4px;
+  touch-action: none;
+  cursor: crosshair;
+}
+#toile:focus-visible { outline: 2px solid var(--bois); outline-offset: 1px; }
+
+.grille__fin { stroke: #ece5d7; stroke-width: 12; }
+.grille__fort { stroke: #ddd2bd; stroke-width: 24; }
+
+.piece rect { fill: var(--bois-clair); stroke: #8a7a5c; stroke-width: 36; cursor: move; }
+.piece--active rect { fill: #e6d9bd; stroke: var(--bois); stroke-width: 60; }
+.piece__nom, .piece__cote {
+  text-anchor: middle;
+  fill: var(--encre);
+  font-family: system-ui, sans-serif;
+  pointer-events: none;
+}
+.piece__nom { font-size: 340px; font-weight: 600; }
+.piece__cote { font-size: 260px; fill: var(--encre-douce); }
+.piece--conflit rect { fill: #f6dcd6; stroke: var(--erreur); stroke-width: 60; }
+.poignee { fill: var(--bois); stroke: #fff; stroke-width: 24; cursor: nwse-resize; }
+.etat--conflit { color: var(--erreur); font-weight: 600; }
+
+.source {
+  height: 16rem;
+  font: 12.5px/1.5 ui-monospace, Menlo, Consolas, monospace;
+  width: 100%;
+  margin-top: .5rem;
+  padding: .7rem .8rem;
+  border: 1px solid var(--bord);
+  border-radius: 4px;
+  background: #fdfcfa;
+  resize: vertical;
+}
+
+kbd {
+  padding: .05rem .3rem;
+  border: 1px solid var(--bord);
+  border-bottom-width: 2px;
+  border-radius: 3px;
+  background: #fdfcfa;
+  font: inherit;
+  font-size: .85em;
+}

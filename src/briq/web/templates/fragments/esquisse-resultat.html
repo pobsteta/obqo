@@ -1,0 +1,41 @@
+<div class="etude">
+  {% if ajustements %}
+  <h2>Calage sur la grille</h2>
+  <ul class="constats__liste">
+    {% for a in ajustements %}<li>{{ a }}</li>{% endfor %}
+  </ul>
+  {% else %}
+  <h2>Calage sur la grille</h2>
+  <p class="aide">Rien à recaler : le dessin tombait déjà juste.</p>
+  {% endif %}
+
+  {% include "fragments/constats.html" %}
+
+  <h2>Plan dérivé</h2>
+  <div class="planche">
+    <div class="planche__dessin">{{ apercu | safe }}</div>
+  </div>
+
+  {% if controle %}
+  <h2>Ce qu'il reste à faire</h2>
+  <p class="aide">
+    Le plan dérivé n'a pas encore de baies : les manques ci-dessous sont normaux
+    à ce stade. Un mur de plus de 6 m a besoin d'une baie, d'un refend ou d'un
+    poteau raidisseur.
+  </p>
+  {% with constats = controle, bloquant = False %}
+    {% include "fragments/constats.html" %}
+  {% endwith %}
+  {% endif %}
+
+  <h2>À reporter dans l'éditeur de plan</h2>
+  <p class="aide">
+    Complétez la liste <code>ouvertures</code>, puis calepinez le plan depuis
+    <a href="/">la page principale</a>. Les cotes des baies portent sur la
+    trémie, pas sur le passage libre.
+  </p>
+  <textarea id="source-derivee" class="source" spellcheck="false" readonly>{{ source }}</textarea>
+  <div class="commandes">
+    <button type="button" id="copier" class="bouton">Copier le plan</button>
+  </div>
+</div>
