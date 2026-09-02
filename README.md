@@ -129,7 +129,7 @@ définit aucune référence (voir `docs/hypotheses.md`).
 ```bash
 uv run pytest                  # 209 tests, ~85 s
 uv run pytest -m "not lent"    # 208 tests, ~40 s : exclut les preuves d'optimalité du débit
-uv run ruff check src tests
+uv run ruff check src tests outils
 uv run mypy
 ```
 
