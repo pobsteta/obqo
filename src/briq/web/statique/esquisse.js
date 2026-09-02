@@ -12,8 +12,13 @@ let pieces = [
   { nom: "séjour", x: 1920, y: 1920, largeur: 4800, hauteur: 3840 },
   { nom: "cuisine", x: 6720, y: 1920, largeur: 3840, hauteur: 3840 },
 ];
+let baies = [];
+let murs = [];
+let mode = "pieces";
 let selection = null;
+let baieActive = null;
 let geste = null;
+const LARGEUR_MINI_BAIE = 720;
 
 const PAS_DESSIN = 240; // on dessine fin, on cale ensuite : voir le bouton « Caler »
 const pas = () => Number(document.getElementById("pas").value);
@@ -141,10 +146,72 @@ function dessiner() {
     etat.classList.add("etat--conflit");
   } else {
     etat.classList.remove("etat--conflit");
-    etat.textContent = pieces.length
+    if (mode === "baies") {
+    const couche = svg("g", { class: "murs" });
+    murs.forEach((mur) => {
+      const ligne = svg("line", {
+        x1: mur.depart[0], y1: MONDE.hauteur - mur.depart[1],
+        x2: mur.arrivee[0], y2: MONDE.hauteur - mur.arrivee[1],
+        class: "mur" + (mur.interieur ? " mur--interieur" : ""),
+      });
+      ligne.dataset.mur = mur.id;
+      couche.appendChild(ligne);
+    });
+    baies.forEach((baie, index) => {
+      const ligne = svg("line", {
+        x1: baie.depart[0], y1: MONDE.hauteur - baie.depart[1],
+        x2: baie.arrivee[0], y2: MONDE.hauteur - baie.arrivee[1],
+        class: "baie" + (index === baieActive ? " baie--active" : ""),
+      });
+      ligne.dataset.baie = index;
+      couche.appendChild(ligne);
+      const mx = (baie.depart[0] + baie.arrivee[0]) / 2;
+      const my = MONDE.hauteur - (baie.depart[1] + baie.arrivee[1]) / 2;
+      couche.appendChild(
+        Object.assign(svg("text", { x: mx, y: my - 260, class: "baie__cote" }), {
+          textContent: `${baie.id} ${largeurDe(baie)}`,
+        })
+      );
+    });
+    toile.appendChild(couche);
+  }
+
+  etat.textContent = pieces.length
       ? `${pieces.length} pièce${pieces.length > 1 ? "s" : ""} — emprise ${emprise()}`
       : "Aucune pièce. Glissez sur le fond pour en créer une.";
   }
+}
+
+function largeurDe(baie) {
+  return (
+    Math.abs(baie.arrivee[0] - baie.depart[0]) + Math.abs(baie.arrivee[1] - baie.depart[1])
+  );
+}
+
+// Projete le pointeur sur l'axe du mur le plus proche : une baie ne peut
+// exister que sur un mur, autant y coller le geste des le depart.
+function surLeMur(point) {
+  let meilleur = null;
+  let ecart = 900;
+  for (const mur of murs) {
+    const [ax, ay] = mur.depart;
+    const [bx, by] = mur.arrivee;
+    if (ax === bx) {
+      const d = Math.abs(point.x - ax);
+      const dans = point.y >= Math.min(ay, by) && point.y <= Math.max(ay, by);
+      if (dans && d < ecart) { ecart = d; meilleur = { mur, x: ax, y: caler(point.y) }; }
+    } else {
+      const d = Math.abs(point.y - ay);
+      const dans = point.x >= Math.min(ax, bx) && point.x <= Math.max(ax, bx);
+      if (dans && d < ecart) { ecart = d; meilleur = { mur, x: caler(point.x), y: ay }; }
+    }
+  }
+  if (!meilleur) return null;
+  const [ax, ay] = meilleur.mur.depart;
+  const [bx, by] = meilleur.mur.arrivee;
+  meilleur.x = Math.min(Math.max(meilleur.x, Math.min(ax, bx)), Math.max(ax, bx));
+  meilleur.y = Math.min(Math.max(meilleur.y, Math.min(ay, by)), Math.max(ay, by));
+  return meilleur;
 }
 
 function emprise() {
@@ -162,8 +229,39 @@ function pieceSous(evenement) {
 
 toile.addEventListener("pointerdown", (evenement) => {
   const point = pointSouris(evenement);
-  const index = pieceSous(evenement);
   toile.setPointerCapture(evenement.pointerId);
+
+  if (mode === "baies") {
+    const surBaie = evenement.target.dataset && evenement.target.dataset.baie;
+    if (surBaie !== undefined && surBaie !== null && surBaie !== "") {
+      baieActive = Number(surBaie);
+      montrerFormeBaie();
+      dessiner();
+      return;
+    }
+    const ancre = surLeMur(point);
+    if (!ancre) {
+      baieActive = null;
+      montrerFormeBaie();
+      dessiner();
+      return;
+    }
+    baieActive = baies.length;
+    baies.push({
+      id: `B${baies.length + 1}`,
+      type: "fenetre",
+      mur: ancre.mur.id,
+      depart: [ancre.x, ancre.y],
+      arrivee: [ancre.x, ancre.y],
+      allege: 960,
+      hauteur: 1200,
+    });
+    geste = { type: "baie", mur: ancre.mur, origine: [ancre.x, ancre.y] };
+    dessiner();
+    return;
+  }
+
+  const index = pieceSous(evenement);
 
   if (index === null) {
     // Une piece n'apparait qu'a partir d'un vrai glissement : un simple clic
@@ -190,6 +288,24 @@ toile.addEventListener("pointerdown", (evenement) => {
 toile.addEventListener("pointermove", (evenement) => {
   if (!geste) return;
   const point = pointSouris(evenement);
+
+  if (geste.type === "baie") {
+    const baie = baies[baieActive];
+    const [ax, ay] = geste.mur.depart;
+    const [bx, by] = geste.mur.arrivee;
+    if (ax === bx) {
+      const y = Math.min(Math.max(caler(point.y), Math.min(ay, by)), Math.max(ay, by));
+      baie.depart = [ax, Math.min(geste.origine[1], y)];
+      baie.arrivee = [ax, Math.max(geste.origine[1], y)];
+    } else {
+      const x = Math.min(Math.max(caler(point.x), Math.min(ax, bx)), Math.max(ax, bx));
+      baie.depart = [Math.min(geste.origine[0], x), ay];
+      baie.arrivee = [Math.max(geste.origine[0], x), ay];
+    }
+    dessiner();
+    return;
+  }
+
   if (geste.ne) {
     const { origine } = geste;
     if (Math.abs(point.x - origine.x) < PAS_DESSIN && Math.abs(point.y - origine.y) < PAS_DESSIN) {
@@ -228,6 +344,20 @@ toile.addEventListener("pointermove", (evenement) => {
 });
 
 toile.addEventListener("pointerup", () => {
+  if (geste && geste.type === "baie") {
+    const baie = baies[baieActive];
+    if (largeurDe(baie) < LARGEUR_MINI_BAIE) {
+      baies.splice(baieActive, 1);
+      baieActive = null;
+      etat.textContent = `Une baie fait ${LARGEUR_MINI_BAIE} mm au minimum : glissez le long du mur.`;
+    } else {
+      etat.textContent = `${baie.id} : ${largeurDe(baie)} mm de trémie, passage libre ${largeurDe(baie) - (largeurDe(baie) > 1800 ? 320 : 160)} mm.`;
+    }
+    geste = null;
+    montrerFormeBaie();
+    dessiner();
+    return;
+  }
   if (geste && !geste.ne && selection !== null) {
     const piece = pieces[selection];
     if (piece.largeur < MINI || piece.hauteur < MINI) {
@@ -249,13 +379,85 @@ toile.addEventListener("dblclick", (evenement) => {
 });
 
 document.addEventListener("keydown", (evenement) => {
-  if ((evenement.key === "Delete" || evenement.key === "Backspace") && selection !== null) {
-    if (document.activeElement && document.activeElement.tagName === "TEXTAREA") return;
+  if (evenement.key !== "Delete" && evenement.key !== "Backspace") return;
+  const actif = document.activeElement;
+  if (actif && (actif.tagName === "TEXTAREA" || actif.tagName === "INPUT")) return;
+  if (mode === "baies" && baieActive !== null) {
+    baies.splice(baieActive, 1);
+    baieActive = null;
+    montrerFormeBaie();
+    dessiner();
+  } else if (mode === "pieces" && selection !== null) {
     pieces.splice(selection, 1);
     selection = null;
     dessiner();
   }
 });
+
+const forme = document.getElementById("forme-baie");
+
+function montrerFormeBaie() {
+  if (mode !== "baies" || baieActive === null || !baies[baieActive]) {
+    forme.hidden = true;
+    return;
+  }
+  const baie = baies[baieActive];
+  forme.hidden = false;
+  document.getElementById("baie-type").value = baie.type;
+  document.getElementById("baie-allege").value = baie.allege;
+  document.getElementById("baie-hauteur").value = baie.hauteur;
+  document.getElementById("baie-allege").disabled = baie.type !== "fenetre";
+
+  // Les cotes portent sur la tremie : rappeler le passage libre evite la
+  // porte de 800 qu'on croyait a 960.
+  const tremie = largeurDe(baie);
+  const passage = tremie - (tremie > 1800 ? 320 : 160);
+  const linteau = tremie > 2400 ? " — au-delà de 2400, linteau en lamellé-collé" : "";
+  document.getElementById("baie-resume").textContent =
+    `${baie.id} sur ${baie.mur || "un mur"} : trémie ${tremie} mm, passage libre ${passage} mm${linteau}`;
+}
+
+for (const champ of ["type", "allege", "hauteur"]) {
+  document.getElementById(`baie-${champ}`).addEventListener("change", (evenement) => {
+    if (baieActive === null) return;
+    const valeur = evenement.target.value;
+    baies[baieActive][champ] = champ === "type" ? valeur : Number(valeur);
+    if (champ === "type" && valeur !== "fenetre") baies[baieActive].allege = 0;
+    montrerFormeBaie();
+    dessiner();
+  });
+}
+
+document.getElementById("baie-supprimer").addEventListener("click", () => {
+  if (baieActive === null) return;
+  baies.splice(baieActive, 1);
+  baieActive = null;
+  montrerFormeBaie();
+  dessiner();
+});
+
+async function chargerMurs() {
+  const reponse = await poster("/esquisse/murs");
+  const donnees = await reponse.json();
+  murs = donnees.murs || [];
+  if (donnees.erreur) etat.textContent = donnees.erreur;
+  dessiner();
+}
+
+function basculer(nouveau) {
+  mode = nouveau;
+  document.getElementById("mode-pieces").classList.toggle("mode--actif", mode === "pieces");
+  document.getElementById("mode-baies").classList.toggle("mode--actif", mode === "baies");
+  document.body.classList.toggle("mode-baies", mode === "baies");
+  selection = null;
+  baieActive = null;
+  montrerFormeBaie();
+  if (mode === "baies") chargerMurs();
+  else dessiner();
+}
+
+document.getElementById("mode-pieces").addEventListener("click", () => basculer("pieces"));
+document.getElementById("mode-baies").addEventListener("click", () => basculer("baies"));
 
 function corps() {
   return {
@@ -268,6 +470,14 @@ function corps() {
       y: Math.round(p.y),
       largeur: Math.round(p.largeur),
       hauteur: Math.round(p.hauteur),
+    })),
+    baies: baies.map((b) => ({
+      id: b.id,
+      type: b.type,
+      depart: b.depart.map(Math.round),
+      arrivee: b.arrivee.map(Math.round),
+      allege: b.allege,
+      hauteur: b.hauteur,
     })),
   };
 }

@@ -10,7 +10,7 @@ from hypothesis import strategies as st
 
 from briq.engine.calepinage import calepiner
 from briq.engine.esquisse import PAS_RECOMMANDE, caler, vers_plan
-from briq.model.esquisse import Esquisse, Piece
+from briq.model.esquisse import Baie, Esquisse, Piece
 from briq.model.plan import Ouverture
 from briq.units import GRILLE
 
@@ -235,3 +235,130 @@ def test_deux_pieces_quelconques_donnent_toujours_un_plan(a: int, b: int, h: int
         )
     )
     assert len(plan.refends) == 1
+
+
+# --- baies posees sur l'esquisse ----------------------------------------------
+
+
+def baie(**champs: Any) -> Baie:
+    defauts = {"id": "B1", "type": "fenetre", "allege": 960, "hauteur": 1200}
+    return Baie(**{**defauts, **champs})
+
+
+def deux_pieces(*baies: Baie) -> Esquisse:
+    return Esquisse(
+        pieces=[
+            Piece(nom="séjour", x=0, y=0, largeur=4800, hauteur=4800),
+            Piece(nom="cuisine", x=4800, y=0, largeur=3840, hauteur=4800),
+        ],
+        baies=list(baies),
+    )
+
+
+def test_une_baie_est_rattachee_au_mur_qui_la_porte() -> None:
+    plan, rapport = vers_plan(
+        deux_pieces(
+            baie(id="P1", type="porte", depart=(1920, 0), arrivee=(3120, 0), hauteur=2160),
+            baie(id="F1", depart=(8640, 1920), arrivee=(8640, 3360)),
+            baie(id="P2", type="porte", depart=(4800, 1920), arrivee=(4800, 2880), hauteur=2160),
+        )
+    )
+    assert plan is not None, [str(e) for e in rapport.erreurs]
+    par_id = {o.id: o for o in plan.ouvertures}
+    assert par_id["P1"].mur == "M1" and par_id["P1"].position == 1920
+    assert par_id["F1"].mur == "M2", "le mur de droite"
+    assert par_id["P2"].mur == "R1", "une baie peut aussi se poser sur un refend"
+
+
+def test_les_trois_types_de_baie_sont_acceptes() -> None:
+    plan, _ = vers_plan(
+        deux_pieces(
+            baie(id="P1", type="porte", depart=(960, 0), arrivee=(1920, 0), hauteur=2160),
+            baie(id="F1", type="fenetre", depart=(2880, 0), arrivee=(4320, 0)),
+            baie(
+                id="PF1",
+                type="porte_fenetre",
+                depart=(5760, 0),
+                arrivee=(8160, 0),
+                hauteur=2160,
+            ),
+        )
+    )
+    assert plan is not None
+    assert {o.type for o in plan.ouvertures} == {"porte", "fenetre", "porte_fenetre"}
+
+
+def test_une_porte_n_a_jamais_d_allege() -> None:
+    """Le formulaire peut laisser une allege : le modele du plan la refuserait."""
+    plan, _ = vers_plan(
+        deux_pieces(
+            baie(
+                id="P1", type="porte", depart=(1920, 0), arrivee=(3120, 0), allege=960, hauteur=2160
+            )
+        )
+    )
+    assert plan is not None
+    assert plan.ouvertures[0].allege == 0
+
+
+def test_une_baie_posee_dans_le_vide_est_signalee() -> None:
+    plan, rapport = vers_plan(deux_pieces(baie(id="F1", depart=(2400, 2400), arrivee=(3840, 2400))))
+    assert plan is None
+    constat = next(c for c in rapport.constats if c.code == "BAIE-SANS-MUR")
+    assert "reposez-la" in constat.message
+
+
+def test_une_baie_oblique_est_refusee_des_le_modele() -> None:
+    with pytest.raises(ValueError, match="ni horizontale ni verticale"):
+        baie(id="F1", depart=(0, 0), arrivee=(1440, 1440))
+
+
+def test_une_baie_se_cale_sur_240_et_non_sur_480() -> None:
+    """Une porte de 1 200 est valide : l'arrondir a 960 lui coute 24 cm de passage.
+
+    Seules les longueurs de murs gagnent a tomber sur 480.
+    """
+    cale, ajustements = caler(
+        deux_pieces(
+            baie(id="P-entree", type="porte", depart=(1920, 0), arrivee=(3120, 0), hauteur=2160)
+        )
+    )
+    assert cale.baies[0].largeur == 1200
+    assert not [a for a in ajustements if a.quoi == "P-entree"]
+
+
+def test_le_calage_signale_les_baies_retrecies() -> None:
+    """Une baie hors grille bouge : il faut que ca se voie."""
+    _, ajustements = caler(deux_pieces(baie(id="F-cuisine", depart=(1900, 0), arrivee=(3030, 0))))
+    resume = [str(a) for a in ajustements if a.quoi == "F-cuisine"]
+    assert resume and "largeur 1130 -> 1200" in resume[0]
+
+
+def test_le_calage_ne_deplace_pas_le_dessin_dans_le_coin() -> None:
+    """Recaler ne doit pas ramener le plan a l'origine : les murs sauteraient
+    sous les baies posees, et le dessin bougerait sous la souris."""
+    croquis = Esquisse(
+        pieces=[
+            Piece(nom="a", x=1920, y=1920, largeur=4800, hauteur=3840),
+            Piece(nom="b", x=6720, y=1920, largeur=3840, hauteur=3840),
+        ]
+    )
+    cale, ajustements = caler(croquis)
+    assert ajustements == []
+    assert (cale.pieces[0].x, cale.pieces[0].y) == (1920, 1920)
+
+
+def test_une_esquisse_complete_se_calepine_sans_retouche() -> None:
+    """Le bout du bout : du dessin au calepinage, sans passer par le YAML."""
+    plan, rapport = vers_plan(
+        deux_pieces(
+            baie(id="P1", type="porte", depart=(1920, 0), arrivee=(3120, 0), hauteur=2160),
+            baie(id="F1", depart=(8640, 1920), arrivee=(8640, 3360)),
+            baie(id="PF1", type="porte_fenetre", depart=(0, 1440), arrivee=(0, 3840), hauteur=2160),
+            baie(id="P2", type="porte", depart=(4800, 1920), arrivee=(4800, 2880), hauteur=2160),
+        )
+    )
+    assert plan is not None, [str(e) for e in rapport.erreurs]
+    calepinage, controle = calepiner(plan)
+    assert calepinage is not None, [str(e) for e in controle.erreurs]
+    assert len(calepinage.briques) > 400

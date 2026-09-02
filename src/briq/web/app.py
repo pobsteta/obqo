@@ -39,9 +39,9 @@ from briq.drawings.ir import nom_de_fichier
 from briq.drawings.mise_en_page import Feuille
 from briq.drawings.planches import apercu
 from briq.engine.calepinage import calepiner
-from briq.engine.esquisse import PAS_RECOMMANDE, caler, vers_plan
+from briq.engine.esquisse import PAS_RECOMMANDE, caler, murs_du_plan, vers_plan
 from briq.engine.validation import Gravite
-from briq.model.esquisse import Esquisse, Piece
+from briq.model.esquisse import Baie, Esquisse, Piece
 from briq.model.plan import Plan
 from briq.web.etude import Depot, EchecDeValidation, Etude
 
@@ -245,6 +245,7 @@ def _esquisse_depuis(corps: dict[str, Any]) -> Esquisse:
             nom=str(corps.get("nom") or "esquisse"),
             hauteur_sous_chainage=int(corps.get("hauteur_sous_chainage") or 2640),
             pieces=[Piece(**p) for p in corps.get("pieces", [])],
+            baies=[Baie(**b) for b in corps.get("baies", [])],
         )
     except ValidationError as erreur:
         details = "; ".join(
@@ -266,6 +267,39 @@ def caler_esquisse(corps: Annotated[dict[str, Any], Body()]) -> JSONResponse:
         {
             "pieces": [p.model_dump() for p in calee.pieces],
             "ajustements": [str(a) for a in ajustements],
+        }
+    )
+
+
+@app.post("/esquisse/murs")
+def murs_de_l_esquisse(corps: Annotated[dict[str, Any], Body()]) -> JSONResponse:
+    """Murs deduits du dessin, pour que l'editeur y accroche les baies.
+
+    La geometrie reste cote serveur : l'editeur ne redevine pas ou tombent les
+    murs, il demande. Une seule source de verite pour les regles.
+    """
+    try:
+        esquisse = _esquisse_depuis(corps)
+    except ValueError as erreur:
+        return JSONResponse({"erreur": str(erreur), "murs": []}, status_code=422)
+    plan, rapport = vers_plan(esquisse)
+    if plan is None:
+        premiere = rapport.erreurs[0]
+        return JSONResponse(
+            {"erreur": f"{premiere.code} — {premiere.message}", "murs": []}, status_code=422
+        )
+    return JSONResponse(
+        {
+            "murs": [
+                {
+                    "id": m.id,
+                    "depart": list(m.depart),
+                    "arrivee": list(m.arrivee),
+                    "interieur": m.interieur,
+                    "longueur": m.longueur,
+                }
+                for m in murs_du_plan(plan)
+            ]
         }
     )
 
@@ -297,6 +331,7 @@ def plan_depuis_esquisse(requete: Request, corps: Annotated[dict[str, Any], Body
             "ajustements": [str(a) for a in ajustements],
             "constats": rapport.constats,
             "controle": controle.constats,
+            "pret": not controle.erreurs,
             "source": _en_yaml(plan, calee),
             "apercu": svg.rendre(apercu(plan), FEUILLE_APERCU, pour_ecran=True),
         },
@@ -308,8 +343,9 @@ def _en_yaml(plan: Plan, esquisse: Esquisse) -> str:
     sommets = plan.contour.sommets()
     lignes = [
         f"# Plan derive de l'esquisse « {esquisse.nom} ».",
-        "# Il ne contient pas encore de baies : ajoutez-les sous « ouvertures »,",
-        "# puis validez. Voir docs/saisir-un-plan.md.",
+        "# Les cotes des baies portent sur la tremie, pas sur le passage libre :",
+        "# les jambages en retirent 160 mm, 320 au-dela de 1800.",
+        "# Voir docs/saisir-un-plan.md.",
         f"nom: {plan.nom}",
         f"hauteur_sous_chainage: {plan.hauteur_sous_chainage}",
         "contour:",
@@ -326,9 +362,18 @@ def _en_yaml(plan: Plan, esquisse: Esquisse) -> str:
                 f"  - {{id: {refend.id}, depart: [{refend.depart[0]}, {refend.depart[1]}], "
                 f"arrivee: [{refend.arrivee[0]}, {refend.arrivee[1]}]}}"
             )
-    lignes += [
-        "ouvertures: []   # a completer : au moins une par mur de plus de 6 m",
-    ]
+    if plan.ouvertures:
+        lignes.append("ouvertures:")
+        for o in plan.ouvertures:
+            passage = o.largeur - (320 if o.largeur > 1800 else 160)
+            allege = f", allege: {o.allege}" if o.allege else ""
+            lignes.append(
+                f"  - {{id: {o.id}, mur: {o.mur}, type: {o.type}, "
+                f"position: {o.position}, largeur: {o.largeur}{allege}, "
+                f"hauteur: {o.hauteur}}}   # passage libre {passage} mm"
+            )
+    else:
+        lignes.append("ouvertures: []   # a completer : au moins une par mur de plus de 6 m")
     return "\n".join(lignes) + "\n"
 
 

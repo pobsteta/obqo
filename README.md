@@ -51,7 +51,7 @@ schéma commité suit le modèle : sans cela l'autocomplétion mentirait.
 | 4 | CLI complète, exemple, documentation | **livré** |
 | — | interface web légère (option du brief) | **livrée** |
 | — | contours en L, U, T et escalier (angles rentrants) | **livré** |
-| — | module d'esquisse : dessiner les pièces, l'app en tire le plan | **livré** |
+| — | module d'esquisse : dessiner les pièces **et les baies** | **livré** |
 
 ## Architecture
 
@@ -126,7 +126,7 @@ définit aucune référence (voir `docs/hypotheses.md`).
 ## Tests
 
 ```bash
-uv run pytest                  # 156 tests, ~80 s
+uv run pytest                  # 168 tests, ~85 s
 uv run pytest -m "not lent"    # ~40 s : exclut les preuves d'optimalité du débit
 uv run ruff check src tests
 uv run mypy
@@ -190,8 +190,20 @@ d'une pièce et peut traverser la voisine de part en part. Sans distinguer les
 deux, l'application posait un mur porteur au milieu du séjour, que personne
 n'avait dessiné.
 
-L'esquisse s'arrête au gros œuvre : le plan dérivé n'a pas encore de baies. On
-les ajoute dans l'éditeur de plan, puis on calepine.
+**Les baies se posent aussi à la souris**, dans l'onglet *Baies* : on glisse le
+long d'un mur, on choisit porte, fenêtre ou porte-fenêtre, on règle l'allège et
+la hauteur. L'application rappelle en direct le passage libre — la trémie moins
+les jambages — et signale la portée qui dépasserait le linteau chevillé.
+
+Les murs sur lesquels on pose les baies viennent du serveur, pas d'un calcul
+refait côté navigateur : une seule source de vérité pour la géométrie.
+
+Une baie se cale sur **240**, jamais sur 480, contrairement aux murs : une porte
+de 1 200 est parfaitement valide, et l'arrondir à 960 lui coûterait 24 cm de
+passage.
+
+Une esquisse complète — pièces et baies — produit un plan qui se calepine tel
+quel, sans passer par le YAML.
 
 ## Les contours non rectangulaires
 

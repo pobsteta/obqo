@@ -183,3 +183,40 @@ kbd {
   font: inherit;
   font-size: .85em;
 }
+
+.modes { display: flex; gap: .3rem; margin: .2rem 0 .5rem; }
+.mode {
+  padding: .32rem .9rem;
+  border: 1px solid var(--bord);
+  border-radius: 4px;
+  background: var(--carte);
+  color: var(--encre-douce);
+  font: inherit;
+  font-size: .88rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.mode--actif { border-color: var(--bois); background: var(--bois-clair); color: var(--bois); }
+
+.mode-baies .piece rect { fill: #f6f2ea; stroke: #cdc4b2; stroke-width: 24; cursor: default; }
+.mode-baies .piece__nom, .mode-baies .piece__cote { fill: #b5ab98; }
+
+.mur { stroke: #6b6155; stroke-width: 240; stroke-linecap: butt; cursor: crosshair; }
+.mur--interieur { stroke: #a09380; }
+.baie { stroke: #2f5d7c; stroke-width: 240; stroke-linecap: butt; cursor: pointer; }
+.baie--active { stroke: #b4531f; }
+.baie__cote { text-anchor: middle; fill: #2f5d7c; font-size: 240px; font-family: system-ui, sans-serif; pointer-events: none; }
+
+#forme-baie {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .8rem;
+  align-items: center;
+  margin: .8rem 0 0;
+  padding: .6rem .8rem .8rem;
+  border: 1px solid var(--bord);
+  border-radius: 4px;
+}
+#forme-baie legend { padding: 0 .3rem; font-size: .82rem; color: var(--encre-douce); }
+#forme-baie label { display: flex; align-items: center; gap: .35rem; font-size: .88rem; }
+#forme-baie input { width: 5.5rem; padding: .3rem .4rem; border: 1px solid var(--bord); border-radius: 4px; font: inherit; }

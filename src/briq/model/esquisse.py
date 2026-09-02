@@ -11,7 +11,7 @@ interieures sont des axes de refend, centres, qui mangent 120 mm de chaque cote.
 
 from __future__ import annotations
 
-from typing import Annotated, Self
+from typing import Annotated, Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -63,10 +63,65 @@ class Piece(Base):
         )
 
 
+class Baie(Base):
+    """Une baie posee sur un axe de mur, avant que les murs aient un nom.
+
+    Elle est decrite par le **segment** qu'elle occupe sur cet axe, et non par un
+    mur et une abscisse : dans l'esquisse les murs n'existent pas encore, ils se
+    deduisent des pieces. La conversion retrouve ensuite le mur porteur et
+    l'abscisse de la rive.
+    """
+
+    id: str
+    type: Literal["porte", "fenetre", "porte_fenetre"] = "fenetre"
+    depart: tuple[int, int]
+    arrivee: tuple[int, int]
+    allege: Annotated[int, Field(ge=0)] = 960
+    hauteur: Annotated[int, Field(gt=0)] = 1200
+
+    @model_validator(mode="after")
+    def _segment_axial(self) -> Self:
+        if self.depart == self.arrivee:
+            raise ValueError(f"la baie « {self.id} » est reduite a un point")
+        if self.depart[0] != self.arrivee[0] and self.depart[1] != self.arrivee[1]:
+            raise ValueError(f"la baie « {self.id} » n'est ni horizontale ni verticale")
+        return self
+
+    @property
+    def largeur(self) -> int:
+        return abs(self.arrivee[0] - self.depart[0]) + abs(self.arrivee[1] - self.depart[1])
+
+    @property
+    def horizontale(self) -> bool:
+        return self.depart[1] == self.arrivee[1]
+
+    def sur(self, depart: tuple[int, int], arrivee: tuple[int, int]) -> bool:
+        """La baie repose-t-elle entierement sur ce segment de mur ?"""
+        if (depart[0] == arrivee[0]) == self.horizontale:
+            return False
+        if depart[0] == arrivee[0]:  # mur vertical
+            return self.depart[0] == depart[0] and all(
+                min(depart[1], arrivee[1]) <= y <= max(depart[1], arrivee[1])
+                for y in (self.depart[1], self.arrivee[1])
+            )
+        return self.depart[1] == depart[1] and all(
+            min(depart[0], arrivee[0]) <= x <= max(depart[0], arrivee[0])
+            for x in (self.depart[0], self.arrivee[0])
+        )
+
+
 class Esquisse(Base):
     hauteur_sous_chainage: Annotated[int, Field(gt=0)] = 2640
     nom: str = "esquisse"
     pieces: Annotated[list[Piece], Field(min_length=1)]
+    baies: list[Baie] = []
+
+    @model_validator(mode="after")
+    def _identifiants_de_baie_uniques(self) -> Self:
+        vus = [b.id for b in self.baies]
+        if len(vus) != len(set(vus)):
+            raise ValueError("deux baies portent le meme identifiant")
+        return self
 
     @model_validator(mode="after")
     def _sans_chevauchement(self) -> Self:

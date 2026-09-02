@@ -20,8 +20,8 @@ from dataclasses import dataclass
 from typing import NamedTuple
 
 from briq.engine.validation import Gravite, Rapport
-from briq.model.esquisse import Esquisse, Piece
-from briq.model.plan import Contour, Plan, Refend
+from briq.model.esquisse import Baie, Esquisse, Piece
+from briq.model.plan import Contour, Ouverture, Plan, Refend
 from briq.units import EPAISSEUR_MUR, GRILLE
 
 PAS_RECOMMANDE = 480
@@ -31,21 +31,30 @@ Point = tuple[int, int]
 
 
 class Ajustement(NamedTuple):
-    """Ce que le calage a change sur une piece."""
+    """Ce que le calage a change sur une piece ou sur une baie.
 
-    piece: str
+    Une baie n'a qu'une largeur a caler : sa hauteur se saisit au clavier, elle
+    ne se dessine pas. Les champs de hauteur valent alors None.
+    """
+
+    quoi: str
     largeur_avant: int
     largeur_apres: int
-    hauteur_avant: int
-    hauteur_apres: int
+    hauteur_avant: int | None = None
+    hauteur_apres: int | None = None
 
     @property
     def bouge(self) -> bool:
         return self.largeur_avant != self.largeur_apres or self.hauteur_avant != self.hauteur_apres
 
     def __str__(self) -> str:
+        if self.hauteur_avant is None or self.hauteur_apres is None:
+            return (
+                f"{self.quoi} : largeur {self.largeur_avant} -> {self.largeur_apres} mm "
+                f"({self.largeur_apres - self.largeur_avant:+d})"
+            )
         return (
-            f"{self.piece} : {self.largeur_avant} x {self.hauteur_avant} -> "
+            f"{self.quoi} : {self.largeur_avant} x {self.hauteur_avant} -> "
             f"{self.largeur_apres} x {self.hauteur_apres} mm "
             f"({self.largeur_apres - self.largeur_avant:+d}, "
             f"{self.hauteur_apres - self.hauteur_avant:+d})"
@@ -60,9 +69,12 @@ def _caler_lignes(valeurs: list[int], pas: int) -> dict[int, int]:
     """
     cale: dict[int, int] = {}
     precedent: int | None = None
+    # L'origine est calee elle aussi, mais conservee : un dessin ne doit pas
+    # sauter dans le coin de la feuille parce qu'on l'a mis sur la grille.
     origine = valeurs[0]
+    ancre = round(origine / pas) * pas
     for valeur in valeurs:
-        cible = round((valeur - origine) / pas) * pas
+        cible = ancre + round((valeur - origine) / pas) * pas
         if precedent is not None and cible <= precedent:
             cible = precedent + pas
         cale[valeur] = cible
@@ -70,10 +82,25 @@ def _caler_lignes(valeurs: list[int], pas: int) -> dict[int, int]:
     return cale
 
 
+def _projeter(valeur: int, lignes: dict[int, int], origine: int) -> int:
+    """Cale une coordonnee de baie : sur sa ligne si c'en est une, sinon sur 240.
+
+    Une baie a une coordonnee sur l'axe de son mur — donc une ligne de piece, qui
+    suit le calage des murs — et une autre le long du mur, qui n'en est pas une.
+    Cette derniere se cale sur la **grille de 240**, jamais sur 480 : une porte
+    de 1 200 est parfaitement valide, et l'arrondir a 960 lui coute 24 cm de
+    passage. Seules les longueurs de murs gagnent a tomber sur 480.
+    """
+    if valeur in lignes:
+        return lignes[valeur]
+    return round((valeur - origine) / GRILLE) * GRILLE + round(origine / GRILLE) * GRILLE
+
+
 def caler(esquisse: Esquisse, pas: int = PAS_RECOMMANDE) -> tuple[Esquisse, list[Ajustement]]:
     """Ramene l'esquisse sur le pas demande et dit ce qui a bouge."""
     x = _caler_lignes(esquisse.abscisses, pas)
     y = _caler_lignes(esquisse.ordonnees, pas)
+    ox, oy = esquisse.abscisses[0], esquisse.ordonnees[0]
     pieces: list[Piece] = []
     ajustements: list[Ajustement] = []
     for piece in esquisse.pieces:
@@ -88,10 +115,88 @@ def caler(esquisse: Esquisse, pas: int = PAS_RECOMMANDE) -> tuple[Esquisse, list
         ajustements.append(
             Ajustement(piece.nom, piece.largeur, calee.largeur, piece.hauteur, calee.hauteur)
         )
+    baies: list[Baie] = []
+    for baie in esquisse.baies:
+        baie_calee = baie.model_copy(
+            update={
+                "depart": (
+                    _projeter(baie.depart[0], x, ox),
+                    _projeter(baie.depart[1], y, oy),
+                ),
+                "arrivee": (
+                    _projeter(baie.arrivee[0], x, ox),
+                    _projeter(baie.arrivee[1], y, oy),
+                ),
+            }
+        )
+        baies.append(baie_calee)
+        ajustements.append(Ajustement(baie.id, baie.largeur, baie_calee.largeur))
     return (
-        esquisse.model_copy(update={"pieces": pieces}),
+        esquisse.model_copy(update={"pieces": pieces, "baies": baies}),
         [a for a in ajustements if a.bouge],
     )
+
+
+class MurDerive(NamedTuple):
+    """Un mur du plan, tel que le moteur de calepinage le nommera."""
+
+    id: str
+    depart: tuple[int, int]
+    arrivee: tuple[int, int]
+    interieur: bool
+
+    @property
+    def longueur(self) -> int:
+        return abs(self.arrivee[0] - self.depart[0]) + abs(self.arrivee[1] - self.depart[1])
+
+
+def murs_du_plan(plan: Plan) -> list[MurDerive]:
+    """Les murs d'un plan, dans l'ordre et sous le nom que leur donne le moteur.
+
+    `engine.geometrie` numerote les murs exterieurs M1, M2... en suivant le
+    contour ; les refends gardent leur identifiant. L'editeur d'esquisse s'appuie
+    dessus pour poser les baies sur un mur qui existera vraiment.
+    """
+    sommets = plan.contour.sommets()
+    murs = [
+        MurDerive(f"M{i + 1}", sommets[i], sommets[(i + 1) % len(sommets)], False)
+        for i in range(len(sommets))
+    ]
+    murs += [MurDerive(r.id, r.depart, r.arrivee, True) for r in plan.refends]
+    return murs
+
+
+def _poser_baies(plan: Plan, baies: list[Baie], rapport: Rapport) -> list[Ouverture]:
+    """Rattache chaque baie de l'esquisse au mur qui la porte."""
+    murs = murs_du_plan(plan)
+    ouvertures: list[Ouverture] = []
+    for baie in baies:
+        porteur = next((m for m in murs if baie.sur(m.depart, m.arrivee)), None)
+        if porteur is None:
+            rapport.ajouter(
+                Gravite.ERREUR,
+                "BAIE-SANS-MUR",
+                baie.id,
+                "la baie ne repose sur aucun mur du plan derive. Le calage a pu "
+                "deplacer le mur qui la portait : reposez-la",
+            )
+            continue
+        depuis = min(
+            abs(baie.depart[0] - porteur.depart[0]) + abs(baie.depart[1] - porteur.depart[1]),
+            abs(baie.arrivee[0] - porteur.depart[0]) + abs(baie.arrivee[1] - porteur.depart[1]),
+        )
+        ouvertures.append(
+            Ouverture(
+                id=baie.id,
+                mur=porteur.id,
+                type=baie.type,
+                position=depuis,
+                largeur=baie.largeur,
+                allege=0 if baie.type in ("porte", "porte_fenetre") else baie.allege,
+                hauteur=baie.hauteur,
+            )
+        )
+    return ouvertures
 
 
 @dataclass(slots=True)
@@ -398,4 +503,6 @@ def vers_plan(esquisse: Esquisse) -> tuple[Plan | None, Rapport]:
         contour=Contour(points=sommets),
         refends=_refends(t, rapport),
     )
-    return plan, rapport
+    if esquisse.baies:
+        plan = plan.model_copy(update={"ouvertures": _poser_baies(plan, esquisse.baies, rapport)})
+    return (plan if rapport.valide else None), rapport

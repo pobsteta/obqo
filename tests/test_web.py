@@ -217,3 +217,130 @@ def test_une_esquisse_en_morceaux_est_refusee_avec_ses_reperes(client: TestClien
     assert reponse.status_code == 422
     assert "PLAN-EN-PLUSIEURS-MORCEAUX" in reponse.text
     assert "avant" in reponse.text
+
+
+def test_les_murs_derives_suivent_le_dessin(client: TestClient) -> None:
+    """Les murs renvoyes doivent tomber sur les pieces telles qu'elles sont a
+    l'ecran : un decalage rendrait la pose des baies impossible."""
+    reponse = client.post(
+        "/esquisse/murs",
+        json={
+            "pieces": [
+                {"nom": "a", "x": 1920, "y": 1920, "largeur": 4800, "hauteur": 3840},
+                {"nom": "b", "x": 6720, "y": 1920, "largeur": 3840, "hauteur": 3840},
+            ]
+        },
+    )
+    assert reponse.status_code == 200
+    murs = {m["id"]: m for m in reponse.json()["murs"]}
+    assert murs["M1"]["depart"] == [1920, 1920]
+    assert murs["R1"]["depart"] == [6720, 1920]
+
+
+def test_le_plan_derive_reprend_les_baies_posees(client: TestClient) -> None:
+    reponse = client.post(
+        "/esquisse/plan",
+        json={
+            "pieces": [
+                {"nom": "a", "x": 0, "y": 0, "largeur": 4800, "hauteur": 4800},
+                {"nom": "b", "x": 4800, "y": 0, "largeur": 3840, "hauteur": 4800},
+            ],
+            "baies": [
+                {
+                    "id": "P1",
+                    "type": "porte",
+                    "depart": [1920, 0],
+                    "arrivee": [3120, 0],
+                    "allege": 0,
+                    "hauteur": 2160,
+                },
+                {
+                    "id": "F1",
+                    "type": "fenetre",
+                    "depart": [8640, 1920],
+                    "arrivee": [8640, 3360],
+                    "allege": 960,
+                    "hauteur": 1200,
+                },
+                {
+                    "id": "PF1",
+                    "type": "porte_fenetre",
+                    "depart": [0, 1440],
+                    "arrivee": [0, 3840],
+                    "allege": 0,
+                    "hauteur": 2160,
+                },
+                {
+                    "id": "P2",
+                    "type": "porte",
+                    "depart": [4800, 1920],
+                    "arrivee": [4800, 2880],
+                    "allege": 0,
+                    "hauteur": 2160,
+                },
+            ],
+        },
+    )
+    assert reponse.status_code == 200
+    assert "ouvertures:" in reponse.text and "ouvertures: []" not in reponse.text
+    assert "passage libre" in reponse.text, "la trémie n'est pas le passage"
+    assert "Plan complet" in reponse.text, "ce plan doit se calepiner tel quel"
+
+
+def test_le_plan_derive_avec_baies_repasse_par_la_porte_d_entree(client: TestClient) -> None:
+    import re
+
+    from briq.engine.calepinage import calepiner
+    from briq.model.lecture import depuis_texte
+
+    reponse = client.post(
+        "/esquisse/plan",
+        json={
+            "pieces": [
+                {"nom": "a", "x": 0, "y": 0, "largeur": 4800, "hauteur": 4800},
+                {"nom": "b", "x": 4800, "y": 0, "largeur": 3840, "hauteur": 4800},
+            ],
+            "baies": [
+                {
+                    "id": "P1",
+                    "type": "porte",
+                    "depart": [1920, 0],
+                    "arrivee": [3120, 0],
+                    "allege": 0,
+                    "hauteur": 2160,
+                },
+                {
+                    "id": "F1",
+                    "type": "fenetre",
+                    "depart": [8640, 1920],
+                    "arrivee": [8640, 3360],
+                    "allege": 960,
+                    "hauteur": 1200,
+                },
+                {
+                    "id": "PF1",
+                    "type": "porte_fenetre",
+                    "depart": [0, 1440],
+                    "arrivee": [0, 3840],
+                    "allege": 0,
+                    "hauteur": 2160,
+                },
+                {
+                    "id": "P2",
+                    "type": "porte",
+                    "depart": [4800, 1920],
+                    "arrivee": [4800, 2880],
+                    "allege": 0,
+                    "hauteur": 2160,
+                },
+            ],
+        },
+    )
+    import html
+
+    source = re.search(r'<textarea id="source-derivee"[^>]*>(.*?)</textarea>', reponse.text, re.S)
+    assert source is not None
+    plan = depuis_texte(html.unescape(source.group(1)))
+    calepinage, rapport = calepiner(plan)
+    assert calepinage is not None, [str(e) for e in rapport.erreurs]
+    assert len(plan.ouvertures) == 4

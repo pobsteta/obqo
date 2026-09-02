@@ -19,20 +19,23 @@
   {% if controle %}
   <h2>Ce qu'il reste à faire</h2>
   <p class="aide">
-    Le plan dérivé n'a pas encore de baies : les manques ci-dessous sont normaux
-    à ce stade. Un mur de plus de 6 m a besoin d'une baie, d'un refend ou d'un
-    poteau raidisseur.
+    Un mur de plus de 6 m a besoin d'une baie, d'un refend ou d'un poteau
+    raidisseur. Posez les baies manquantes dans l'onglet <em>Baies</em>.
   </p>
   {% with constats = controle, bloquant = False %}
     {% include "fragments/constats.html" %}
   {% endwith %}
   {% endif %}
 
-  <h2>À reporter dans l'éditeur de plan</h2>
+  <h2>{% if pret %}Plan complet{% else %}À compléter{% endif %}</h2>
   <p class="aide">
-    Complétez la liste <code>ouvertures</code>, puis calepinez le plan depuis
-    <a href="/">la page principale</a>. Les cotes des baies portent sur la
-    trémie, pas sur le passage libre.
+    {% if pret %}
+    Ce plan se calepine tel quel : copiez-le dans
+    <a href="/">la page principale</a>.
+    {% else %}
+    Complétez ce qui manque, ici ou dans <a href="/">la page principale</a>.
+    {% endif %}
+    Les cotes des baies portent sur la trémie, pas sur le passage libre.
   </p>
   <textarea id="source-derivee" class="source" spellcheck="false" readonly>{{ source }}</textarea>
   <div class="commandes">

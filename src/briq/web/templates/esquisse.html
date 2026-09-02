@@ -13,8 +13,26 @@
         toucher sans se chevaucher : chaque ligne partagée devient un mur.
       </p>
     </div>
+    <div class="modes" role="group" aria-label="Mode de dessin">
+      <button type="button" id="mode-pieces" class="mode mode--actif">Pièces</button>
+      <button type="button" id="mode-baies" class="mode">Baies</button>
+    </div>
     <svg id="toile" viewBox="0 0 19200 14400" preserveAspectRatio="xMidYMid meet"
          role="application" aria-label="Zone de dessin des pièces" tabindex="0"></svg>
+    <fieldset id="forme-baie" hidden>
+      <legend>Baie sélectionnée</legend>
+      <label>type
+        <select id="baie-type">
+          <option value="porte">porte</option>
+          <option value="fenetre">fenêtre</option>
+          <option value="porte_fenetre">porte-fenêtre</option>
+        </select>
+      </label>
+      <label>allège <input id="baie-allege" type="number" step="240" min="0" value="960"></label>
+      <label>hauteur <input id="baie-hauteur" type="number" step="240" min="240" value="1200"></label>
+      <button type="button" id="baie-supprimer" class="bouton">Supprimer</button>
+      <p class="aide" id="baie-resume"></p>
+    </fieldset>
     <div class="commandes">
       <button id="generer" type="button">Générer le plan</button>
       <button id="caler" type="button" class="bouton">Caler sur le pas</button>
