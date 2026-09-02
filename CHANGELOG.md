@@ -7,6 +7,13 @@ n'y écrit pas à la main — on écrit ses messages de commit.
 
 Voir `docs/publier.md` pour la règle complète.
 
+## 0.2.0 — 2026-09-02
+
+### Nouveautés
+
+- **esquisse** — redimensionner les baies au clavier, et ouvrir sur le dessin
+- **cli** — annoncer le numero de version avec --version
+
 ## 0.1.0 — 2026-09-02
 
 Première version : calepinage, nomenclature, métré, débit optimisé, plans SVG /
