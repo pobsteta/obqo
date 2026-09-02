@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 GABARIT = """\
-# Plan BRIQ — modifier les cotes, puis : obqo valider ce-fichier.yaml
+# Plan obqo — modifier les cotes, puis : obqo valider ce-fichier.yaml
 # Methode de saisie pas a pas : docs/saisir-un-plan.md
 #
 # TOUTES LES COTES SONT EN MILLIMETRES, MULTIPLES DE 240.

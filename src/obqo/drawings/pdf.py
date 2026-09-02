@@ -150,7 +150,7 @@ def ecrire(planches: list[Dessin], chemin: Path, feuille: Feuille = A3) -> None:
         pagesize=(feuille.largeur * mm, feuille.hauteur * mm),
         invariant=True,
     )
-    canevas.setTitle("Dossier de calepinage BRIQ")
+    canevas.setTitle("Dossier de calepinage obqo")
     for dessin in planches:
         _page(canevas, dessin, feuille)
         canevas.showPage()

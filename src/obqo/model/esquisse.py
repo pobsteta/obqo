@@ -1,7 +1,7 @@
 """Esquisse : une maison decrite par ses pieces, avant tout calepinage.
 
 C'est le modele que manipule l'editeur graphique. Une esquisse n'est pas un plan
-BRIQ : elle ignore l'epaisseur des murs, la grille de 240 et les regles de baie.
+obqo : elle ignore l'epaisseur des murs, la grille de 240 et les regles de baie.
 Elle sert a dessiner vite, et `engine.esquisse` la convertit ensuite en plan.
 
 Convention : **les rectangles se touchent**, et chaque ligne partagee est un axe

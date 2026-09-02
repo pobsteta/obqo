@@ -25,7 +25,7 @@ def texte(valeur: str) -> str:
 def esquisse_en_yaml(esquisse: Esquisse) -> str:
     """Rend l'esquisse sous une forme relisible et rechargeable."""
     lignes = [
-        "# Esquisse BRIQ — rouvrable depuis l'onglet « Esquisse » d'obqo web.",
+        "# Esquisse obqo — rouvrable depuis l'onglet « Esquisse » d'obqo web.",
         "# Les pieces se touchent : chaque ligne partagee est un axe de mur.",
         "# Les baies sont posees sur ces axes, decrites par le segment qu'elles",
         "# occupent. Toutes les cotes sont en millimetres.",

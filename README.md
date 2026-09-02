@@ -1,7 +1,7 @@
-# obqo — calepinage du système constructif BRIQ
+# obqo — calepinage du système constructif en briques de bois chevillées
 
 Calcule, à partir d'un plan de maison, tout ce qu'il faut pour la construire avec
-le système BRIQ : calepinage rang par rang, nomenclature, plans de montage et
+le système obqo : calepinage rang par rang, nomenclature, plans de montage et
 métré de matière première.
 
 > Les plans produits portent la mention : « Document de calepinage —
@@ -184,7 +184,7 @@ lieu de produire un plan infaisable :
 
 | Situation | Réponse |
 |---|---|
-| mur intérieur qui traverse tout le bâtiment | **refend BRIQ** |
+| mur intérieur qui traverse tout le bâtiment | **refend obqo** |
 | mur intérieur qui s'arrête en chemin | cloison légère, hors calepinage |
 | deux refends qui se croisent | le sens le plus long l'emporte, l'autre devient cloison |
 | pièces en deux blocs séparés | refus, avec la position de chaque bloc |

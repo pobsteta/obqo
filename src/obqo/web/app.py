@@ -376,7 +376,7 @@ def ouvrir_esquisse(corps: Annotated[dict[str, Any], Body()]) -> JSONResponse:
 
 @app.post("/esquisse/plan", response_class=HTMLResponse)
 def plan_depuis_esquisse(requete: Request, corps: Annotated[dict[str, Any], Body()]) -> Any:
-    """Convertit le dessin en plan BRIQ et rend le fragment de resultat."""
+    """Convertit le dessin en plan obqo et rend le fragment de resultat."""
     try:
         esquisse = _esquisse_depuis(corps)
     except ValueError as erreur:
@@ -453,7 +453,7 @@ def _en_yaml(plan: Plan, esquisse: Esquisse) -> str:
 def schema() -> JSONResponse:
     document = Plan.model_json_schema(by_alias=True)
     document["$schema"] = "https://json-schema.org/draft/2020-12/schema"
-    document["title"] = "Plan BRIQ, version 1"
+    document["title"] = "Plan obqo, version 1"
     return JSONResponse(document)
 
 

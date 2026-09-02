@@ -10,7 +10,7 @@ Deux operations, volontairement separees pour rester relisibles :
 
 Ce que le moteur de calepinage sait faire borne le resultat : un refend doit
 aller d'un mur exterieur a l'autre. Une ligne interieure qui ne traverse pas tout
-le batiment n'est pas un refend BRIQ — c'est une **cloison non porteuse**, hors
+le batiment n'est pas un refend obqo — c'est une **cloison non porteuse**, hors
 calepinage, et l'application le dit au lieu de produire un plan infaisable.
 """
 
@@ -419,7 +419,7 @@ def _refends(t: Treillis, rapport: Rapport) -> list[Refend]:
             Gravite.AVERTISSEMENT,
             "CLOISON-NON-PORTEUSE",
             ", ".join(cloisons),
-            "ces murs interieurs ne peuvent pas etre des refends BRIQ : soit ils "
+            "ces murs interieurs ne peuvent pas etre des refends obqo : soit ils "
             "ne traversent pas tout le batiment, soit ils en croisent un autre — "
             "et le systeme ne decrit pas la jonction en croix. A realiser en "
             "cloison legere, hors calepinage",
@@ -471,7 +471,7 @@ def _demeler(refends: list[Refend]) -> tuple[list[Refend], list[str]]:
 
 
 def vers_plan(esquisse: Esquisse) -> tuple[Plan | None, Rapport]:
-    """Convertit une esquisse en plan BRIQ. Retourne None si c'est impossible."""
+    """Convertit une esquisse en plan obqo. Retourne None si c'est impossible."""
     rapport = Rapport()
     for piece in esquisse.pieces:
         for cote, valeur in (("largeur", piece.largeur), ("hauteur", piece.hauteur)):

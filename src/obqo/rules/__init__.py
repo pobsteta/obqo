@@ -1,1 +1,1 @@
-"""Regles metier du systeme BRIQ, sous forme de tables."""
+"""Regles metier du systeme obqo, sous forme de tables."""

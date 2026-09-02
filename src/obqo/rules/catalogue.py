@@ -1,4 +1,4 @@
-"""Regles metier du systeme BRIQ : **des tables, pas des algorithmes**.
+"""Regles metier du systeme obqo : **des tables, pas des algorithmes**.
 
 Ce module est fait pour etre relu ligne a ligne face au brief. Il ne contient
 aucune logique de placement : uniquement la composition des briques, des
@@ -47,7 +47,7 @@ PIECES: Final[dict[str, Piece]] = {
 }
 
 # --- Composition atelier des briques -----------------------------------------
-# Paragraphe 1.2 (BRIQ 480) et 1.4 (demi-brique 240). Les quantites sont celles
+# Paragraphe 1.2 (obqo 480) et 1.4 (demi-brique 240). Les quantites sont celles
 # de la brique nue, abouts ouverts.
 
 CORPS_480: Final[Counter[str]] = Counter(

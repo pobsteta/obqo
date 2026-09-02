@@ -1,4 +1,4 @@
-"""Unites et constantes de grille du systeme BRIQ.
+"""Unites et constantes de grille du systeme obqo.
 
 Regle absolue du projet : **toutes les longueurs sont des entiers en
 millimetres**. Aucun flottant n'entre dans le modele ni dans le moteur. Tout le
@@ -25,7 +25,7 @@ HAUTEUR_RANG = 240
 """Hauteur d'un rang de briques."""
 
 LONGUEUR_BRIQUE = 480
-"""Longueur de la brique standard BRIQ 480."""
+"""Longueur de la brique standard obqo 480."""
 
 LONGUEUR_DEMI = 240
 """Longueur de la demi-brique."""

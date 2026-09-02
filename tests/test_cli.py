@@ -117,7 +117,7 @@ def test_schema_exporte_un_schema_json_valide(tmp_path: Path) -> None:
     resultat = runner.invoke(app, ["schema", "-o", str(tmp_path)])
     assert resultat.exit_code == 0, resultat.output
     document = json.loads((tmp_path / "obqo-plan-v1.schema.json").read_text())
-    assert document["title"] == "Plan BRIQ, version 1"
+    assert document["title"] == "Plan obqo, version 1"
     assert "contour" in document["properties"]
     assert "$schema" in document["properties"], "l'editeur doit pouvoir s'y accrocher"
 
@@ -128,7 +128,7 @@ def test_le_schema_du_depot_est_a_jour() -> None:
 
     attendu = Plan.model_json_schema(by_alias=True)
     attendu["$schema"] = "https://json-schema.org/draft/2020-12/schema"
-    attendu["title"] = "Plan BRIQ, version 1"
+    attendu["title"] = "Plan obqo, version 1"
     publie = json.loads((RACINE / "schemas" / "obqo-plan-v1.schema.json").read_text())
     assert publie == attendu, "lancer `uv run obqo schema`"
 

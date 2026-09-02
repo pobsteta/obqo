@@ -98,7 +98,7 @@ l'autre côté ?
 
 ## F1 — La constante « 4,16 m » du §1.8 décrit une 480-A, pas une 480-S
 
-Vérifié par test. Le décompte des pièces du §1.2 donne, pour une BRIQ 480 nue
+Vérifié par test. Le décompte des pièces du §1.2 donne, pour une obqo 480 nue
 (abouts ouverts) : 8 × 240 (couchés) + 4 × 240 (montants) + 1 × 480 (âme)
 + 2 × 160 (remplissages) + 2 × 160 (tenons) = **4,00 m** de carrelet, 17 pièces.
 

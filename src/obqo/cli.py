@@ -45,7 +45,7 @@ from obqo.model.plan import Plan
 from obqo.model.systeme import Calepinage
 
 app = typer.Typer(
-    help="Calepinage, nomenclature et metre du systeme constructif BRIQ.",
+    help="Calepinage, nomenclature et metre du systeme constructif obqo.",
     no_args_is_help=True,
     add_completion=True,
 )
@@ -485,7 +485,7 @@ def schema(
     cible = sortie / "obqo-plan-v1.schema.json"
     document = Plan.model_json_schema(by_alias=True)
     document["$schema"] = "https://json-schema.org/draft/2020-12/schema"
-    document["title"] = "Plan BRIQ, version 1"
+    document["title"] = "Plan obqo, version 1"
     cible.write_text(
         json.dumps(document, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",

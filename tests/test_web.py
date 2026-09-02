@@ -101,7 +101,7 @@ def test_le_dossier_zip_contient_tous_les_livrables(client: TestClient, cle: str
 
 def test_le_schema_est_servi(client: TestClient) -> None:
     document = client.get("/schema.json").json()
-    assert document["title"] == "Plan BRIQ, version 1"
+    assert document["title"] == "Plan obqo, version 1"
 
 
 # --- depot d'etudes -----------------------------------------------------------

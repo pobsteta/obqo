@@ -1,4 +1,5 @@
-"""obqo — calepinage, nomenclature et metre du systeme constructif BRIQ."""
+"""obqo — calepinage, nomenclature et metre du systeme constructif en briques
+de bois massif chevillees."""
 
 from __future__ import annotations
 

@@ -1,7 +1,7 @@
 # obqo — Choix techniques recommandés
 
 Document de décision préalable à l'implémentation. Il répond à la question :
-*quelles technologies pour construire l'application de calepinage BRIQ ?*
+*quelles technologies pour construire l'application de calepinage obqo ?*
 Il ne discute aucune règle constructive : celles du brief sont la source de vérité.
 
 ---
