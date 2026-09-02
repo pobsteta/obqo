@@ -53,7 +53,9 @@ python_version = "3.12"
 strict = true
 
 mypy_path = "src"
-packages = ["obqo"]
+packages = ["obqo", "outils"]
+# « outils » n'est pas livre dans la roue, mais il ecrit les versions du depot :
+# une erreur y coute un tag faux, qui ne se reprend pas.
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

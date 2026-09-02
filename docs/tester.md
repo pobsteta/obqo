@@ -7,11 +7,16 @@ le plus de bugs.
 ## 1. La suite de tests
 
 ```bash
-uv run pytest -m "not lent"    # 186 tests, ~40 s
-uv run pytest                  # 187 avec les preuves d'optimalité du débit, ~85 s
-uv run ruff check src tests
+uv run pytest -m "not lent"    # 208 tests, ~40 s
+uv run pytest                  # 209 avec les preuves d'optimalité du débit, ~85 s
+uv run ruff check src tests outils
 uv run mypy
 ```
+
+Ces quatre commandes sont exactement celles que GitHub rejoue :
+`.github/workflows/controles.yml` les lance sur chaque pull request, et la
+publication les rappelle — preuves lentes comprises — avant de poser un tag. Rien
+à réapprendre entre la machine et le serveur.
 
 Le marqueur `lent` isole les tests qui résolvent le programme entier du débit à
 l'optimum et vérifient qu'aucune solution meilleure n'existe. Ils prennent la
@@ -311,7 +316,7 @@ Le reste du code était déjà portable : aucun chemin en dur, `pathlib` partout
 avec un `encoding=` explicite. C'est vérifiable :
 
 ```powershell
-uv run pytest -m "not lent"       # les 186 tests doivent passer tels quels
+uv run pytest -m "not lent"       # les 208 tests doivent passer tels quels
 ```
 
 ### Ce qui reste à vérifier sur une vraie machine

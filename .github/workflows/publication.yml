@@ -1,0 +1,84 @@
+# Publication automatique : après chaque fusion sur la branche par défaut, le
+# dépôt se donne sa version, son tag et sa release.
+#
+# La règle n'est pas ici mais dans outils/version.py, qui la lit dans les
+# messages de commit et se teste (tests/test_version.py) : ce fichier ne fait
+# qu'enchaîner contrôles, écriture, tag et release.
+#
+# Rien n'est publié quand rien ne le mérite : une fusion qui n'apporte que de la
+# documentation ou du remaniement laisse la version où elle est.
+name: publication
+
+on:
+  push:
+    branches: ["**"]
+
+# Une seule publication à la fois : deux fusions rapprochées se suivraient
+# sinon jusqu'à se disputer le même numéro.
+concurrency:
+  group: publication
+  cancel-in-progress: false
+
+jobs:
+  controles:
+    # Le filtre de branche est ici, pas dans « on: push » : la branche par
+    # défaut se renomme un jour, et le workflow doit suivre sans qu'on y pense.
+    if: github.ref_name == github.event.repository.default_branch
+    uses: ./.github/workflows/controles.yml
+    with:
+      lents: true
+
+  publier:
+    # Le même garde-fou que ci-dessus : un job dont la dépendance est sautée
+    # l'est aussi, mais une condition explicite se relit sans le savoir.
+    if: github.ref_name == github.event.repository.default_branch
+    needs: controles
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # L'outil remonte jusqu'au dernier tag : un dépôt tronqué le
+          # croirait vide et republierait tout l'historique.
+          fetch-depth: 0
+
+      - name: Installer uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Installer le projet
+        run: uv sync
+
+      - name: Calculer la version
+        id: version
+        run: uv run python -m outils.version --appliquer --notes notes-de-version.md
+
+      - name: Construire la roue
+        if: steps.version.outputs.version != ''
+        run: uv build
+
+      - name: Poser le tag et publier
+        if: steps.version.outputs.version != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          git config user.name "obqo — publication"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "chore(version): $VERSION"
+          git tag -a "v$VERSION" -F notes-de-version.md
+          # Poussé avec le GITHUB_TOKEN : GitHub ne relance pas les workflows
+          # sur ces commits, la publication ne se rappelle donc pas elle-même.
+          git push origin "HEAD:${{ github.ref_name }}" --follow-tags
+          gh release create "v$VERSION" \
+            --title "obqo $VERSION" \
+            --notes-file notes-de-version.md \
+            dist/*
+
+      - name: Dire qu'il n'y avait rien à publier
+        if: steps.version.outputs.version == ''
+        run: |
+          echo "Aucun commit ne change la version : le dépôt reste où il est."

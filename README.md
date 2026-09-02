@@ -127,8 +127,8 @@ définit aucune référence (voir `docs/hypotheses.md`).
 ## Tests
 
 ```bash
-uv run pytest                  # 187 tests, ~85 s
-uv run pytest -m "not lent"    # 186 tests, ~40 s : exclut les preuves d'optimalité du débit
+uv run pytest                  # 209 tests, ~85 s
+uv run pytest -m "not lent"    # 208 tests, ~40 s : exclut les preuves d'optimalité du débit
 uv run ruff check src tests
 uv run mypy
 ```
@@ -340,6 +340,35 @@ bibliothèque à maintenir ni CDN à joindre depuis un atelier hors ligne. Si
 l'interface grossit (édition graphique du plan, comparaison de variantes), HTMX
 redeviendra le bon choix.
 
+## Versions et publication
+
+**Le message de commit décide de la version.** Le dépôt suit les commits
+conventionnels, et chaque fusion sur la branche par défaut se donne toute seule
+sa version, son tag et sa release : `feat` avance la mineure, `fix` et `perf` la
+corrective, une rupture (`feat!:`) la majeure ; `docs`, `refactor`, `chore` et
+compagnie ne publient rien. Une fusion qui ne mérite pas de version n'en reçoit
+pas — un dépôt qui publie à chaque virgule noie ses vraies versions.
+
+```bash
+uv run python -m outils.version   # ce que la prochaine fusion publierait
+uv run obqo --version             # ce que le paquet installé annonce
+```
+
+Tant que la majeure vaut 0, une rupture avance la **mineure** et non la
+majeure : une version 0 ne promet aucune stabilité, et le passage en 1.0 est une
+décision, pas l'effet de bord d'un point d'exclamation.
+
+La règle n'est pas apportée par une dépendance de publication : elle tient en
+trente lignes lisibles dans `outils/version.py`, testées dans
+`tests/test_version.py` — jusqu'au garde-fou qui vérifie que `pyproject.toml`,
+`src/obqo/__init__.py` et le paquet installé disent le même numéro. Une chaîne
+de publication qu'on ne sait pas relire finit par publier ce qu'on n'a pas
+voulu. Le détail est dans [`docs/publier.md`](docs/publier.md), l'historique
+dans [`CHANGELOG.md`](CHANGELOG.md), et les deux workflows dans
+`.github/workflows/` : `controles.yml` (ruff, mypy, pytest — appelé par les
+pull requests **et** par la publication, pour qu'une version ne passe pas une
+porte plus large) et `publication.yml`.
+
 ## Documentation
 
 - `docs/00-choix-techniques.md` — pourquoi cette pile technique
@@ -351,3 +380,5 @@ redeviendra le bon choix.
   questions à trancher
 - [`docs/tester.md`](docs/tester.md) — comment vérifier que l'application marche,
   et ce que les tests automatiques ne voient pas
+- [`docs/publier.md`](docs/publier.md) — comment le message de commit décide de
+  la version, du tag et de la release

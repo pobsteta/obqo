@@ -1,0 +1,48 @@
+# Les contrôles du dépôt : ruff, mypy, pytest — les trois commandes de
+# docs/tester.md, exécutées ici telles quelles.
+#
+# Ce fichier sert deux fois : sur chaque pull request, et appelé par
+# publication.yml avant de poser un tag. Une seule définition, donc aucune
+# chance que la porte d'entrée d'une version soit moins exigeante que celle
+# d'une pull request.
+name: contrôles
+
+on:
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      lents:
+        description: >-
+          Jouer aussi les preuves d'optimalité du solveur de débit, exclues des
+          pull requests parce qu'elles se comptent en minutes.
+        type: boolean
+        default: false
+
+jobs:
+  controles:
+    runs-on: ubuntu-latest
+    env:
+      MARQUEURS: ${{ inputs.lents && 'lent or not lent' || 'not lent' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # uv s'installe par son propre script plutôt que par une action tierce :
+      # c'est la commande que le README donne aux humains, et le dépôt n'a pas
+      # à suivre les versions d'une action de plus.
+      - name: Installer uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Installer le projet
+        run: uv sync
+
+      - name: ruff
+        run: uv run ruff check src tests outils
+
+      - name: mypy
+        run: uv run mypy
+
+      - name: pytest
+        run: uv run pytest -m "$MARQUEURS"

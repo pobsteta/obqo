@@ -1,0 +1,13 @@
+# Journal des versions
+
+Ce fichier est écrit par la chaîne de publication : à chaque fusion sur la
+branche par défaut, `outils/version.py` lit les commits conventionnels depuis le
+dernier tag, en déduit la version, et insère la section correspondante ici. On
+n'y écrit pas à la main — on écrit ses messages de commit.
+
+Voir `docs/publier.md` pour la règle complète.
+
+## 0.1.0 — 2026-09-02
+
+Première version : calepinage, nomenclature, métré, débit optimisé, plans SVG /
+PDF A3 / DXF, vue 3D, interface web et éditeur d'esquisse.
