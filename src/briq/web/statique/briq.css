@@ -201,11 +201,16 @@ kbd {
 .mode-baies .piece rect { fill: #f6f2ea; stroke: #cdc4b2; stroke-width: 24; cursor: default; }
 .mode-baies .piece__nom, .mode-baies .piece__cote { fill: #b5ab98; }
 
+a.bouton { display: inline-block; }
+.bouton--fort { background: var(--bois); color: #fff; }
+.bouton--fort:hover { background: #755733; color: #fff; }
+
 .mur { stroke: #6b6155; stroke-width: 240; stroke-linecap: butt; cursor: crosshair; }
 .mur--interieur { stroke: #a09380; }
 .baie { stroke: #2f5d7c; stroke-width: 240; stroke-linecap: butt; cursor: pointer; }
 .baie--active { stroke: #b4531f; }
-.baie__cote { text-anchor: middle; fill: #2f5d7c; font-size: 240px; font-family: system-ui, sans-serif; pointer-events: none; }
+/* text-anchor vient du JS : une regle CSS l'emporterait sur l'attribut. */
+.baie__cote { fill: #2f5d7c; font-size: 240px; font-family: system-ui, sans-serif; pointer-events: none; }
 
 #forme-baie {
   display: flex;

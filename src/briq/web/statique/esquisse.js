@@ -168,6 +168,7 @@ function dessiner() {
       ligne.dataset.mur = mur.id;
       couche.appendChild(ligne);
     });
+    const etiquettes = poserLesEtiquettes();
     baies.forEach((baie, index) => {
       const ligne = svg("line", {
         x1: baie.depart[0], y1: MONDE.hauteur - baie.depart[1],
@@ -176,12 +177,18 @@ function dessiner() {
       });
       ligne.dataset.baie = index;
       couche.appendChild(ligne);
-      const mx = (baie.depart[0] + baie.arrivee[0]) / 2;
-      const my = MONDE.hauteur - (baie.depart[1] + baie.arrivee[1]) / 2;
+      const pose = etiquettes[index];
       couche.appendChild(
-        Object.assign(svg("text", { x: mx, y: my - 260, class: "baie__cote" }), {
-          textContent: `${baie.id} ${largeurDe(baie)}`,
-        })
+        Object.assign(
+          svg("text", {
+            x: pose.x,
+            y: MONDE.hauteur - pose.y,
+            class: "baie__cote",
+            "text-anchor": pose.ancre,
+            "dominant-baseline": pose.ligne,
+          }),
+          { textContent: pose.texte }
+        )
       );
     });
     toile.appendChild(couche);
@@ -197,6 +204,98 @@ function largeurDe(baie) {
   return (
     Math.abs(baie.arrivee[0] - baie.depart[0]) + Math.abs(baie.arrivee[1] - baie.depart[1])
   );
+}
+
+const ETIQUETTE = { hauteur: 240, parCaractere: 132, ecart: 300, marge: 120 };
+
+// Une etiquette posee toujours au-dessus de la baie se couche en travers du mur
+// des qu'il est vertical — « porte d'entree 1200 » fait 2,5 m de long pour un
+// mur de 240. On la decale donc perpendiculairement au mur, vers l'exterieur du
+// batiment, et on l'ecarte d'un cran de plus tant qu'elle mord sur une
+// etiquette deja posee.
+function poserLesEtiquettes() {
+  const centre = centreDuBati();
+  const posees = boitesDesNoms();
+  return baies.map((baie) => {
+    const texte = `${baie.id} ${largeurDe(baie)}`;
+    const largeur = texte.length * ETIQUETTE.parCaractere;
+    const mx = (baie.depart[0] + baie.arrivee[0]) / 2;
+    const my = (baie.depart[1] + baie.arrivee[1]) / 2;
+    const vertical = baie.depart[0] === baie.arrivee[0];
+    const dehors = (vertical ? mx < centre.x : my < centre.y) ? -1 : 1;
+    // Deux textes horizontaux se degagent en hauteur, jamais en largeur : le
+    // cran d'echappement vaut donc une ligne, pas la longueur de l'etiquette —
+    // sans quoi celle d'un mur vertical part a des metres de sa baie.
+    const cran = ETIQUETTE.hauteur + ETIQUETTE.marge;
+    const decalages = vertical
+      ? [0, cran, -cran, 2 * cran, -2 * cran]
+      : [0, 1, 2, 3, 4].map((n) => n * cran * dehors);
+    // Un mur au bord du cadre n'a pas d'exterieur : l'etiquette y sortirait du
+    // dessin. On rentre alors du cote interieur plutot que de la perdre.
+    let secours = null;
+    for (const cote of [dehors, -dehors]) {
+      for (const decalage of decalages) {
+        const pose = vertical
+          ? { texte, x: mx + cote * ETIQUETTE.ecart, y: my + decalage,
+              ancre: cote < 0 ? "end" : "start", ligne: "middle" }
+          : { texte, x: mx, y: my + cote * ETIQUETTE.ecart + decalage,
+              ancre: "middle", ligne: cote < 0 ? "hanging" : "auto" };
+        const boite = encadrer(pose, largeur);
+        secours = secours || pose;
+        if (!dansLeCadre(boite)) continue;
+        if (!posees.some((autre) => seChevauchent(boite, autre))) {
+          posees.push(boite);
+          return pose;
+        }
+      }
+    }
+    return secours;
+  });
+}
+
+const dansLeCadre = (b) =>
+  b.x0 >= 0 && b.y0 >= 0 && b.x1 <= MONDE.largeur && b.y1 <= MONDE.hauteur;
+
+// Le nom d'une piece et sa cote occupent deja son milieu : une etiquette de baie
+// qui rentre du cote interieur doit les eviter, sinon elle se lit par-dessus.
+function boitesDesNoms() {
+  return pieces.map((piece) => {
+    const cote = `${piece.largeur} × ${piece.hauteur}`;
+    const largeur = Math.max(piece.nom.length * 190, cote.length * 145);
+    const cx = piece.x + piece.largeur / 2;
+    const cy = piece.y + piece.hauteur / 2;
+    return { x0: cx - largeur / 2, y0: cy - 280, x1: cx + largeur / 2, y1: cy + 470 };
+  });
+}
+
+// L'ancre et la ligne de base disent ou le texte tombe par rapport a son point.
+function encadrer(pose, largeur) {
+  const x0 =
+    pose.ancre === "end" ? pose.x - largeur
+    : pose.ancre === "start" ? pose.x
+    : pose.x - largeur / 2;
+  const y0 =
+    pose.ligne === "middle" ? pose.y - ETIQUETTE.hauteur / 2
+    : pose.ligne === "hanging" ? pose.y - ETIQUETTE.hauteur
+    : pose.y;
+  return { x0, y0, x1: x0 + largeur, y1: y0 + ETIQUETTE.hauteur };
+}
+
+const seChevauchent = (a, b) => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
+
+function boiteDuBati() {
+  return {
+    x0: Math.min(...pieces.map((p) => p.x)),
+    y0: Math.min(...pieces.map((p) => p.y)),
+    x1: Math.max(...pieces.map((p) => p.x + p.largeur)),
+    y1: Math.max(...pieces.map((p) => p.y + p.hauteur)),
+  };
+}
+
+function centreDuBati() {
+  if (!pieces.length) return { x: MONDE.largeur / 2, y: MONDE.hauteur / 2 };
+  const b = boiteDuBati();
+  return { x: (b.x0 + b.x1) / 2, y: (b.y0 + b.y1) / 2 };
 }
 
 // Projete le pointeur sur l'axe du mur le plus proche : une baie ne peut
@@ -226,11 +325,8 @@ function surLeMur(point) {
 }
 
 function emprise() {
-  const x0 = Math.min(...pieces.map((p) => p.x));
-  const y0 = Math.min(...pieces.map((p) => p.y));
-  const x1 = Math.max(...pieces.map((p) => p.x + p.largeur));
-  const y1 = Math.max(...pieces.map((p) => p.y + p.hauteur));
-  return `${x1 - x0} × ${y1 - y0} mm hors tout`;
+  const b = boiteDuBati();
+  return `${b.x1 - b.x0} × ${b.y1 - b.y0} mm hors tout`;
 }
 
 function pieceSous(evenement) {

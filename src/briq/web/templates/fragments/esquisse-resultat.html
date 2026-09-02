@@ -30,15 +30,19 @@
   <h2>{% if pret %}Plan complet{% else %}À compléter{% endif %}</h2>
   <p class="aide">
     {% if pret %}
-    Ce plan se calepine tel quel : copiez-le dans
-    <a href="/">la page principale</a>.
+    Ce plan se calepine tel quel.
     {% else %}
-    Complétez ce qui manque, ici ou dans <a href="/">la page principale</a>.
+    Il manque encore quelque chose : ouvrez le plan pour le compléter, ou
+    posez les baies qui manquent dans l'onglet <em>Baies</em>.
     {% endif %}
     Les cotes des baies portent sur la trémie, pas sur le passage libre.
   </p>
-  <textarea id="source-derivee" class="source" spellcheck="false" readonly>{{ source }}</textarea>
   <div class="commandes">
-    <button type="button" id="copier" class="bouton">Copier le plan</button>
+    {% if pret %}
+    <a class="bouton bouton--fort" href="/?depuis={{ brouillon }}&amp;calepiner=1">Calepiner ce plan</a>
+    {% endif %}
+    <a class="bouton" href="/?depuis={{ brouillon }}">Ouvrir dans l'onglet Plan</a>
+    <button type="button" id="copier" class="bouton">Copier la source</button>
   </div>
+  <textarea id="source-derivee" class="source" spellcheck="false" readonly>{{ source }}</textarea>
 </div>

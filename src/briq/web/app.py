@@ -46,7 +46,7 @@ from briq.model.ecriture import esquisse_en_yaml, texte
 from briq.model.esquisse import Baie, Esquisse, Piece
 from briq.model.lecture import esquisse_depuis_texte
 from briq.model.plan import Plan
-from briq.web.etude import Depot, EchecDeValidation, Etude
+from briq.web.etude import Brouillons, Depot, EchecDeValidation, Etude
 
 RACINE = Path(__file__).parent
 EXEMPLE = RACINE.parents[2] / "exemples" / "maison.json"
@@ -55,6 +55,7 @@ app = FastAPI(title="BRIQ — calepinage", docs_url="/api")
 app.mount("/statique", StaticFiles(directory=RACINE / "statique"), name="statique")
 gabarits = Jinja2Templates(directory=RACINE / "templates")
 depot = Depot()
+brouillons = Brouillons()
 
 FEUILLE_APERCU = Feuille(largeur=240.0, hauteur=170.0, marge=6.0, cartouche=18.0, legende=0.0)
 """Feuille compacte pour l'apercu a l'ecran : le dessin remplit son cadre au lieu
@@ -90,9 +91,32 @@ def _etude_ou_404(cle: str) -> Etude:
 
 
 @app.get("/", response_class=HTMLResponse)
-def accueil(requete: Request) -> Any:
+def accueil(requete: Request, depuis: str = "", calepiner: int = 0) -> Any:
+    """La page de calepinage, eventuellement chargee d'un plan derive d'esquisse.
+
+    `depuis` porte la cle d'un brouillon depose par `/esquisse/plan` : c'est ce
+    qui evite le copier-coller entre les deux onglets.
+    """
+    avis = ""
+    source = plan_d_exemple()
+    if depuis:
+        brouillon = brouillons.get(depuis)
+        if brouillon is None:
+            avis = (
+                "Ce plan dérivé n'est plus en mémoire — le serveur n'en garde "
+                "que les huit derniers. Repassez par l'esquisse."
+            )
+        else:
+            source = brouillon
     return gabarits.TemplateResponse(
-        requete, "index.html", {"plan": plan_d_exemple(), "titre": "BRIQ — calepinage"}
+        requete,
+        "index.html",
+        {
+            "plan": source,
+            "titre": "BRIQ — calepinage",
+            "avis": avis,
+            "lancer": bool(calepiner) and not avis,
+        },
     )
 
 
@@ -370,6 +394,7 @@ def plan_depuis_esquisse(requete: Request, corps: Annotated[dict[str, Any], Body
         )
 
     _, controle = calepiner(plan)
+    source = _en_yaml(plan, calee)
     return gabarits.TemplateResponse(
         requete,
         "fragments/esquisse-resultat.html",
@@ -378,7 +403,8 @@ def plan_depuis_esquisse(requete: Request, corps: Annotated[dict[str, Any], Body
             "constats": rapport.constats,
             "controle": controle.constats,
             "pret": not controle.erreurs,
-            "source": _en_yaml(plan, calee),
+            "source": source,
+            "brouillon": brouillons.deposer(source),
             "apercu": svg.rendre(apercu(plan), FEUILLE_APERCU, pour_ecran=True),
         },
     )

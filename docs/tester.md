@@ -114,10 +114,15 @@ Le parcours à refaire après toute modification de l'éditeur :
 5. **Onglet Baies** — poser une porte de 1 200 sur un mur, vérifier qu'elle
    reste à 1 200 après calage (les baies se calent sur 240, pas sur 480), lire
    le passage libre annoncé.
-6. Renommer une baie, **enregistrer** l'esquisse, rafraîchir la page, la
+6. Poser **deux baies côte à côte** sur un mur vertical, puis deux autres sur
+   un mur horizontal : chaque étiquette doit rester à côté de sa baie, sans
+   recouvrir sa voisine ni sortir du cadre.
+7. Renommer une baie, **enregistrer** l'esquisse, rafraîchir la page, la
    **rouvrir** : le nom choisi doit revenir tel quel.
-7. Envoyer l'esquisse au calepinage et vérifier que les baies apparaissent sur
-   les élévations.
+8. Générer le plan, puis cliquer **« Calepiner ce plan »** : l'onglet Plan doit
+   s'ouvrir déjà rempli et lancer le calepinage tout seul. Sur un plan
+   incomplet, ce bouton ne doit pas apparaître.
+9. Vérifier que les baies apparaissent sur les élévations.
 
 Sont sortis de ce parcours, et d'aucun test : le clic simple qui créait une
 pièce fantôme de 240 × 240, la porte de 1 200 réduite à 960 par un calage sur
@@ -125,6 +130,11 @@ pièce fantôme de 240 × 240, la porte de 1 200 réduite à 960 par un calage s
 dessin à l'écran, et une route `/etude/{clé}/planche/{index}` qui capturait
 `0.svg` et renvoyait un 422 — Starlette compare les routes dans l'ordre de
 déclaration, la variante `.svg` doit être déclarée en premier.
+
+Le placement des étiquettes de baies en est un cas d'école : les deux premières
+versions passaient les tests serveur sans broncher, mais la capture d'écran
+montrait d'abord deux étiquettes disparues hors du cadre, puis une étiquette
+partie à huit mètres de sa baie. Rien qu'un `assert` n'aurait vu.
 
 ## Ce que rien ne teste encore
 

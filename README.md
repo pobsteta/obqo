@@ -208,7 +208,25 @@ de 1 200 est parfaitement valide, et l'arrondir à 960 lui coûterait 24 cm de
 passage.
 
 Une esquisse complète — pièces et baies — produit un plan qui se calepine tel
-quel, sans passer par le YAML.
+quel, sans passer par le YAML. **Et sans copier-coller** : le plan dérivé est
+déposé côté serveur, et deux boutons y mènent — « Calepiner ce plan » enchaîne
+directement sur la nomenclature et les planches, « Ouvrir dans l'onglet Plan »
+le charge dans l'éditeur pour le compléter à la main. Le bouton d'enchaînement
+n'apparaît que si le plan se calepine vraiment : sinon il n'afficherait que ses
+propres erreurs.
+
+Passer par le serveur plutôt que par le stockage du navigateur n'est pas
+gratuit — c'est ce qui fait marcher le transfert en navigation privée, survivre
+à un lien copié dans un autre onglet, et se vérifier par un test.
+
+**Les cotes des baies se placent toutes seules.** Une étiquette posée au-dessus
+de la baie se couche en travers du mur dès qu'il est vertical : « porte
+d'entrée 1200 » fait 2,5 m de long pour un mur de 240. Elle est donc décalée
+perpendiculairement au mur, vers l'extérieur du bâtiment, rentrée du côté
+intérieur quand le mur touche le bord du cadre, et écartée d'une ligne tant
+qu'elle mord sur une voisine ou sur un nom de pièce. Le cran d'échappement vaut
+une ligne, pas la longueur de l'étiquette : deux textes horizontaux se dégagent
+en hauteur, et un cran trop grand envoie l'étiquette à des mètres de sa baie.
 
 **Les baies portent un nom**, pas un code : « porte d'entrée », « fenêtre
 cuisine ». Le nom par défaut suit le type (`porte 1`, `fenêtre 2`) et se met à

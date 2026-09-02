@@ -8,7 +8,9 @@
       <a href="/schema.json">Schéma</a> — référencez-le par <code>$schema</code>
       pour obtenir l'autocomplétion dans votre éditeur.
     </p>
-    <textarea id="plan" spellcheck="false" aria-label="Plan au format JSON">{{ plan }}</textarea>
+    {% if avis %}<p class="constat constat--erreur">{{ avis }}</p>{% endif %}
+    <textarea id="plan" spellcheck="false" aria-label="Plan au format JSON"
+      {% if lancer %}data-lancer="1"{% endif %}>{{ plan }}</textarea>
     <div class="commandes">
       <button id="calepiner" type="button">Calepiner</button>
       <label class="bascule" title="Résout le cutting-stock à l'optimum prouvé plutôt qu'avec le glouton. Quelques secondes.">

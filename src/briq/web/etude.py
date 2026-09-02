@@ -24,6 +24,7 @@ from briq.model.plan import Plan
 from briq.model.systeme import Calepinage
 
 ETUDES_EN_MEMOIRE = 8
+BROUILLONS_EN_MEMOIRE = 8
 
 
 @dataclass(frozen=True, slots=True)
@@ -107,3 +108,35 @@ class Depot:
                 planches=dossier(calepinage, plan),
             )
         )
+
+
+class Brouillons:
+    """Plans derives d'une esquisse, en attente d'etre ouverts dans l'onglet Plan.
+
+    Le transfert passe par le serveur plutot que par le stockage du navigateur :
+    il marche en navigation privee, il survit a un lien copie dans un autre
+    onglet, et il se verifie par un test — trois choses qu'un `localStorage`
+    ne donne pas.
+    """
+
+    def __init__(self, capacite: int = BROUILLONS_EN_MEMOIRE) -> None:
+        self._sources: OrderedDict[str, str] = OrderedDict()
+        self._verrou = Lock()
+        self._capacite = capacite
+
+    def deposer(self, source: str) -> str:
+        """Range la source et rend la cle qui la rouvrira."""
+        cle = hashlib.sha256(source.encode("utf-8")).hexdigest()[:16]
+        with self._verrou:
+            self._sources[cle] = source
+            self._sources.move_to_end(cle)
+            while len(self._sources) > self._capacite:
+                self._sources.popitem(last=False)
+        return cle
+
+    def get(self, cle: str) -> str | None:
+        with self._verrou:
+            if cle not in self._sources:
+                return None
+            self._sources.move_to_end(cle)
+            return self._sources[cle]

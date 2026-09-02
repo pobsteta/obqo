@@ -49,3 +49,7 @@ function brancherPlanches() {
 }
 
 bouton.addEventListener("click", calepiner);
+
+// Un plan derive d'une esquisse arrive deja rempli, avec l'ordre de partir :
+// l'onglet Esquisse a fait le trajet, l'utilisateur n'a rien a recopier.
+if (document.getElementById("plan").dataset.lancer) calepiner();

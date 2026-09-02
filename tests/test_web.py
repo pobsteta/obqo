@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import html
 import io
 import json
 import re
@@ -388,3 +389,113 @@ def test_un_fichier_d_esquisse_illisible_est_explique(client: TestClient) -> Non
     casse = client.post("/esquisse/ouvrir", json={"source": "pieces: []"})
     assert casse.status_code == 422
     assert "pydantic" not in casse.json()["erreur"]
+
+
+# --- passage de l'esquisse a l'onglet Plan ------------------------------------
+
+ESQUISSE_COMPLETE: dict[str, object] = {
+    "pieces": [
+        {"nom": "a", "x": 0, "y": 0, "largeur": 4800, "hauteur": 4800},
+        {"nom": "b", "x": 4800, "y": 0, "largeur": 3840, "hauteur": 4800},
+    ],
+    "baies": [
+        {
+            "id": "porte d'entrée",
+            "type": "porte",
+            "depart": [1920, 0],
+            "arrivee": [3120, 0],
+            "allege": 0,
+            "hauteur": 2160,
+        },
+        {
+            "id": "F1",
+            "type": "fenetre",
+            "depart": [8640, 1920],
+            "arrivee": [8640, 3360],
+            "allege": 960,
+            "hauteur": 1200,
+        },
+        {
+            "id": "PF1",
+            "type": "porte_fenetre",
+            "depart": [0, 1440],
+            "arrivee": [0, 3840],
+            "allege": 0,
+            "hauteur": 2160,
+        },
+        {
+            "id": "P2",
+            "type": "porte",
+            "depart": [4800, 1920],
+            "arrivee": [4800, 2880],
+            "allege": 0,
+            "hauteur": 2160,
+        },
+    ],
+}
+
+
+def _brouillon(client: TestClient, esquisse: dict[str, object]) -> str:
+    reponse = client.post("/esquisse/plan", json=esquisse)
+    assert reponse.status_code == 200, reponse.text
+    trouve = re.search(r'href="/\?depuis=([0-9a-f]+)"', reponse.text)
+    assert trouve is not None, reponse.text
+    return trouve.group(1)
+
+
+def test_un_plan_complet_propose_de_calepiner_sans_copier_coller(client: TestClient) -> None:
+    reponse = client.post("/esquisse/plan", json=ESQUISSE_COMPLETE)
+    assert "Plan complet" in reponse.text
+    assert "Calepiner ce plan" in reponse.text
+    assert "&amp;calepiner=1" in reponse.text
+
+
+def test_un_plan_incomplet_ne_propose_que_de_l_ouvrir(client: TestClient) -> None:
+    """Chainer un plan a completer n'afficherait que ses propres erreurs.
+
+    Une piece de 9,60 m sans la moindre baie : aucun de ses murs n'est tenu.
+    """
+    reponse = client.post(
+        "/esquisse/plan",
+        json={"pieces": [{"nom": "a", "x": 0, "y": 0, "largeur": 9600, "hauteur": 9600}]},
+    )
+    assert "À compléter" in reponse.text
+    assert "Calepiner ce plan" not in reponse.text
+    assert "Ouvrir dans l'onglet Plan" in reponse.text
+
+
+def test_le_plan_derive_se_retrouve_dans_l_onglet_plan(client: TestClient) -> None:
+    from briq.model.lecture import depuis_texte
+
+    cle_brouillon = _brouillon(client, ESQUISSE_COMPLETE)
+    page = client.get("/", params={"depuis": cle_brouillon})
+    assert page.status_code == 200
+    source = re.search(r'<textarea id="plan"[^>]*>(.*?)</textarea>', page.text, re.S)
+    assert source is not None
+    plan = depuis_texte(html.unescape(source.group(1)))
+    assert len(plan.ouvertures) == 4, "les baies posees a la souris ont fait le trajet"
+    assert 'data-lancer="1"' not in page.text, "sans ordre explicite, on ne lance rien"
+
+
+def test_le_lien_calepiner_demande_le_lancement_automatique(client: TestClient) -> None:
+    cle_brouillon = _brouillon(client, ESQUISSE_COMPLETE)
+    page = client.get("/", params={"depuis": cle_brouillon, "calepiner": 1})
+    assert 'data-lancer="1"' in page.text
+
+
+def test_un_brouillon_oublie_le_dit_au_lieu_de_servir_l_exemple(client: TestClient) -> None:
+    page = client.get("/", params={"depuis": "0" * 16, "calepiner": 1})
+    assert page.status_code == 200
+    assert "plus en mémoire" in page.text
+    assert 'data-lancer="1"' not in page.text, "rien a lancer : ce n'est pas le plan demande"
+
+
+def test_le_depot_de_brouillons_oublie_les_plus_anciens() -> None:
+    from briq.web.etude import Brouillons
+
+    brouillons = Brouillons(capacite=2)
+    premier = brouillons.deposer("un")
+    brouillons.deposer("deux")
+    brouillons.deposer("trois")
+    assert brouillons.get(premier) is None
+    assert brouillons.get(brouillons.deposer("trois")) == "trois"
