@@ -131,3 +131,83 @@ def test_le_schema_du_depot_est_a_jour() -> None:
     attendu["title"] = "Plan BRIQ, version 1"
     publie = json.loads((RACINE / "schemas" / "briq-plan-v1.schema.json").read_text())
     assert publie == attendu, "lancer `uv run briq schema`"
+
+
+# --- lecture YAML et gabarit --------------------------------------------------
+
+
+def test_un_plan_yaml_donne_le_meme_calepinage_que_le_json(tmp_path: Path) -> None:
+    """Le YAML n'est qu'une facon d'ecrire la meme structure, commentaires en plus."""
+    from briq.model.lecture import depuis_texte
+
+    source = """
+    # Maison d'essai, commentee
+    nom: Essai            # le JSON ne permettrait pas cette ligne
+    hauteur_sous_chainage: 2640
+    contour:
+      trace:
+        segments:
+          - {direction: est,   longueur: 5760}   # facade sud
+          - {direction: nord,  longueur: 4800}
+          - {direction: ouest, longueur: 5760}
+          - {direction: sud,   longueur: 4800}
+    """
+    equivalent = {
+        "nom": "Essai",
+        "hauteur_sous_chainage": 2640,
+        "contour": {
+            "trace": {
+                "segments": [
+                    {"direction": "est", "longueur": 5760},
+                    {"direction": "nord", "longueur": 4800},
+                    {"direction": "ouest", "longueur": 5760},
+                    {"direction": "sud", "longueur": 4800},
+                ]
+            }
+        },
+    }
+    assert depuis_texte(source) == depuis_texte(json.dumps(equivalent))
+
+
+def test_un_json_reste_lisible_apres_l_ajout_du_yaml() -> None:
+    from briq.model.lecture import depuis_texte
+
+    assert depuis_texte(EXEMPLE.read_text()).nom.startswith("Maison d'exemple")
+
+
+def test_une_source_illisible_donne_le_message_le_plus_precis() -> None:
+    from briq.model.lecture import depuis_texte
+
+    with pytest.raises(ValueError, match=r"line|column|ligne|colonne|Expecting"):
+        depuis_texte('{"hauteur_sous_chainage": 2640,,}')
+    with pytest.raises(ValueError, match="objet"):
+        depuis_texte("- juste une liste")
+
+
+def test_le_gabarit_produit_un_plan_immediatement_valide(tmp_path: Path) -> None:
+    """Un gabarit qui ne valide pas serait pire qu'inutile."""
+    cible = tmp_path / "depart.yaml"
+    assert runner.invoke(app, ["gabarit", "-o", str(cible)]).exit_code == 0
+    assert "#" in cible.read_text(), "le gabarit doit etre commente"
+
+    resultat = runner.invoke(app, ["valider", str(cible)])
+    assert resultat.exit_code == 0, resultat.output
+    assert "aucun constat" in resultat.output
+
+
+def test_le_gabarit_n_ecrase_jamais_un_fichier_existant(tmp_path: Path) -> None:
+    cible = tmp_path / "depart.yaml"
+    cible.write_text("mon travail", encoding="utf-8")
+    resultat = runner.invoke(app, ["gabarit", "-o", str(cible)])
+    assert resultat.exit_code == 1
+    assert cible.read_text() == "mon travail"
+
+
+def test_calepiner_accepte_un_plan_yaml(tmp_path: Path) -> None:
+    plan = tmp_path / "p.yaml"
+    assert runner.invoke(app, ["gabarit", "-o", str(plan)]).exit_code == 0
+    resultat = runner.invoke(
+        app, ["calepiner", str(plan), "-o", str(tmp_path / "out"), "--glouton", "-f", "svg"]
+    )
+    assert resultat.exit_code == 0, resultat.output
+    assert (tmp_path / "out" / "calepinage.json").exists()

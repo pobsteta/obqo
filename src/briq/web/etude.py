@@ -8,7 +8,6 @@ du plan, et les plus anciennes sont oubliees.
 from __future__ import annotations
 
 import hashlib
-import json
 from collections import OrderedDict
 from dataclasses import dataclass
 from threading import Lock
@@ -20,6 +19,7 @@ from briq.drawings.ir import Dessin
 from briq.drawings.planches import dossier
 from briq.engine.calepinage import calepiner
 from briq.engine.validation import Rapport
+from briq.model.lecture import depuis_texte
 from briq.model.plan import Plan
 from briq.model.systeme import Calepinage
 
@@ -87,7 +87,7 @@ class Depot:
         if (deja := self.get(cle)) is not None:
             return deja
 
-        plan = Plan.model_validate(json.loads(source))
+        plan = depuis_texte(source)
         calepinage, rapport = calepiner(plan)
         if calepinage is None:
             raise EchecDeValidation(rapport)

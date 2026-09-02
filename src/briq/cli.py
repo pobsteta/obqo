@@ -39,6 +39,8 @@ from briq.drawings.ir import nom_de_fichier
 from briq.drawings.planches import dossier as planches_du_dossier
 from briq.engine.calepinage import calepiner as calepiner_le_plan
 from briq.engine.validation import Gravite, Rapport
+from briq.gabarit import GABARIT
+from briq.model.lecture import depuis_fichier
 from briq.model.plan import Plan
 from briq.model.systeme import Calepinage
 
@@ -64,15 +66,15 @@ class Format(StrEnum):
     TROIS_D = "3d"
 
 
-Chemin = Annotated[Path, typer.Argument(help="Fichier de plan JSON ou YAML.", exists=True)]
+Chemin = Annotated[Path, typer.Argument(help="Fichier de plan, JSON ou YAML.", exists=True)]
 
 
 # --- aides --------------------------------------------------------------------
 
 
 def charger(chemin: Path) -> Plan:
-    """Lit et valide un plan. Les erreurs de schema remontent telles quelles."""
-    return Plan.model_validate(json.loads(chemin.read_text(encoding="utf-8")))
+    """Lit et valide un plan, en JSON ou en YAML."""
+    return depuis_fichier(chemin)
 
 
 def _brut(objet: Any) -> Any:
@@ -386,6 +388,25 @@ def debit(
         if plan_de_debit and plan_de_debit.barres:
             console.print()
             console.print(_table_debit(plan_de_debit))
+
+
+@app.command()
+def gabarit(
+    sortie: Annotated[Path, typer.Option("-o", "--sortie", help="Fichier a ecrire.")] = Path(
+        "plan.yaml"
+    ),
+) -> None:
+    """Ecrire un plan de depart commente, a modifier cote par cote."""
+    if sortie.exists():
+        erreurs.print(f"[bold red]{sortie} existe deja[/bold red] : choisir un autre nom.")
+        raise typer.Exit(code=1)
+    sortie.parent.mkdir(parents=True, exist_ok=True)
+    sortie.write_text(GABARIT, encoding="utf-8")
+    console.print(
+        f"[green]Gabarit ecrit dans {sortie}[/green]\n"
+        f"Modifier les cotes, puis : [bold]briq valider {sortie}[/bold]\n"
+        "Methode de saisie complete : docs/saisir-un-plan.md"
+    )
 
 
 @app.command()

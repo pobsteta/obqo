@@ -23,6 +23,7 @@ uv run briq calepiner exemples/maison.json -o sortie/   # dossier complet
 | `briq nomenclature PLAN` | la nomenclature à l'écran, sans rien écrire |
 | `briq debit PLAN` | le plan de découpe optimisé, sans rien écrire |
 | `briq web` | interface web sur http://127.0.0.1:8000 |
+| `briq gabarit -o FICHIER` | écrit un plan de départ commenté, à modifier |
 | `briq schema -o DOSSIER` | régénère le schéma JSON du format de plan |
 
 Options utiles de `calepiner` : `-f svg` (répétable) restreint les formats de
@@ -57,6 +58,7 @@ schéma commité suit le modèle : sans cela l'autocomplétion mentirait.
 src/briq/
   units.py      constantes de grille — tout est un entier de millimètres
   model/        plan.py    schéma d'entrée validé (Pydantic, JSON Schema versionné)
+                lecture.py lecture d'un plan, JSON ou YAML
                 systeme.py types produits par le moteur (dataclasses gelées)
   rules/        catalogue.py   LES RÈGLES MÉTIER, en tables relisibles face au brief
   engine/       appareillage.py  remplissage d'une course, parité des joints
@@ -121,7 +123,7 @@ définit aucune référence (voir `docs/hypotheses.md`).
 ## Tests
 
 ```bash
-uv run pytest                  # 129 tests, ~75 s
+uv run pytest                  # 135 tests, ~75 s
 uv run pytest -m "not lent"    # ~40 s : exclut les preuves d'optimalité du débit
 uv run ruff check src tests
 uv run mypy
@@ -244,5 +246,7 @@ redeviendra le bon choix.
 - `docs/00-choix-techniques.md` — pourquoi cette pile technique
 - `docs/etudes/longueur-de-barre.md` — pourquoi la barre de 4 m, et pourquoi
   2,40 m est le pire choix
+- [`docs/saisir-un-plan.md`](docs/saisir-un-plan.md) — comment passer d'une idée
+  ou d'un plan d'architecte au fichier que l'application calepine
 - `docs/hypotheses.md` — les points du brief que l'application interprète, et les
   questions à trancher
