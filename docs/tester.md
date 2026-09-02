@@ -144,10 +144,38 @@ le chemin du binaire dans l'environnement virtuel, et le tableur.
 ### Installer
 
 Dans **PowerShell** (pas `cmd.exe` : il ne connaît pas `curl` ni les accents du
-terminal moderne) :
+terminal moderne).
+
+**Si vous avez déjà un Python** — Anaconda, Miniconda ou python.org, votre
+invite affiche alors quelque chose comme `(base)` — le plus court est de
+l'installer avec ce pip-là :
 
 ```powershell
-winget install --id=astral-sh.uv -e     # ou : irm https://astral.sh/uv/install.ps1 | iex
+pip install uv
+```
+
+`uv` atterrit dans le `Scripts\` de cet environnement, donc il est utilisable
+tout de suite, sans rouvrir le terminal.
+
+**Sinon**, l'installateur officiel, indépendant de tout Python déjà présent :
+
+```powershell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+> **Le piège.** `winget install --id=astral-sh.uv` comme le script ci-dessus
+> modifient le `PATH` **des sessions futures, pas de celle en cours**.
+> Enchaîner l'installation et `uv sync` dans la même fenêtre donne
+> `Le terme « uv » n'est pas reconnu`. Ouvrez une nouvelle fenêtre PowerShell,
+> ou rafraîchissez le `PATH` sur place :
+>
+> ```powershell
+> $env:Path = [Environment]::GetEnvironmentVariable("Path","User") + ";" + $env:Path
+> ```
+
+Ensuite, quel que soit le chemin pris :
+
+```powershell
 git clone <dépôt> $env:TEMP\essai
 cd $env:TEMP\essai
 uv sync
@@ -158,6 +186,28 @@ uv run briq calepiner exemples\maison.json -o sortie\
 `uv sync` règle tout : Python, les dépendances, les roues Windows d'OR-Tools,
 ReportLab, ezdxf et trimesh. Il n'y a **ni compilateur ni bibliothèque système à
 installer** — c'est une des raisons du choix de cette pile.
+
+### Se passer de `uv`
+
+C'est possible, à une condition : l'application demande **Python 3.12 ou plus**,
+et la base d'une installation Anaconda est souvent en dessous.
+
+```powershell
+python --version                       # 3.12 ou plus, sinon restez sur uv
+python -m venv .venv
+.venv\Scripts\pip install -e ".[solveur,dessins,volume,web]"
+.venv\Scripts\briq valider exemples\maison.json
+```
+
+En dessous de 3.12, pip refuse net :
+
+```
+ERROR: Package 'briq' requires a different Python: 3.11.15 not in '>=3.12'
+```
+
+Gardez alors `uv` : il télécharge son propre Python et ne touche pas à votre
+installation. Cette liste d'extras a été vérifiée — elle produit le dossier
+complet, PDF, DXF et GLB compris, exactement comme `uv sync`.
 
 ### Les quatre niveaux, en PowerShell
 
