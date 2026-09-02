@@ -211,3 +211,18 @@ def test_calepiner_accepte_un_plan_yaml(tmp_path: Path) -> None:
     )
     assert resultat.exit_code == 0, resultat.output
     assert (tmp_path / "out" / "calepinage.json").exists()
+
+
+def test_les_fichiers_texte_sortent_avec_les_memes_fins_de_ligne_partout(tmp_path: Path) -> None:
+    """Un plan identique doit donner un fichier identique, quel que soit le systeme.
+
+    `write_text` traduit les fins de ligne selon la plateforme : sous Windows le
+    meme calepinage sortirait en CRLF et cesserait d'etre comparable.
+    """
+    sortie = tmp_path / "dossier"
+    code = runner.invoke(app, ["calepiner", str(EXEMPLE), "-o", str(sortie), "-f", "svg"])
+    assert code.exit_code == 0, code.output
+    for nom in ("calepinage.json", "rapport.txt"):
+        assert b"\r\n" not in (sortie / nom).read_bytes(), nom
+    planche = next((sortie / "plans").glob("*.svg"))
+    assert b"\r\n" not in planche.read_bytes()

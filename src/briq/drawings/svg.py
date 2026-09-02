@@ -224,4 +224,4 @@ def rendre(dessin: Dessin, feuille: Feuille = A3, pour_ecran: bool = False) -> s
 
 
 def ecrire(dessin: Dessin, chemin: Path, feuille: Feuille = A3) -> None:
-    chemin.write_text(rendre(dessin, feuille) + "\n", encoding="utf-8")
+    chemin.write_text(rendre(dessin, feuille) + "\n", encoding="utf-8", newline="\n")

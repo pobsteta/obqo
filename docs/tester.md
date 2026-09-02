@@ -7,8 +7,8 @@ le plus de bugs.
 ## 1. La suite de tests
 
 ```bash
-uv run pytest -m "not lent"    # 178 tests, ~40 s
-uv run pytest                  # + les preuves d'optimalité du débit, ~85 s
+uv run pytest -m "not lent"    # 186 tests, ~40 s
+uv run pytest                  # 187 avec les preuves d'optimalité du débit, ~85 s
 uv run ruff check src tests
 uv run mypy
 ```
@@ -135,6 +135,78 @@ Le placement des étiquettes de baies en est un cas d'école : les deux premièr
 versions passaient les tests serveur sans broncher, mais la capture d'écran
 montrait d'abord deux étiquettes disparues hors du cadre, puis une étiquette
 partie à huit mètres de sa baie. Rien qu'un `assert` n'aurait vu.
+
+## Sous Windows 11
+
+Tout ce qui précède marche à l'identique, à trois différences près : le shell,
+le chemin du binaire dans l'environnement virtuel, et le tableur.
+
+### Installer
+
+Dans **PowerShell** (pas `cmd.exe` : il ne connaît pas `curl` ni les accents du
+terminal moderne) :
+
+```powershell
+winget install --id=astral-sh.uv -e     # ou : irm https://astral.sh/uv/install.ps1 | iex
+git clone <dépôt> $env:TEMP\essai
+cd $env:TEMP\essai
+uv sync
+uv run briq valider exemples\maison.json
+uv run briq calepiner exemples\maison.json -o sortie\
+```
+
+`uv sync` règle tout : Python, les dépendances, les roues Windows d'OR-Tools,
+ReportLab, ezdxf et trimesh. Il n'y a **ni compilateur ni bibliothèque système à
+installer** — c'est une des raisons du choix de cette pile.
+
+### Les quatre niveaux, en PowerShell
+
+| Niveau | Commande |
+|---|---|
+| suite de tests | `uv run pytest -m "not lent"` |
+| clone neuf | `git clone <dépôt> $env:TEMP\essai` puis `uv sync` |
+| installation minimale | `python -m venv .venv` ; `.venv\Scripts\pip install -e .` ; `.venv\Scripts\briq.exe valider exemples\maison.json` |
+| navigateur | `uv run briq web` puis <http://127.0.0.1:8000> |
+
+Le seul vrai piège est le troisième : sous Windows l'environnement virtuel range
+ses exécutables dans **`.venv\Scripts\`** et non `.venv/bin/`, et le binaire
+s'appelle `briq.exe`. Le reste de la consigne tient : appelez-le directement,
+`uv run` réinstallerait tous les extras et l'essai ne voudrait plus rien dire.
+
+Au premier `briq web`, Windows ouvre une **demande de pare-feu**. Refuser suffit
+pour un usage local : le serveur n'écoute que sur `127.0.0.1`, l'autorisation ne
+sert qu'à y accéder depuis une autre machine du réseau.
+
+### Ce qui a été corrigé pour Windows
+
+Deux défauts n'apparaissaient que là, et aucun test ne les voyait :
+
+- **Les CSV s'ouvraient de travers dans Excel.** Un fichier en UTF-8 sans marque
+  d'ordre des octets est lu en cp1252 par Excel : « Débit » devenait
+  « DÃ©bit ». Les CSV sortent maintenant en `utf-8-sig` — la marque ne gêne
+  aucun autre lecteur, Python, LibreOffice et pandas la retirent seuls. Le
+  séparateur est déjà le point-virgule, celui qu'attend un Excel français.
+- **Les fichiers texte perdaient leur déterminisme.** `write_text` traduit les
+  fins de ligne selon la plateforme : le même plan sortait en CRLF sous Windows
+  et en LF ailleurs, donc deux fichiers différents. `calepinage.json`,
+  `rapport.txt`, les SVG et le gabarit sont désormais écrits en `newline="\n"`,
+  et un test le vérifie.
+
+Le reste du code était déjà portable : aucun chemin en dur, `pathlib` partout,
+`tempfile.gettempdir()` plutôt que `/tmp`, et tous les fichiers lus et écrits
+avec un `encoding=` explicite. C'est vérifiable :
+
+```powershell
+uv run pytest -m "not lent"       # les 186 tests doivent passer tels quels
+```
+
+### Ce qui reste à vérifier sur une vraie machine
+
+Cette section vient d'un audit du code et des équivalents PowerShell, pas d'une
+exécution sous Windows 11 — l'application n'y a pas encore tourné. Restent donc
+à confirmer par quelqu'un qui l'a sous la main : le rendu des accents dans
+Windows Terminal, l'ouverture des CSV dans un Excel réellement installé, et
+l'affichage des SVG dans Edge.
 
 ## Ce que rien ne teste encore
 

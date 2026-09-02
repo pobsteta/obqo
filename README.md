@@ -127,15 +127,15 @@ définit aucune référence (voir `docs/hypotheses.md`).
 ## Tests
 
 ```bash
-uv run pytest                  # 178 tests, ~85 s
-uv run pytest -m "not lent"    # ~40 s : exclut les preuves d'optimalité du débit
+uv run pytest                  # 187 tests, ~85 s
+uv run pytest -m "not lent"    # 186 tests, ~40 s : exclut les preuves d'optimalité du débit
 uv run ruff check src tests
 uv run mypy
 ```
 
 96 % de couverture. La marche à suivre complète — clone neuf, installation
-minimale, essai en navigateur — est dans
-[`docs/tester.md`](docs/tester.md).
+minimale, essai en navigateur, **et les équivalents PowerShell pour
+Windows 11** — est dans [`docs/tester.md`](docs/tester.md).
 
 Les tests unitaires vérifient des comptages faits à la main. Les tests à
 propriétés (Hypothesis) vérifient les **invariants** sur des milliers de murs

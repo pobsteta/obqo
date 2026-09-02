@@ -337,9 +337,12 @@ def calepiner(
     demandes = list(formats) if formats is not None else list(Format)
 
     sortie.mkdir(parents=True, exist_ok=True)
+    # `newline="\n"` : sans lui, Windows convertirait chaque fin de ligne et le
+    # meme plan ne donnerait plus le meme fichier d'un poste a l'autre.
     (sortie / "calepinage.json").write_text(
         json.dumps(serialiser(calepinage), indent=2, ensure_ascii=False, default=_brut) + "\n",
         encoding="utf-8",
+        newline="\n",
     )
     nomenclature = nomenclaturer(calepinage)
     ecrire_csv(sortie / "nomenclature.csv", ENTETES_NOMENCLATURE, lignes_nomenclature(nomenclature))
@@ -362,6 +365,7 @@ def calepiner(
             plan_valide.parametres.masse_volumique_epicea,
         ),
         encoding="utf-8",
+        newline="\n",
     )
 
     console.print()
@@ -441,7 +445,7 @@ def gabarit(
         erreurs.print(f"[bold red]{sortie} existe deja[/bold red] : choisir un autre nom.")
         raise typer.Exit(code=1)
     sortie.parent.mkdir(parents=True, exist_ok=True)
-    sortie.write_text(GABARIT, encoding="utf-8")
+    sortie.write_text(GABARIT, encoding="utf-8", newline="\n")
     console.print(
         f"[green]Gabarit ecrit dans {sortie}[/green]\n"
         f"Modifier les cotes, puis : [bold]briq valider {sortie}[/bold]\n"
@@ -482,7 +486,11 @@ def schema(
     document = Plan.model_json_schema(by_alias=True)
     document["$schema"] = "https://json-schema.org/draft/2020-12/schema"
     document["title"] = "Plan BRIQ, version 1"
-    cible.write_text(json.dumps(document, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    cible.write_text(
+        json.dumps(document, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
     console.print(f"[green]Schema ecrit dans {cible}[/green]")
 
 

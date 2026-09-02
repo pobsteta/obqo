@@ -15,7 +15,14 @@ Ligne = Sequence[object]
 
 
 def ecrire_csv(chemin: Path, entetes: Sequence[str], lignes: Iterable[Ligne]) -> None:
-    with chemin.open("w", encoding="utf-8", newline="") as flux:
+    """Ecrit un CSV que le tableur du poste ouvrira sans se tromper.
+
+    `utf-8-sig` plutot que `utf-8` : sans la marque d'ordre des octets, Excel
+    sous Windows lit le fichier en cp1252 et rend « Debit » en « DÃ©bit ». La
+    marque ne gene aucun autre lecteur — Python, LibreOffice et pandas la
+    retirent seuls.
+    """
+    with chemin.open("w", encoding="utf-8-sig", newline="") as flux:
         graveur = csv.writer(flux, delimiter=";")
         graveur.writerow(entetes)
         graveur.writerows(lignes)

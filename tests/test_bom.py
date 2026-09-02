@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections import Counter
+from pathlib import Path
 
 import pytest
 
@@ -131,3 +132,14 @@ def test_toutes_les_briques_du_catalogue_ont_une_designation() -> None:
     for ref in Ref:
         assert ref.value in DESIGNATIONS
         assert longueur_carrelet(composition(ref)) > 0
+
+
+def test_le_csv_porte_la_marque_qui_fait_lire_les_accents_a_excel(tmp_path: Path) -> None:
+    """Sans la BOM, Excel sous Windows lit le fichier en cp1252 et abime les accents."""
+    from briq.bom.sorties import ecrire_csv
+
+    cible = tmp_path / "essai.csv"
+    ecrire_csv(cible, ("référence", "désignation"), [("480-S", "brique standard")])
+    octets = cible.read_bytes()
+    assert octets.startswith(b"\xef\xbb\xbf"), "marque d'ordre des octets attendue"
+    assert cible.read_text(encoding="utf-8-sig").startswith("référence;désignation")
