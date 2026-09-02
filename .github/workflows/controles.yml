@@ -25,7 +25,7 @@ jobs:
     env:
       MARQUEURS: ${{ inputs.lents && 'lent or not lent' || 'not lent' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # uv s'installe par son propre script plutôt que par une action tierce :
       # c'est la commande que le README donne aux humains, et le dépôt n'a pas
