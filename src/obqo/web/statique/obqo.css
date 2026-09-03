@@ -218,7 +218,10 @@ a.bouton { display: inline-block; }
 /* text-anchor vient du JS : une regle CSS l'emporterait sur l'attribut. */
 .baie__cote { fill: #2f5d7c; font-size: 240px; font-family: system-ui, sans-serif; pointer-events: none; }
 
-#forme-baie {
+/* Les trois zones de saisie — piece, ouverture, mur interieur — partagent la
+   meme mise en forme : une seule regle, et un onglet de plus n'invente pas sa
+   propre apparence. */
+.forme {
   display: flex;
   flex-wrap: wrap;
   gap: .8rem;
@@ -228,16 +231,21 @@ a.bouton { display: inline-block; }
   border: 1px solid var(--bord);
   border-radius: 4px;
 }
-#forme-baie legend { padding: 0 .3rem; font-size: .82rem; color: var(--encre-douce); }
-#forme-baie label { display: flex; align-items: center; gap: .35rem; font-size: .88rem; }
-#forme-baie input { width: 5.5rem; padding: .3rem .4rem; border: 1px solid var(--bord); border-radius: 4px; font: inherit; }
+/* `display: flex` l'emporte sur le `display: none` que le navigateur applique
+   a [hidden] : sans cette regle, une zone « masquee » reste a l'ecran — c'est
+   ainsi que la zone des ouvertures s'affichait dans l'onglet des pieces. */
+.forme[hidden] { display: none; }
+.forme legend { padding: 0 .3rem; font-size: .82rem; color: var(--encre-douce); }
+.forme label { display: flex; align-items: center; gap: .35rem; font-size: .88rem; }
+.forme input { width: 5.5rem; padding: .3rem .4rem; border: 1px solid var(--bord); border-radius: 4px; font: inherit; }
+.forme .aide { flex-basis: 100%; margin: 0; }
 /* « hauteur × largeur » se lit comme une seule cote : les deux champs se collent. */
-#forme-baie .cote-fois { margin-left: -.45rem; }
+.forme .cote-fois { margin-left: -.45rem; }
 
 .identite { display: flex; flex-wrap: wrap; gap: .9rem; margin: .3rem 0 .2rem; }
 .identite label { display: flex; align-items: center; gap: .35rem; font-size: .88rem; }
 .identite input { padding: .3rem .45rem; border: 1px solid var(--bord); border-radius: 4px; font: inherit; }
 #nom-esquisse { width: 11rem; }
 #hauteur-chainage { width: 6rem; }
-#baie-nom { width: 9rem; }
+#baie-nom, #piece-nom, #mur-nom { width: 9rem; }
 label.bouton { display: inline-block; cursor: pointer; }

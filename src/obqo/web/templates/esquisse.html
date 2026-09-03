@@ -21,13 +21,31 @@
     </div>
     <div class="modes" role="group" aria-label="Mode de dessin">
       <button type="button" id="mode-pieces" class="mode mode--actif">Pièces</button>
-      <button type="button" id="mode-baies" class="mode">Baies</button>
+      <button type="button" id="mode-baies" class="mode">Ouvertures</button>
       <button type="button" id="mode-murs" class="mode">Murs intérieurs</button>
     </div>
     <svg id="toile" viewBox="0 0 19200 14400" preserveAspectRatio="xMidYMid meet"
          role="application" aria-label="Zone de dessin des pièces" tabindex="0"></svg>
-    <fieldset id="forme-baie" hidden>
-      <legend>Baie sélectionnée</legend>
+    <fieldset id="forme-piece" class="forme" hidden>
+      <legend>Pièce sélectionnée</legend>
+      <label>nom <input id="piece-nom" type="text"></label>
+      <label>largeur <input id="piece-largeur" type="number" step="240" min="240"></label>
+      <label class="cote-fois">× hauteur
+        <input id="piece-hauteur" type="number" step="240" min="240">
+      </label>
+      <label>x <input id="piece-x" type="number" step="240" min="0"></label>
+      <label>y <input id="piece-y" type="number" step="240" min="0"></label>
+      <button type="button" id="piece-supprimer" class="bouton">Supprimer</button>
+      <p class="aide" id="piece-resume"></p>
+      <p class="aide">
+        Les cotes vont d'axe de mur à axe de mur, au pas de 240&nbsp;mm ;
+        <em>x</em> et <em>y</em> placent le coin bas-gauche depuis l'origine du
+        dessin. Ce que la souris fait, ces champs le font au millimètre près —
+        et deux pièces doivent toujours se toucher sans se chevaucher.
+      </p>
+    </fieldset>
+    <fieldset id="forme-baie" class="forme" hidden>
+      <legend>Ouverture sélectionnée</legend>
       <label>nom <input id="baie-nom" type="text"></label>
       <label>type
         <select id="baie-type">
@@ -46,10 +64,11 @@
       <p class="aide">
         Les cotes portent sur la trémie et se saisissent en hauteur × largeur,
         au pas de 240&nbsp;mm. La largeur s'applique le long du mur, rive gauche
-        fixe ; la baie recule d'elle-même si elle ne tient plus au bout du mur.
+        fixe ; l'ouverture recule d'elle-même si elle ne tient plus au bout du
+        mur.
       </p>
     </fieldset>
-    <fieldset id="forme-mur" hidden>
+    <fieldset id="forme-mur" class="forme" hidden>
       <legend>Mur intérieur sélectionné</legend>
       <label>nom <input id="mur-nom" type="text"></label>
       <label>type
@@ -68,6 +87,14 @@
         inutile de les retracer, le tracé <em>complète</em> la déduction.
         Un refend porteur doit rejoindre le contour par ses deux bouts ; sinon
         la conversion le repasse en cloison et vous le dit.
+      </p>
+      <p class="aide">
+        <strong>Les ouvertures se posent ici aussi</strong>, sans changer
+        d'onglet : c'est le sens du geste qui décide. Partez d'un mur et
+        glissez <em>le long</em> du mur pour percer une ouverture,
+        <em>en travers</em> pour tracer un mur de plus. Une ouverture ne se
+        pose que sur un mur du plan — le contour et les refends ; une cloison
+        légère n'est pas calepinée, elle n'en porte pas.
       </p>
     </fieldset>
     <div class="commandes">
@@ -94,7 +121,7 @@
       <p class="attente">
         Dessinez au moins une pièce, puis « Générer le plan ».
         L'application cale le dessin sur la grille, en déduit le contour et les
-        refends, et vous rend un plan à compléter par ses baies.
+        refends, et vous rend un plan à compléter par ses ouvertures.
       </p>
     </div>
   </section>

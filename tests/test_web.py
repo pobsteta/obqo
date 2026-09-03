@@ -302,6 +302,21 @@ def test_le_plan_derive_reprend_les_baies_posees(client: TestClient) -> None:
     assert "Plan complet" in reponse.text, "ce plan doit se calepiner tel quel"
 
 
+def test_les_trois_zones_de_saisie_sont_servies(client: TestClient) -> None:
+    """Une piece, une ouverture et un mur interieur se modifient au clavier.
+
+    L'onglet s'appelle « Ouvertures », comme le champ du plan derive : dire
+    « baie » ici et « ouverture » dans le YAML obligeait a traduire de tete.
+    """
+    reponse = client.get("/")
+    for zone in ('id="forme-piece"', 'id="forme-baie"', 'id="forme-mur"'):
+        assert zone in reponse.text
+    for champ in ('id="piece-nom"', 'id="piece-largeur"', 'id="piece-x"'):
+        assert champ in reponse.text
+    assert ">Ouvertures<" in reponse.text
+    assert ">Baies<" not in reponse.text
+
+
 def test_les_cotes_de_baie_se_saisissent_au_clavier(client: TestClient) -> None:
     """Glisser pose la baie a peu pres ; les deux champs la posent exactement."""
     reponse = client.get("/")

@@ -123,7 +123,7 @@ Le parcours à refaire après toute modification de l'éditeur :
    dérivé. Puis un qui s'arrête en chemin : il doit repasser en cloison,
    avec un message qui dit pourquoi. Puis une cloison. Les refends déjà
    déduits du dessin des pièces doivent apparaître en filigrane.
-7. **Onglet Baies** — poser une porte de 1 200 sur un mur, vérifier qu'elle
+7. **Onglet Ouvertures** — poser une porte de 1 200 sur un mur, vérifier qu'elle
    reste à 1 200 après calage (les baies se calent sur 240, pas sur 480), lire
    le passage libre annoncé.
 8. **Redimensionner au clavier** — sur cette même porte, taper 2 160 en hauteur
@@ -144,6 +144,24 @@ Le parcours à refaire après toute modification de l'éditeur :
     s'ouvrir déjà rempli et lancer le calepinage tout seul. Sur un plan
     incomplet, ce bouton ne doit pas apparaître.
 13. Vérifier que les baies apparaissent sur les élévations, aux cotes tapées.
+14. **Les trois zones de saisie** — en *Pièces*, sélectionner une pièce : la
+    zone « Pièce sélectionnée » doit apparaître, et **elle seule**. Changer son
+    nom, sa largeur, son x : le dessin doit suivre. Passer en *Ouvertures* puis
+    en *Murs intérieurs* : la zone des pièces doit disparaître, celles de
+    l'ouverture et du mur sélectionnés apparaître. Une zone masquée qui reste à
+    l'écran est le symptôme d'une règle `display` qui l'emporte sur `[hidden]`.
+15. **Percer depuis l'onglet des murs** — partir d'un mur et glisser **le long**
+    du mur : une ouverture doit naître. Repartir du même point **en travers** :
+    un mur doit naître. Cliquer un mur sans glisser ne doit rien créer.
+16. **Ce qui survit au rechargement** — tracer un mur intérieur, aller sur
+    l'onglet *Plan* (qui recharge la page), revenir : le mur doit être encore
+    là, comme les pièces et les ouvertures.
+
+Les deux derniers points sortent de défauts réels : les murs tracés à la main
+n'étaient pas écrits dans la mémoire du navigateur — ils disparaissaient au
+premier aller-retour par l'onglet *Plan* — et les zones de saisie, mises en
+forme par une règle `display: flex`, restaient affichées malgré leur attribut
+`hidden` : la zone des ouvertures s'ouvrait donc dans l'onglet des pièces.
 
 Sont sortis de ce parcours, et d'aucun test : le clic simple qui créait une
 pièce fantôme de 240 × 240, la porte de 1 200 réduite à 960 par un calage sur

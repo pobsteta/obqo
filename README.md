@@ -226,9 +226,12 @@ nomenclature et du métré, mais celui qui monte la maison a besoin de savoir o�
 elle tombe. Elle figure donc sur l'aperçu et sur chaque plan de pose, en trait
 fin.
 
-**Les baies se posent aussi à la souris**, dans l'onglet *Baies* : on glisse le
-long d'un mur, on choisit porte, fenêtre ou porte-fenêtre, on règle l'allège et
-la hauteur. L'application rappelle en direct le passage libre — la trémie moins
+**Les ouvertures se posent aussi à la souris**, dans l'onglet *Ouvertures* : on
+glisse le long d'un mur, on choisit porte, fenêtre ou porte-fenêtre, on règle
+l'allège et la hauteur. L'onglet porte le mot du plan — *ouverture* — et non
+*baie* : dire l'un à l'écran et l'autre dans le YAML obligeait à traduire de
+tête. Le code, lui, garde `baie` : c'est le nom du champ dans les esquisses
+déjà enregistrées, et le renommer les casserait pour un synonyme. L'application rappelle en direct le passage libre — la trémie moins
 les jambages — et signale la portée qui dépasserait le linteau chevillé.
 
 **Et elles se redimensionnent au clavier** : les deux cotes de la trémie,
@@ -246,15 +249,31 @@ de linteau) et la rive à moins de 480 mm d'un angle. Ces deux règles étaient
 déjà vérifiées — mais à la génération du plan, une fois la baie posée, au lieu
 du moment où l'on tape la cote.
 
-Les murs sur lesquels on pose les baies viennent du serveur, pas d'un calcul
-refait côté navigateur : une seule source de vérité pour la géométrie.
+**Et elles se posent depuis l'onglet des murs intérieurs**, sans changer
+d'onglet : une porte se perce en même temps que le mur qui la porte. C'est le
+**sens du geste** qui décide — partant d'un mur, glisser *le long* du mur perce
+une ouverture, glisser *en travers* trace un mur de plus. Aucune autre lecture
+ne marche : un mur intérieur part presque toujours d'un mur existant, donc
+refuser les gestes qui en partent interdirait de tracer, et les prendre tous
+pour des ouvertures aussi. Rien n'est tranché avant un déplacement d'un pas :
+plus tôt, la direction n'est que du bruit de souris.
+
+**La pièce sélectionnée a elle aussi ses champs** — nom, largeur × hauteur, x et
+y — sur le modèle de ceux de l'ouverture. Un plan se saisit souvent depuis des
+cotes relevées : « le séjour fait 4,80 sur 3,84 » se tape, là où le retrouver à
+la souris au pas de 240 est un exercice inutile.
+
+Les murs sur lesquels on pose les ouvertures viennent du serveur, pas d'un
+calcul refait côté navigateur : une seule source de vérité pour la géométrie.
+Une ouverture ne se pose donc que sur un mur du plan — le contour et les
+refends. Une cloison légère n'est pas calepinée : elle n'en porte pas.
 
 Une baie se cale sur **240**, jamais sur 480, contrairement aux murs : une porte
 de 1 200 est parfaitement valide, et l'arrondir à 960 lui coûterait 24 cm de
 passage.
 
-Une esquisse complète — pièces et baies — produit un plan qui se calepine tel
-quel, sans passer par le YAML. **Et sans copier-coller** : le plan dérivé est
+Une esquisse complète — pièces, murs et ouvertures — produit un plan qui se
+calepine tel quel, sans passer par le YAML. **Et sans copier-coller** : le plan dérivé est
 déposé côté serveur, et deux boutons y mènent — « Calepiner ce plan » enchaîne
 directement sur la nomenclature et les planches, « Ouvrir dans l'onglet Plan »
 le charge dans l'éditeur pour le compléter à la main. Le bouton d'enchaînement

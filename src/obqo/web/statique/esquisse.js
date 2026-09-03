@@ -1,6 +1,10 @@
 // Editeur d'esquisse : des rectangles sur une grille, rien de plus.
 // Le SVG travaille directement en millimetres du plan grace a son viewBox :
 // pas de conversion a maintenir, seulement une inversion de matrice a la souris.
+//
+// Vocabulaire : l'interface dit « ouverture », comme le plan obqo, mais le code
+// garde `baie` — c'est le nom du champ dans l'esquisse enregistree, et le
+// renommer casserait les fichiers deja ecrits pour un simple synonyme.
 
 const toile = document.getElementById("toile");
 const etat = document.getElementById("etat");
@@ -172,51 +176,10 @@ function dessiner() {
     toile.appendChild(groupe);
   });
 
-  if (mode === "murs") {
-    const couche = svg("g", { class: "murs" });
-    // Les murs deduits en filigrane : on voit ce que le dessin donne deja, et
-    // donc ce qu'il est inutile de retracer.
-    murs.filter((m) => m.interieur).forEach((mur) => {
-      couche.appendChild(
-        svg("line", {
-          x1: mur.depart[0], y1: MONDE.hauteur - mur.depart[1],
-          x2: mur.arrivee[0], y2: MONDE.hauteur - mur.arrivee[1],
-          class: "mur mur--deduit",
-        })
-      );
-    });
-    // Meme placement que pour les baies : l'etiquette s'ecarte du mur et evite
-    // le nom de la piece, sinon elle se lit par-dessus « sejour ».
-    const etiquettes = poserLesEtiquettes(
-      traces.map((m) => ({ ...m, etiquette: `${m.id} ${longueurDe(m)}` }))
-    );
-    traces.forEach((mur, index) => {
-      const ligne = svg("line", {
-        x1: mur.depart[0], y1: MONDE.hauteur - mur.depart[1],
-        x2: mur.arrivee[0], y2: MONDE.hauteur - mur.arrivee[1],
-        class:
-          `trace trace--${mur.type}` + (index === traceActif ? " trace--actif" : ""),
-      });
-      ligne.dataset.trace = index;
-      couche.appendChild(ligne);
-      const pose = etiquettes[index];
-      couche.appendChild(
-        Object.assign(
-          svg("text", {
-            x: pose.x,
-            y: MONDE.hauteur - pose.y,
-            class: "baie__cote",
-            "text-anchor": pose.ancre,
-            "dominant-baseline": pose.ligne,
-          }),
-          { textContent: pose.texte }
-        )
-      );
-    });
-    toile.appendChild(couche);
-  }
-
   if (typeof memoriser === "function") memoriser();
+  // Le formulaire suit l'etat comme le dessin : une seule source, un seul
+  // endroit ou le rafraichir.
+  montrerFormePiece();
 
   if (conflits.size) {
     const noms = [...conflits].map((i) => `« ${pieces[i].nom} »`).join(", ");
@@ -224,51 +187,86 @@ function dessiner() {
     etat.classList.add("etat--conflit");
   } else {
     etat.classList.remove("etat--conflit");
-    if (mode === "baies") {
-    const couche = svg("g", { class: "murs" });
-    murs.forEach((mur) => {
-      const ligne = svg("line", {
-        x1: mur.depart[0], y1: MONDE.hauteur - mur.depart[1],
-        x2: mur.arrivee[0], y2: MONDE.hauteur - mur.arrivee[1],
-        class: "mur" + (mur.interieur ? " mur--interieur" : ""),
-      });
-      ligne.dataset.mur = mur.id;
-      couche.appendChild(ligne);
-    });
-    // H et L sont ecrits : sur un plan, « 2160 × 960 » se lit dans les deux
-    // sens, et une porte posee a l'envers se paie en menuiserie.
-    const etiquettes = poserLesEtiquettes(
-      baies.map((b) => ({ ...b, etiquette: `${b.id} H${b.hauteur}×L${largeurDe(b)}` }))
-    );
-    baies.forEach((baie, index) => {
-      const ligne = svg("line", {
-        x1: baie.depart[0], y1: MONDE.hauteur - baie.depart[1],
-        x2: baie.arrivee[0], y2: MONDE.hauteur - baie.arrivee[1],
-        class: "baie" + (index === baieActive ? " baie--active" : ""),
-      });
-      ligne.dataset.baie = index;
-      couche.appendChild(ligne);
-      const pose = etiquettes[index];
-      couche.appendChild(
-        Object.assign(
-          svg("text", {
-            x: pose.x,
-            y: MONDE.hauteur - pose.y,
-            class: "baie__cote",
-            "text-anchor": pose.ancre,
-            "dominant-baseline": pose.ligne,
-          }),
-          { textContent: pose.texte }
-        )
-      );
-    });
-    toile.appendChild(couche);
-  }
+    // Une seule couche pour les deux modes qui travaillent sur les murs : on y
+    // voit les murs, ceux traces a la main et les ouvertures ensemble.
+    if (mode !== "pieces") toile.appendChild(coucheDesMurs());
 
   etat.textContent = pieces.length
       ? `${pieces.length} pièce${pieces.length > 1 ? "s" : ""} — emprise ${emprise()}`
       : "Aucune pièce. Glissez sur le fond pour en créer une.";
   }
+}
+
+// La couche des murs, commune aux modes « ouvertures » et « murs interieurs ».
+//
+// Les ouvertures y figurent dans les deux : une porte se pose en meme temps que
+// le mur qui la porte, et devoir changer d'onglet entre les deux revient a
+// dessiner a l'aveugle. Les etiquettes des murs traces et des ouvertures sont
+// placees d'un seul coup, sinon elles s'ecriraient les unes sur les autres.
+function coucheDesMurs() {
+  const couche = svg("g", { class: "murs" });
+  murs.forEach((mur) => {
+    // En mode « murs interieurs », les refends deja deduits du dessin des
+    // pieces passent en filigrane : on voit ce qu'il est inutile de retracer.
+    const filigrane = mode === "murs" && mur.interieur;
+    const ligne = svg("line", {
+      x1: mur.depart[0], y1: MONDE.hauteur - mur.depart[1],
+      x2: mur.arrivee[0], y2: MONDE.hauteur - mur.arrivee[1],
+      class: filigrane ? "mur mur--deduit" : "mur" + (mur.interieur ? " mur--interieur" : ""),
+    });
+    ligne.dataset.mur = mur.id;
+    couche.appendChild(ligne);
+  });
+
+  const traceables = mode === "murs" ? traces : [];
+  // H et L sont ecrits : sur un plan, « 2160 × 960 » se lit dans les deux
+  // sens, et une porte posee a l'envers se paie en menuiserie.
+  const etiquettes = poserLesEtiquettes([
+    ...traceables.map((m) => ({ ...m, etiquette: `${m.id} ${longueurDe(m)}` })),
+    ...baies.map((b) => ({ ...b, etiquette: `${b.id} H${b.hauteur}×L${largeurDe(b)}` })),
+  ]);
+
+  const poser = (segment, classe, cle, index, pose) => {
+    const ligne = svg("line", {
+      x1: segment.depart[0], y1: MONDE.hauteur - segment.depart[1],
+      x2: segment.arrivee[0], y2: MONDE.hauteur - segment.arrivee[1],
+      class: classe,
+    });
+    ligne.dataset[cle] = index;
+    couche.appendChild(ligne);
+    couche.appendChild(
+      Object.assign(
+        svg("text", {
+          x: pose.x,
+          y: MONDE.hauteur - pose.y,
+          class: "baie__cote",
+          "text-anchor": pose.ancre,
+          "dominant-baseline": pose.ligne,
+        }),
+        { textContent: pose.texte }
+      )
+    );
+  };
+
+  traceables.forEach((mur, index) =>
+    poser(
+      mur,
+      `trace trace--${mur.type}` + (index === traceActif ? " trace--actif" : ""),
+      "trace",
+      index,
+      etiquettes[index]
+    )
+  );
+  baies.forEach((baie, index) =>
+    poser(
+      baie,
+      "baie" + (index === baieActive ? " baie--active" : ""),
+      "baie",
+      index,
+      etiquettes[traceables.length + index]
+    )
+  );
+  return couche;
 }
 
 function longueurDe(mur) {
@@ -351,7 +349,7 @@ function resumeDeLaBaie(baie) {
   if (haut > chainage) {
     lignes.push(
       `allège + hauteur + linteau = ${haut} mm au-dessus des ${chainage} mm ` +
-        "sous chaînage : baissez la baie"
+        "sous chaînage : baissez l'ouverture"
     );
   }
   if (mur) {
@@ -500,20 +498,46 @@ function pieceSous(evenement) {
   return groupe ? Number(groupe.dataset.index) : null;
 }
 
+// Cliquer une ouverture la selectionne, dans les deux modes qui l'affichent.
+// Selectionner ici deselectionne le mur trace : deux formulaires ouverts en
+// meme temps sur deux objets differents ne se lisent pas.
+function choisirUneOuverture(evenement) {
+  const cible = evenement.target.dataset && evenement.target.dataset.baie;
+  if (cible === undefined || cible === null || cible === "") return false;
+  baieActive = Number(cible);
+  traceActif = null;
+  montrerFormeMur();
+  montrerFormeBaie();
+  dessiner();
+  return true;
+}
+
 toile.addEventListener("pointerdown", (evenement) => {
   const point = pointSouris(evenement);
   toile.setPointerCapture(evenement.pointerId);
 
   if (mode === "murs") {
+    if (choisirUneOuverture(evenement)) return;
     const surTrace = evenement.target.dataset && evenement.target.dataset.trace;
     if (surTrace !== undefined && surTrace !== null && surTrace !== "") {
       traceActif = Number(surTrace);
+      baieActive = null;
+      montrerFormeBaie();
       montrerFormeMur();
       dessiner();
       return;
     }
     const origine = [caler(point.x), caler(point.y)];
+    // Un geste qui part d'un mur est ambigu : le long du mur c'est une
+    // ouverture, en travers c'est un mur de plus. On ne tranche pas au
+    // pointerdown — on attend de voir dans quel sens la souris part.
+    const ancre = surLeMur(point);
+    if (ancre) {
+      geste = { type: "ambigu", ancre, origine };
+      return;
+    }
     traceActif = traces.length;
+    baieActive = null;
     traces.push({
       id: nomLibreMur("refend"),
       type: "refend",
@@ -521,19 +545,13 @@ toile.addEventListener("pointerdown", (evenement) => {
       arrivee: [...origine],
     });
     geste = { type: "mur", origine };
+    montrerFormeBaie();
     dessiner();
     return;
   }
 
   if (mode === "baies") {
-    const surBaie = evenement.target.dataset && evenement.target.dataset.baie;
-    if (surBaie !== undefined && surBaie !== null && surBaie !== "") {
-      baieActive = Number(surBaie);
-      montrerFormeBaie();
-      restaurer();
-dessiner();
-      return;
-    }
+    if (choisirUneOuverture(evenement)) return;
     const ancre = surLeMur(point);
     if (!ancre) {
       baieActive = null;
@@ -542,15 +560,7 @@ dessiner();
       return;
     }
     baieActive = baies.length;
-    baies.push({
-      id: nomLibre("fenetre"),
-      type: "fenetre",
-      mur: ancre.mur.id,
-      depart: [ancre.x, ancre.y],
-      arrivee: [ancre.x, ancre.y],
-      allege: 960,
-      hauteur: 1200,
-    });
+    baies.push(nouvelleBaie(ancre.mur, ancre.x, ancre.y));
     geste = { type: "baie", mur: ancre.mur, origine: [ancre.x, ancre.y] };
     dessiner();
     return;
@@ -580,9 +590,63 @@ dessiner();
   dessiner();
 });
 
+// Une ouverture commencante : une fenetre a l'allege usuelle, reduite a un
+// point sur son mur. Le glissement lui donne sa largeur, le formulaire le reste.
+function nouvelleBaie(mur, x, y) {
+  return {
+    id: nomLibre("fenetre"),
+    type: "fenetre",
+    mur: mur.id,
+    depart: [x, y],
+    arrivee: [x, y],
+    allege: 960,
+    hauteur: HAUTEURS.fenetre,
+  };
+}
+
+// Le sens du geste dit ce qu'on dessine, quand il part d'un mur : **le long**
+// du mur, c'est une ouverture ; **en travers**, c'est un mur de plus. C'est la
+// seule lecture qui marche dans les deux cas, parce qu'un mur interieur part
+// presque toujours d'un mur existant — refuser les gestes qui en partent
+// interdirait de tracer, et les prendre tous pour des ouvertures aussi.
+//
+// Rien n'est tranche avant un deplacement d'un pas : plus tot, la direction
+// n'est que du bruit de souris.
+function trancherLeGeste(point) {
+  const [ox, oy] = geste.origine;
+  const dx = caler(point.x) - ox;
+  const dy = caler(point.y) - oy;
+  if (Math.max(Math.abs(dx), Math.abs(dy)) < PAS_DESSIN) return;
+  const { mur, x, y } = geste.ancre;
+  const vertical = mur.depart[0] === mur.arrivee[0];
+  const long = vertical ? Math.abs(dy) : Math.abs(dx);
+  const travers = vertical ? Math.abs(dx) : Math.abs(dy);
+
+  if (long > travers) {
+    baieActive = baies.length;
+    traceActif = null;
+    baies.push(nouvelleBaie(mur, x, y));
+    geste = { type: "baie", mur, origine: [x, y] };
+    montrerFormeMur();
+    return;
+  }
+  traceActif = traces.length;
+  baieActive = null;
+  traces.push({
+    id: nomLibreMur("refend"),
+    type: "refend",
+    depart: [ox, oy],
+    arrivee: [ox, oy],
+  });
+  geste = { type: "mur", origine: [ox, oy] };
+  montrerFormeBaie();
+}
+
 toile.addEventListener("pointermove", (evenement) => {
   if (!geste) return;
   const point = pointSouris(evenement);
+
+  if (geste.type === "ambigu") trancherLeGeste(point);
 
   if (geste.type === "baie") {
     const baie = baies[baieActive];
@@ -652,6 +716,16 @@ toile.addEventListener("pointermove", (evenement) => {
 });
 
 toile.addEventListener("pointerup", () => {
+  if (geste && geste.type === "ambigu") {
+    // Un clic sans glissement sur un mur : rien a creer, seulement deselectionner.
+    geste = null;
+    baieActive = null;
+    traceActif = null;
+    montrerFormeBaie();
+    montrerFormeMur();
+    dessiner();
+    return;
+  }
   if (geste && geste.type === "mur") {
     const mur = traces[traceActif];
     let avis;
@@ -674,7 +748,7 @@ toile.addEventListener("pointerup", () => {
     if (largeurDe(baie) < LARGEUR_MINI_BAIE) {
       baies.splice(baieActive, 1);
       baieActive = null;
-      avis = `Une baie fait ${LARGEUR_MINI_BAIE} mm au minimum : glissez le long du mur, ou tapez sa largeur.`;
+      avis = `Une ouverture fait ${LARGEUR_MINI_BAIE} mm au minimum : glissez le long du mur, ou tapez sa largeur.`;
     } else {
       avis = resumeDeLaBaie(baie);
     }
@@ -696,11 +770,11 @@ toile.addEventListener("pointerup", () => {
 });
 
 toile.addEventListener("dblclick", (evenement) => {
-  if (mode === "baies") {
+  if (mode !== "pieces") {
     const cible = evenement.target.dataset && evenement.target.dataset.baie;
     if (cible === undefined || cible === null || cible === "") return;
     const index = Number(cible);
-    const nom = window.prompt("Nom de la baie", baies[index].id);
+    const nom = window.prompt("Nom de l'ouverture", baies[index].id);
     if (nom && !baies.some((b, i) => i !== index && b.id === nom.trim())) {
       baies[index].id = nom.trim();
       baieActive = index;
@@ -722,7 +796,12 @@ document.addEventListener("keydown", (evenement) => {
   if (evenement.key !== "Delete" && evenement.key !== "Backspace") return;
   const actif = document.activeElement;
   if (actif && (actif.tagName === "TEXTAREA" || actif.tagName === "INPUT")) return;
-  if (mode === "murs" && traceActif !== null) {
+  if (mode !== "pieces" && baieActive !== null) {
+    baies.splice(baieActive, 1);
+    baieActive = null;
+    montrerFormeBaie();
+    dessiner();
+  } else if (mode === "murs" && traceActif !== null) {
     traces.splice(traceActif, 1);
     traceActif = null;
     montrerFormeMur();
@@ -739,10 +818,100 @@ document.addEventListener("keydown", (evenement) => {
   }
 });
 
+// --- la piece selectionnee ---------------------------------------------------
+//
+// Meme principe que pour les ouvertures : la souris pose la piece a peu pres,
+// les champs la posent exactement. Un plan se saisit souvent depuis des cotes
+// relevees — « le sejour fait 4,80 sur 3,84 » — et les retrouver a la souris au
+// pas de 240 est un exercice inutile.
+
+function montrerFormePiece() {
+  const forme = document.getElementById("forme-piece");
+  if (mode !== "pieces" || selection === null || !pieces[selection]) {
+    forme.hidden = true;
+    return;
+  }
+  const piece = pieces[selection];
+  forme.hidden = false;
+  document.getElementById("piece-nom").value = piece.nom;
+  document.getElementById("piece-largeur").value = piece.largeur;
+  document.getElementById("piece-hauteur").value = piece.hauteur;
+  document.getElementById("piece-x").value = piece.x;
+  document.getElementById("piece-y").value = piece.y;
+  document.getElementById("piece-resume").textContent = resumeDeLaPiece(piece);
+}
+
+function resumeDeLaPiece(piece) {
+  const surface = (piece.largeur * piece.hauteur) / 1e6;
+  const lignes = [
+    `« ${piece.nom} » : ${piece.largeur} × ${piece.hauteur} mm d'axe à axe, ` +
+      `${surface.toFixed(1).replace(".", ",")} m² hors murs`,
+  ];
+  if (Math.min(piece.largeur, piece.hauteur) < MINI) {
+    lignes.push(
+      `moins de ${MINI} mm dans un sens : les murs qui la bordent ne lui ` +
+        "laisseraient presque pas d'espace habitable"
+    );
+  }
+  if (chevauchements().has(selection)) {
+    lignes.push("elle chevauche une voisine : deux pièces se touchent, ne se recouvrent pas");
+  }
+  return lignes.join(" — ");
+}
+
+// Les cotes se calent sur 240 comme le dessin ; « Caler » ramenera l'ensemble
+// sur 480 si on le lui demande.
+const CHAMPS_DE_PIECE = {
+  largeur: (piece, valeur) => {
+    piece.largeur = Math.max(PAS_DESSIN, valeur);
+  },
+  hauteur: (piece, valeur) => {
+    piece.hauteur = Math.max(PAS_DESSIN, valeur);
+  },
+  x: (piece, valeur) => {
+    piece.x = Math.max(0, valeur);
+  },
+  y: (piece, valeur) => {
+    piece.y = Math.max(0, valeur);
+  },
+};
+
+for (const champ of Object.keys(CHAMPS_DE_PIECE)) {
+  document.getElementById(`piece-${champ}`).addEventListener("change", (evenement) => {
+    if (selection === null) return;
+    CHAMPS_DE_PIECE[champ](pieces[selection], caler(Number(evenement.target.value) || 0));
+    montrerFormePiece();
+    dessiner();
+  });
+}
+
+document.getElementById("piece-nom").addEventListener("change", (evenement) => {
+  if (selection === null) return;
+  const nom = evenement.target.value.trim();
+  if (!nom) {
+    etat.textContent = "Une pièce doit porter un nom.";
+    montrerFormePiece();
+    return;
+  }
+  pieces[selection].nom = nom;
+  montrerFormePiece();
+  dessiner();
+});
+
+document.getElementById("piece-supprimer").addEventListener("click", () => {
+  if (selection === null) return;
+  pieces.splice(selection, 1);
+  selection = null;
+  montrerFormePiece();
+  dessiner();
+});
+
 const forme = document.getElementById("forme-baie");
 
 function montrerFormeBaie() {
-  if (mode !== "baies" || baieActive === null || !baies[baieActive]) {
+  // Le mode « murs interieurs » affiche et modifie les ouvertures lui aussi :
+  // seul le mode « pieces » ne les connait pas.
+  if (mode === "pieces" || baieActive === null || !baies[baieActive]) {
     forme.hidden = true;
     return;
   }
@@ -802,12 +971,12 @@ document.getElementById("baie-nom").addEventListener("change", (evenement) => {
   if (baieActive === null) return;
   const nom = evenement.target.value.trim();
   if (!nom) {
-    etat.textContent = "Une baie doit porter un nom.";
+    etat.textContent = "Une ouverture doit porter un nom.";
     montrerFormeBaie();
     return;
   }
   if (baies.some((b, i) => i !== baieActive && b.id === nom)) {
-    etat.textContent = `« ${nom} » est déjà pris par une autre baie.`;
+    etat.textContent = `« ${nom} » est déjà pris par une autre ouverture.`;
     montrerFormeBaie();
     return;
   }
@@ -1027,7 +1196,7 @@ document.getElementById("generer").addEventListener("click", async () => {
 });
 
 document.getElementById("vider").addEventListener("click", () => {
-  if (pieces.length && !window.confirm("Effacer toutes les pièces et les baies ?")) return;
+  if (pieces.length && !window.confirm("Effacer toutes les pièces, les murs et les ouvertures ?")) return;
   pieces = [];
   baies = [];
   traces = [];
@@ -1040,9 +1209,15 @@ document.getElementById("vider").addEventListener("click", () => {
 });
 
 // Un rafraichissement de page ne doit pas coûter une demi-heure de dessin.
+// Les murs traces a la main en font partie : `restaurer` les relit sous la clef
+// `murs`, et les oublier ici les faisait disparaitre au moindre aller-retour
+// par l'onglet « Plan » — qui recharge la page.
 function memoriser() {
   try {
-    window.localStorage.setItem(MEMOIRE, JSON.stringify({ ...identite(), pieces, baies }));
+    window.localStorage.setItem(
+      MEMOIRE,
+      JSON.stringify({ ...identite(), pieces, baies, murs: traces })
+    );
   } catch (erreur) {
     // Navigation privee ou stockage plein : l'editeur marche quand meme.
   }
