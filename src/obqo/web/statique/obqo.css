@@ -216,6 +216,8 @@ a.bouton { display: inline-block; }
 .baie { stroke: #2f5d7c; stroke-width: 240; stroke-linecap: butt; cursor: pointer; }
 .baie--active { stroke: #b4531f; }
 /* text-anchor vient du JS : une regle CSS l'emporterait sur l'attribut. */
+/* Le repere d'un mur — M1, R1 — se lit sans voler la vedette aux cotes. */
+.mur__nom { fill: #8a7f70; font-size: 300px; font-family: system-ui, sans-serif; pointer-events: none; }
 .baie__cote { fill: #2f5d7c; font-size: 240px; font-family: system-ui, sans-serif; pointer-events: none; }
 
 /* Les trois zones de saisie — piece, ouverture, mur interieur — partagent la

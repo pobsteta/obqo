@@ -12,7 +12,14 @@ import pytest
 from obqo.drawings import dxf, pdf, svg
 from obqo.drawings.ir import MENTION, Calque, Dessin, Rect, echelle_adaptee
 from obqo.drawings.mise_en_page import A3, ECHELLE_DE_LISIBILITE, cadrer, paginer
-from obqo.drawings.planches import dossier, elevation, instructions, plan_de_rang
+from obqo.drawings.planches import (
+    aire_hors_tout,
+    apercu,
+    dossier,
+    elevation,
+    instructions,
+    plan_de_rang,
+)
 from obqo.drawings.volume import (
     receptions_globales,
     tenons_globaux,
@@ -133,6 +140,65 @@ def test_l_elevation_contient_une_forme_par_brique(maison: Plan, maison_calepine
     assert len(briques) == len(mur.briques)
     assert any(p.calque is Calque.CHAINAGE for p in dessin.primitives)
     assert any(p.calque is Calque.LINTEAU for p in dessin.primitives)
+
+
+def _textes(dessin) -> list[str]:
+    return [p.texte for p in dessin.primitives if hasattr(p, "texte")]
+
+
+def test_l_elevation_porte_le_nom_du_mur_sur_le_dessin(maison: Plan, maison_calepinee) -> None:
+    """Une planche detachee de son dossier doit dire quel mur elle montre."""
+    mur = maison_calepinee.murs[0]
+    dessin = elevation(mur, maison, [o for o in maison.ouvertures if o.mur == mur.id])
+    assert f"MUR {mur.id}" in _textes(dessin)
+
+
+def test_chaque_planche_de_pose_repere_tous_les_murs(maison: Plan, maison_calepinee) -> None:
+    reperes = set(_textes(plan_de_rang(maison_calepinee, maison, 0)))
+    for mur in maison_calepinee.murs:
+        assert mur.id in reperes
+
+
+def test_l_apercu_repere_les_murs_a_cote_du_trait_et_pas_dessus(maison: Plan) -> None:
+    """« M3 — 13920 » centre sur le mur se lisait coupe en deux par ce mur."""
+    dessin = apercu(maison)
+    textes = _textes(dessin)
+    assert any(t.startswith("M1 — ") for t in textes)
+    assert "R1" in textes
+    sur_le_mur = [
+        p
+        for p in dessin.primitives
+        if hasattr(p, "texte") and p.texte.startswith("M1 — ") and p.y == 0
+    ]
+    assert not sur_le_mur, "le repere de M1 tombe encore sur le mur y = 0"
+
+
+def test_le_repere_sort_du_batiment_meme_si_le_contour_tourne_a_l_envers() -> None:
+    """Un contour saisi dans l'autre sens ecrivait ses reperes a l'interieur."""
+    horaire = Plan.model_validate(
+        {
+            "nom": "sens horaire",
+            "hauteur_sous_chainage": 2640,
+            "contour": {"points": [[0, 0], [0, 4800], [4800, 4800], [4800, 0]]},
+        }
+    )
+    for primitive in apercu(horaire).primitives:
+        if hasattr(primitive, "texte") and primitive.texte.startswith("M"):
+            dedans = 0 < primitive.x < 4800 and 0 < primitive.y < 4800
+            assert not dedans, f"{primitive.texte} est ecrit dans le batiment"
+
+
+def test_la_surface_au_sol_est_annoncee_et_juste(maison: Plan, maison_calepinee) -> None:
+    assert aire_hors_tout(maison.contour.sommets()) == pytest.approx(13.920 * 10.560, abs=0.01)
+    assert "147,0 m2 au sol hors tout" in (apercu(maison).sous_titre or "")
+    pose = _textes(instructions(maison_calepinee, maison))
+    assert any("Emprise au sol 147,0 m2" in ligne for ligne in pose)
+
+
+def test_la_surface_suit_le_contour_et_pas_sa_boite(maison: Plan) -> None:
+    """Un L de 4,8 x 4,8 ampute d'un quart ne fait pas la surface du rectangle."""
+    en_l = [(0, 0), (4800, 0), (4800, 2400), (2400, 2400), (2400, 4800), (0, 4800)]
+    assert aire_hors_tout(en_l) == pytest.approx(4.8 * 4.8 - 2.4 * 2.4, abs=0.001)
 
 
 def test_le_dossier_a_une_planche_par_mur_par_rang_et_les_instructions(

@@ -192,7 +192,8 @@ function dessiner() {
     if (mode !== "pieces") toile.appendChild(coucheDesMurs());
 
   etat.textContent = pieces.length
-      ? `${pieces.length} pièce${pieces.length > 1 ? "s" : ""} — emprise ${emprise()}`
+      ? `${pieces.length} pièce${pieces.length > 1 ? "s" : ""} — ` +
+        `${surfaceTotale()} au sol — emprise ${emprise()}`
       : "Aucune pièce. Glissez sur le fond pour en créer une.";
   }
 }
@@ -221,9 +222,15 @@ function coucheDesMurs() {
   const traceables = mode === "murs" ? traces : [];
   // H et L sont ecrits : sur un plan, « 2160 × 960 » se lit dans les deux
   // sens, et une porte posee a l'envers se paie en menuiserie.
+  //
+  // Les reperes des murs — M1..Mn, R1..Rn — passent en dernier : ce sont les
+  // etiquettes les moins precieuses, elles cedent la meilleure place aux
+  // ouvertures. Ce sont pourtant elles qui repondent a « quel mur est M1 ? »
+  // quand on relit le plan derive ou une elevation.
   const etiquettes = poserLesEtiquettes([
     ...traceables.map((m) => ({ ...m, etiquette: `${m.id} ${longueurDe(m)}` })),
     ...baies.map((b) => ({ ...b, etiquette: `${b.id} H${b.hauteur}×L${largeurDe(b)}` })),
+    ...murs.map((m) => ({ ...m, etiquette: m.id })),
   ]);
 
   const poser = (segment, classe, cle, index, pose) => {
@@ -266,6 +273,21 @@ function coucheDesMurs() {
       etiquettes[traceables.length + index]
     )
   );
+  murs.forEach((mur, index) => {
+    const pose = etiquettes[traceables.length + baies.length + index];
+    couche.appendChild(
+      Object.assign(
+        svg("text", {
+          x: pose.x,
+          y: MONDE.hauteur - pose.y,
+          class: "mur__nom",
+          "text-anchor": pose.ancre,
+          "dominant-baseline": pose.ligne,
+        }),
+        { textContent: pose.texte }
+      )
+    );
+  });
   return couche;
 }
 
@@ -486,6 +508,15 @@ function surLeMur(point) {
   meilleur.x = Math.min(Math.max(meilleur.x, Math.min(ax, bx)), Math.max(ax, bx));
   meilleur.y = Math.min(Math.max(meilleur.y, Math.min(ay, by)), Math.max(ay, by));
   return meilleur;
+}
+
+// Surface des pieces dessinees, d'axe a axe : elle suit chaque geste, et c'est
+// le chiffre qu'on surveille en dessinant. Elle n'est ni l'emprise hors tout
+// (qui compte l'epaisseur des murs exterieurs) ni la surface habitable (qui
+// retire la moitie de chaque mur) — les deux se lisent sur le plan derive.
+function surfaceTotale() {
+  const m2 = pieces.reduce((total, p) => total + p.largeur * p.hauteur, 0) / 1e6;
+  return `${m2.toFixed(1).replace(".", ",")} m²`;
 }
 
 function emprise() {
@@ -845,7 +876,7 @@ function resumeDeLaPiece(piece) {
   const surface = (piece.largeur * piece.hauteur) / 1e6;
   const lignes = [
     `« ${piece.nom} » : ${piece.largeur} × ${piece.hauteur} mm d'axe à axe, ` +
-      `${surface.toFixed(1).replace(".", ",")} m² hors murs`,
+      `${surface.toFixed(1).replace(".", ",")} m²`,
   ];
   if (Math.min(piece.largeur, piece.hauteur) < MINI) {
     lignes.push(

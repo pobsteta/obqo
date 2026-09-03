@@ -136,6 +136,17 @@ def elevation(mur: MurCalepine, plan: Plan, ouvertures: list[Ouverture]) -> Dess
             Calque.TEXTE,
             taille_mm=2.2,
         ),
+        # Le nom du mur sur le dessin, et pas seulement au cartouche : une
+        # planche detachee de son dossier, posee sur un etabli, doit dire
+        # elle-meme quel mur elle montre.
+        Texte(
+            0,
+            sommet + HAUTEUR_LISSE + 480,
+            f"MUR {mur.id}",
+            Calque.REPERE,
+            taille_mm=4.0,
+            ancrage=Ancrage.GAUCHE,
+        ),
     )
 
     coter_horizontal(dessin, 0, mur.longueur_hors_tout, -700)
@@ -228,6 +239,8 @@ def instructions(calepinage: Calepinage, plan: Plan) -> Dessin:
         "",
         f"{len(calepinage.briques)} briques, {len(calepinage.murs)} murs, "
         f"{plan.rangs} rangs de {HAUTEUR_RANG} mm.",
+        f"Emprise au sol {_cote_m2(aire_hors_tout(plan.contour.sommets()))}, "
+        f"hors tout (nu exterieur des murs).",
         "",
         "ORDRE DE POSE",
         "  1. Lisse basse d'ancrage sur le soubassement, sur tout le perimetre.",
@@ -321,6 +334,46 @@ def dossier(calepinage: Calepinage, plan: Plan) -> list[Dessin]:
     return planches
 
 
+def aire_hors_tout(sommets: list[tuple[int, int]]) -> float:
+    """Aire du contour en m2, par la formule du lacet.
+
+    Le contour est le nu **exterieur** des murs : c'est donc l'emprise au sol,
+    murs compris, et non la surface habitable — qui depend de l'epaisseur des
+    refends et se lit piece par piece dans l'esquisse.
+    """
+    doublee = sum(
+        x * sommets[(i + 1) % len(sommets)][1] - sommets[(i + 1) % len(sommets)][0] * y
+        for i, (x, y) in enumerate(sommets)
+    )
+    return abs(doublee) / 2 / 1_000_000
+
+
+def _dehors(sommets: list[tuple[int, int]]) -> int:
+    """+1 si la normale (dy, -dx) sort du batiment, -1 sinon.
+
+    Un contour saisi a la main peut tourner dans un sens ou dans l'autre ; le
+    signe de l'aire du lacet le dit, et evite d'ecrire les reperes a l'interieur.
+    """
+    doublee = sum(
+        x * sommets[(i + 1) % len(sommets)][1] - sommets[(i + 1) % len(sommets)][0] * y
+        for i, (x, y) in enumerate(sommets)
+    )
+    return 1 if doublee > 0 else -1
+
+
+RECUL_REPERE = 600
+"""Distance a laquelle le repere d'un mur se pose, hors du nu du mur."""
+
+
+def _cote_m2(aire: float) -> str:
+    """« 147,0 m2 » : virgule decimale comme les autres cotes, et pas d'exposant.
+
+    Le « ² » ne traverse pas tous les lecteurs DXF ; les planches restent en
+    ASCII pur pour ce qui doit s'imprimer et se relire partout.
+    """
+    return f"{aire:.1f}".replace(".", ",") + " m2"
+
+
 def apercu(plan: Plan) -> Dessin:
     """Vue de dessus schematique d'un plan : contour et refends, sans calepinage.
 
@@ -332,18 +385,24 @@ def apercu(plan: Plan) -> Dessin:
         sous_titre=(
             f"{len(plan.contour.sommets())} murs, {len(plan.refends)} refend"
             f"{'s' if len(plan.refends) > 1 else ''}, "
+            f"{_cote_m2(aire_hors_tout(plan.contour.sommets()))} au sol hors tout, "
             f"hauteur sous chainage {plan.hauteur_sous_chainage} mm"
         ),
     )
     sommets = plan.contour.sommets()
     dessin.ajouter(Polyligne(tuple(sommets), Calque.BRIQUE, ferme=True))
+    dehors = _dehors(sommets)
     for i, (x, y) in enumerate(sommets):
         suivant = sommets[(i + 1) % len(sommets)]
         longueur = abs(suivant[0] - x) + abs(suivant[1] - y)
+        # Le repere se pose a cote du mur, jamais dessus : centre sur le trait,
+        # « M3 — 13920 » se lisait coupe en deux par le mur qu'il designe.
+        dx = ((suivant[0] > x) - (suivant[0] < x)) * dehors
+        dy = ((suivant[1] > y) - (suivant[1] < y)) * dehors
         dessin.ajouter(
             Texte(
-                (x + suivant[0]) / 2,
-                (y + suivant[1]) / 2,
+                (x + suivant[0]) / 2 + dy * RECUL_REPERE,
+                (y + suivant[1]) / 2 - dx * RECUL_REPERE,
                 f"M{i + 1} — {longueur}",
                 Calque.TEXTE,
                 taille_mm=2.4,
@@ -361,14 +420,29 @@ def apercu(plan: Plan) -> Dessin:
                 abs(y1 - y0) or EPAISSEUR_MUR,
                 Calque.REFEND,
             ),
-            Texte((x0 + x1) / 2, (y0 + y1) / 2, refend.id, Calque.REPERE, taille_mm=2.6),
+            # Un refend n'a pas de dehors : son repere se decale du meme cran,
+            # toujours du meme cote, pour ne pas se lire par-dessus le mur.
+            Texte(
+                (x0 + x1) / 2 + (0 if horizontal else RECUL_REPERE),
+                (y0 + y1) / 2 + (RECUL_REPERE if horizontal else 0),
+                refend.id,
+                Calque.REPERE,
+                taille_mm=2.6,
+            ),
         )
     # Une cloison ne porte rien : trait fin, et jamais l'epaisseur d'un refend.
     for cloison in plan.cloisons:
         (x0, y0), (x1, y1) = cloison.depart, cloison.arrivee
+        horizontale = y0 == y1
         dessin.ajouter(
             Trait(x0, y0, x1, y1, Calque.CLOISON),
-            Texte((x0 + x1) / 2, (y0 + y1) / 2, cloison.id, Calque.REPERE, taille_mm=2.2),
+            Texte(
+                (x0 + x1) / 2 + (0 if horizontale else RECUL_REPERE),
+                (y0 + y1) / 2 + (RECUL_REPERE if horizontale else 0),
+                cloison.id,
+                Calque.REPERE,
+                taille_mm=2.2,
+            ),
         )
     dessin.legende = [(c.value, c) for c in dessin.calques_de_legende()]
     return dessin

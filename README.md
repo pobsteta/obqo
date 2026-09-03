@@ -258,6 +258,13 @@ refuser les gestes qui en partent interdirait de tracer, et les prendre tous
 pour des ouvertures aussi. Rien n'est tranché avant un déplacement d'un pas :
 plus tôt, la direction n'est que du bruit de souris.
 
+**La surface se compte au fur et à mesure.** La barre d'état annonce le nombre de
+pièces, leur **surface totale d'axe à axe** et l'emprise hors tout, et se met à
+jour à chaque geste : c'est le chiffre qu'on surveille en dessinant. Les murs
+déduits par le serveur portent en outre leur repère — `M1` à `Mn`, `R1` à `Rn` —
+sur le dessin, dans les deux onglets qui les affichent : c'est ce qui répond à
+« quel mur est M1 ? » quand on relit une élévation ou le plan dérivé.
+
 **La pièce sélectionnée a elle aussi ses champs** — nom, largeur × hauteur, x et
 y — sur le modèle de ceux de l'ouverture. Un plan se saisit souvent depuis des
 cotes relevées : « le séjour fait 4,80 sur 3,84 » se tape, là où le retrouver à
@@ -361,6 +368,23 @@ obligatoire est apposée par le back-end, donc impossible à oublier.
 
 Le dossier comprend une élévation par mur, un plan de pose par rang et une page
 d'instructions générée.
+
+**Chaque planche dit quel mur elle montre.** L'élévation porte le repère `MUR M1`
+sur le dessin lui-même, pas seulement au cartouche : une planche détachée de son
+dossier et posée sur un établi doit se lire seule. Les plans de pose repèrent
+tous les murs — `M1` à `Mn` pour le contour, `R1` à `Rn` pour les refends — et
+l'aperçu fait de même, avec la longueur de chaque mur.
+
+Ces repères se posent **à côté du trait, jamais dessus** : centré sur son mur,
+« M3 — 13920 » se lisait coupé en deux par le mur qu'il désignait. Ils sortent du
+bâtiment, et le sens du contour ne s'y suppose pas — l'aire du lacet le donne,
+faute de quoi un contour saisi dans l'autre sens écrirait ses repères à
+l'intérieur.
+
+**L'emprise au sol** — l'aire du contour, murs compris — figure sur l'aperçu et
+sur la page d'instructions. C'est l'aire hors tout, au nu extérieur : ni la
+surface habitable, qui dépend de l'épaisseur des refends, ni la somme des pièces
+de l'esquisse, qui se compte d'axe à axe.
 
 **Pagination.** Une élévation qui ne tiendrait pas au 1:50 est découpée en
 plusieurs A3 qui se recouvrent d'une bande de 960 mm, plutôt que réduite au 1:100
