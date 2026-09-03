@@ -7,6 +7,13 @@ n'y écrit pas à la main — on écrit ses messages de commit.
 
 Voir `docs/publier.md` pour la règle complète.
 
+## 0.4.0 — 2026-09-03
+
+### Nouveautés
+
+- **esquisse** — tracer refends et cloisons a la main
+- **esquisse** — une zone de saisie par onglet, et des ouvertures partout
+
 ## 0.3.0 — 2026-09-03
 
 ### Nouveautés
