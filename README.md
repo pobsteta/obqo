@@ -52,6 +52,9 @@ schéma commité suit le modèle : sans cela l'autocomplétion mentirait.
 | — | interface web légère (option du brief) | **livrée** |
 | — | contours en L, U, T et escalier (angles rentrants) | **livré** |
 | — | esquisse : dessiner pièces et baies, enregistrer, rouvrir | **livré** |
+| — | esquisse → calepinage sans copier-coller | **livré** |
+| — | poteaux raidisseurs posés d'eux-mêmes là où il en manque | **livré** |
+| — | esquisse : tracer refends et cloisons à la main | **livré** |
 
 ## Architecture
 
