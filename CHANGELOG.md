@@ -7,6 +7,12 @@ n'y écrit pas à la main — on écrit ses messages de commit.
 
 Voir `docs/publier.md` pour la règle complète.
 
+## 0.7.0 — 2026-09-03
+
+### Nouveautés
+
+- **esquisse** — ecrire la surface de chaque piece sur le dessin
+
 ## 0.6.0 — 2026-09-03
 
 ### Ruptures
