@@ -418,3 +418,24 @@ def test_deux_baies_du_meme_nom_sont_refusees() -> None:
             baie(id="fenêtre 1", depart=(1920, 0), arrivee=(3360, 0)),
             baie(id="fenêtre 1", depart=(4800, 0), arrivee=(6240, 0)),
         )
+
+
+def test_une_porte_sans_hauteur_nait_a_2160() -> None:
+    """Le type emmene sa cote : une porte de 1200 ne se passe pas debout."""
+    from obqo.model.esquisse import Baie
+    from obqo.units import HAUTEUR_TREMIE_FENETRE, HAUTEUR_TREMIE_PORTE
+
+    porte = Baie(id="P1", type="porte", depart=(0, 0), arrivee=(1200, 0))
+    fenetre = Baie(id="F1", type="fenetre", depart=(0, 0), arrivee=(1200, 0))
+    baie = Baie(id="PF1", type="porte_fenetre", depart=(0, 0), arrivee=(2400, 0))
+
+    assert (porte.hauteur, porte.allege) == (HAUTEUR_TREMIE_PORTE, 0)
+    assert (baie.hauteur, baie.allege) == (HAUTEUR_TREMIE_PORTE, 0)
+    assert (fenetre.hauteur, fenetre.allege) == (HAUTEUR_TREMIE_FENETRE, 960)
+
+
+def test_une_hauteur_choisie_n_est_jamais_ecrasee() -> None:
+    from obqo.model.esquisse import Baie
+
+    porte = Baie(id="P1", type="porte", depart=(0, 0), arrivee=(960, 0), hauteur=1920)
+    assert porte.hauteur == 1920, "la cote saisie l'emporte sur le defaut du type"

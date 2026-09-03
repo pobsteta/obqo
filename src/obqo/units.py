@@ -48,6 +48,20 @@ LARGEUR_JAMBAGE = 80
 LARGEUR_BAIE_JAMBAGE_DOUBLE = 1800
 """Au-dela de cette largeur de tremie, les jambages sont doubles (160)."""
 
+HAUTEUR_TREMIE_PORTE = 2160
+"""Hauteur de tremie usuelle d'une porte : 9 rangs, soit 2040 de vantail fini
+plus le jeu. Avec les 240 du linteau, 2400 mm sous un chainage a 2640."""
+
+HAUTEUR_TREMIE_FENETRE = 1200
+"""Hauteur de tremie usuelle d'une fenetre, sous une allege de 960."""
+
+HAUTEUR_MINI_PASSAGE = 1920
+"""En dessous, on ne passe plus debout sous le linteau : 8 rangs.
+
+La hauteur d'une tremie *est* le passage libre vertical — contrairement a la
+largeur, dont les jambages retirent 160 mm.
+"""
+
 
 def sur_grille(valeur: int, pas: int = GRILLE) -> bool:
     """La valeur tombe-t-elle sur la grille ?"""

@@ -15,7 +15,7 @@ from typing import Annotated, Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from obqo.units import EPAISSEUR_MUR
+from obqo.units import EPAISSEUR_MUR, HAUTEUR_TREMIE_FENETRE, HAUTEUR_TREMIE_PORTE
 
 
 class Base(BaseModel):
@@ -77,19 +77,26 @@ class Baie(Base):
     depart: tuple[int, int]
     arrivee: tuple[int, int]
     allege: Annotated[int, Field(ge=0)] = 960
-    hauteur: Annotated[int, Field(gt=0)] = 1200
+    hauteur: Annotated[int, Field(gt=0)] = HAUTEUR_TREMIE_FENETRE
 
     @model_validator(mode="before")
     @classmethod
-    def _sans_allege_pour_une_porte(cls, valeurs: object) -> object:
-        """Une porte et une porte-fenetre partent du sol : l'allege vaut zero.
+    def _defauts_du_type(cls, valeurs: object) -> object:
+        """Une porte part du sol, et monte plus haut qu'une fenetre.
 
-        Normalise ici plutot qu'a la conversion, pour que le modele, le fichier
-        enregistre et le formulaire disent tous la meme chose.
+        L'allege est forcee a zero ; la hauteur n'est *completee* que si elle
+        manque, pour ne jamais ecraser une cote choisie. Normaliser ici plutot
+        qu'a la conversion fait dire la meme chose au modele, au fichier
+        enregistre et au formulaire.
         """
-        if isinstance(valeurs, dict) and valeurs.get("type") in ("porte", "porte_fenetre"):
-            return {**valeurs, "allege": 0}
-        return valeurs
+        if not isinstance(valeurs, dict):
+            return valeurs
+        if valeurs.get("type") not in ("porte", "porte_fenetre"):
+            return valeurs
+        defauts = {"allege": 0}
+        if valeurs.get("hauteur") is None:
+            defauts["hauteur"] = HAUTEUR_TREMIE_PORTE
+        return {**valeurs, **defauts}
 
     @model_validator(mode="after")
     def _segment_axial(self) -> Self:

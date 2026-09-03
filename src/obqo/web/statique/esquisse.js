@@ -24,6 +24,12 @@ const RECUL_MINI_ANGLE = 480; // 240 d'appui de linteau + 240 de maconnerie
 const HAUTEUR_RANG = 240;
 const LIBELLES = { porte: "porte", fenetre: "fenêtre", porte_fenetre: "porte-fenêtre" };
 
+// Cotes de tremie usuelles, reprises de `units.py`. Une porte de 1200 laisserait
+// un passage ou l'on ne tient pas debout : le type doit emmener sa hauteur.
+const HAUTEURS = { porte: 2160, porte_fenetre: 2160, fenetre: 1200 };
+const ALLEGES = { porte: 0, porte_fenetre: 0, fenetre: 960 };
+const HAUTEUR_MINI_PASSAGE = 1920; // 8 rangs
+
 // « porte 1 » se relit dans une nomenclature ; « B1 » ne dit rien a personne.
 function nomLibre(type) {
   const base = LIBELLES[type];
@@ -266,6 +272,12 @@ function resumeDeLaBaie(baie) {
       `${baie.hauteur} × ${tremie} mm (h × l), passage libre ${passage} mm`,
   ];
   if (tremie > 2400) lignes.push("au-delà de 2400, linteau en lamellé-collé");
+  if (baie.type !== "fenetre" && baie.hauteur < HAUTEUR_MINI_PASSAGE) {
+    lignes.push(
+      `${baie.hauteur} mm de haut : on ne passe plus debout en dessous de ` +
+        `${HAUTEUR_MINI_PASSAGE} mm (l'usage est ${HAUTEURS.porte})`
+    );
+  }
   const chainage = Number(document.getElementById("hauteur-chainage").value) || 2640;
   const haut = baie.allege + baie.hauteur + HAUTEUR_RANG;
   if (haut > chainage) {
@@ -641,7 +653,14 @@ for (const champ of ["type", "allege", "hauteur", "largeur"]) {
     const nomAuto = Object.values(LIBELLES).some((l) => baie.id.startsWith(`${l} `));
     let avis = "";
     if (champ === "type") {
+      // Une cote encore automatique suit le type, comme le nom : elle ne bouge
+      // que si elle vaut encore l'usuelle de l'ancien type. Sans quoi une porte
+      // repassee en fenetre gardait une allege de zero, qui n'etait pas un
+      // choix mais le reste de la regle ci-dessous.
+      if (baie.hauteur === HAUTEURS[baie.type]) baie.hauteur = HAUTEURS[valeur];
+      if (baie.allege === ALLEGES[baie.type]) baie.allege = ALLEGES[valeur];
       baie.type = valeur;
+      // La regle, elle, ne se discute pas : une porte part du sol.
       if (valeur !== "fenetre") baie.allege = 0;
       // Un nom encore automatique suit le type ; un nom choisi ne bouge pas.
       if (nomAuto) baie.id = nomLibre(valeur);

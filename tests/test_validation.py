@@ -6,6 +6,8 @@ import pytest
 
 from obqo.engine.calepinage import calepiner
 from obqo.engine.validation import Gravite
+from obqo.model.plan import Plan
+from obqo.units import HAUTEUR_MINI_PASSAGE
 
 from .conftest import plan_rectangle
 
@@ -180,3 +182,27 @@ def test_mur_hors_grille_refuse_sans_recalage() -> None:
     erreur = next(c for c in rapport.erreurs if c.code == "MUR-HORS-GRILLE")
     assert erreur.gravite is Gravite.ERREUR
     assert "romprait sa fermeture" in erreur.message
+
+
+def test_une_porte_trop_basse_est_signalee(maison: Plan) -> None:
+    """Une trémie de 1200 laisse un passage où l'on ne tient pas debout."""
+    ouvertures = [
+        o.model_copy(update={"hauteur": 1200}) if o.type == "porte" else o
+        for o in maison.ouvertures
+    ]
+    _, rapport = calepiner(maison.model_copy(update={"ouvertures": ouvertures}))
+    constats = [c for c in rapport.constats if c.code == "PASSAGE-TROP-BAS"]
+    assert len(constats) == sum(1 for o in maison.ouvertures if o.type == "porte")
+    assert all(c.gravite is Gravite.AVERTISSEMENT for c in constats)
+    assert "1920" in constats[0].message
+
+
+def test_une_fenetre_basse_ne_declenche_rien(maison: Plan) -> None:
+    """On ne passe pas sous une fenêtre : la règle ne la concerne pas."""
+    _, rapport = calepiner(maison)
+    assert not [c for c in rapport.constats if c.code == "PASSAGE-TROP-BAS"]
+
+
+def test_le_plan_d_exemple_donne_ses_portes_a_2160(maison: Plan) -> None:
+    portes = [o for o in maison.ouvertures if o.type in ("porte", "porte_fenetre")]
+    assert portes and all(o.hauteur >= HAUTEUR_MINI_PASSAGE for o in portes)

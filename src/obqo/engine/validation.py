@@ -14,6 +14,7 @@ from obqo.model.plan import Ouverture, Plan
 from obqo.units import (
     ENTRAXE_MAXI_RAIDISSEUR,
     GRILLE,
+    HAUTEUR_MINI_PASSAGE,
     HAUTEUR_RANG,
     PORTEE_MAXI_LINTEAU,
     RECUL_MINI_BAIE_ANGLE,
@@ -175,6 +176,17 @@ def valider(
                     f"portee de {o.largeur} mm > {PORTEE_MAXI_LINTEAU} mm : "
                     "linteau cheville impossible, l'application prescrit un "
                     "lamelle-colle du commerce aux memes cotes",
+                )
+            # La hauteur d'une tremie est le passage libre vertical : rien ne
+            # vient s'y ajouter, contrairement aux jambages en largeur.
+            if o.type in ("porte", "porte_fenetre") and o.hauteur < HAUTEUR_MINI_PASSAGE:
+                rapport.ajouter(
+                    Gravite.AVERTISSEMENT,
+                    "PASSAGE-TROP-BAS",
+                    ou,
+                    f"tremie de {o.hauteur} mm de haut pour une {o.type.replace('_', '-')} : "
+                    f"on ne passe plus debout en dessous de {HAUTEUR_MINI_PASSAGE} mm "
+                    "(l'usage est 2160)",
                 )
             haut = o.allege + o.hauteur + HAUTEUR_RANG
             if haut > plan.hauteur_sous_chainage:
