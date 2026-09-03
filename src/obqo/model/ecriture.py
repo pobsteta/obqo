@@ -38,7 +38,7 @@ def esquisse_en_yaml(esquisse: Esquisse) -> str:
     for piece in esquisse.pieces:
         lignes.append(
             f"  - {{nom: {texte(piece.nom)}, x: {piece.x}, y: {piece.y}, "
-            f"largeur: {piece.largeur}, hauteur: {piece.hauteur}}}"
+            f"longueur: {piece.longueur}, largeur: {piece.largeur}}}"
         )
     if esquisse.baies:
         lignes.append("baies:")

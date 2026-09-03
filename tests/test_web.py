@@ -158,8 +158,8 @@ DEUX_PIECES = {
     "hauteur_sous_chainage": 2640,
     "pas": 480,
     "pieces": [
-        {"nom": "séjour", "x": 0, "y": 0, "largeur": 5000, "hauteur": 4000},
-        {"nom": "cuisine", "x": 5000, "y": 0, "largeur": 3500, "hauteur": 4000},
+        {"nom": "séjour", "x": 0, "y": 0, "longueur": 5000, "largeur": 4000},
+        {"nom": "cuisine", "x": 5000, "y": 0, "longueur": 3500, "largeur": 4000},
     ],
 }
 
@@ -175,7 +175,7 @@ def test_caler_renvoie_les_pieces_recalees_et_les_ecarts(client: TestClient) -> 
     reponse = client.post("/esquisse/caler", json=DEUX_PIECES)
     assert reponse.status_code == 200
     donnees = reponse.json()
-    assert [p["largeur"] for p in donnees["pieces"]] == [4800, 3840]
+    assert [p["longueur"] for p in donnees["pieces"]] == [4800, 3840]
     assert len(donnees["ajustements"]) == 2
     assert "5000 x 4000 -> 4800 x 3840" in donnees["ajustements"][0]
 
@@ -208,8 +208,8 @@ def test_des_pieces_qui_se_chevauchent_donnent_un_message_lisible(client: TestCl
         "/esquisse/caler",
         json={
             "pieces": [
-                {"nom": "a", "x": 0, "y": 0, "largeur": 4000, "hauteur": 4000},
-                {"nom": "b", "x": 2000, "y": 2000, "largeur": 4000, "hauteur": 4000},
+                {"nom": "a", "x": 0, "y": 0, "longueur": 4000, "largeur": 4000},
+                {"nom": "b", "x": 2000, "y": 2000, "longueur": 4000, "largeur": 4000},
             ]
         },
     )
@@ -224,8 +224,8 @@ def test_une_esquisse_en_morceaux_est_refusee_avec_ses_reperes(client: TestClien
         "/esquisse/plan",
         json={
             "pieces": [
-                {"nom": "avant", "x": 0, "y": 0, "largeur": 4800, "hauteur": 3840},
-                {"nom": "arriere", "x": 0, "y": 4080, "largeur": 4800, "hauteur": 3840},
+                {"nom": "avant", "x": 0, "y": 0, "longueur": 4800, "largeur": 3840},
+                {"nom": "arriere", "x": 0, "y": 4080, "longueur": 4800, "largeur": 3840},
             ]
         },
     )
@@ -241,8 +241,8 @@ def test_les_murs_derives_suivent_le_dessin(client: TestClient) -> None:
         "/esquisse/murs",
         json={
             "pieces": [
-                {"nom": "a", "x": 1920, "y": 1920, "largeur": 4800, "hauteur": 3840},
-                {"nom": "b", "x": 6720, "y": 1920, "largeur": 3840, "hauteur": 3840},
+                {"nom": "a", "x": 1920, "y": 1920, "longueur": 4800, "largeur": 3840},
+                {"nom": "b", "x": 6720, "y": 1920, "longueur": 3840, "largeur": 3840},
             ]
         },
     )
@@ -257,8 +257,8 @@ def test_le_plan_derive_reprend_les_baies_posees(client: TestClient) -> None:
         "/esquisse/plan",
         json={
             "pieces": [
-                {"nom": "a", "x": 0, "y": 0, "largeur": 4800, "hauteur": 4800},
-                {"nom": "b", "x": 4800, "y": 0, "largeur": 3840, "hauteur": 4800},
+                {"nom": "a", "x": 0, "y": 0, "longueur": 4800, "largeur": 4800},
+                {"nom": "b", "x": 4800, "y": 0, "longueur": 3840, "largeur": 4800},
             ],
             "baies": [
                 {
@@ -332,8 +332,8 @@ def _esquisse_avec_baie(baie: dict[str, object]) -> dict[str, object]:
     return {
         "hauteur_sous_chainage": 2640,
         "pieces": [
-            {"nom": "a", "x": 0, "y": 0, "largeur": 4800, "hauteur": 4800},
-            {"nom": "b", "x": 4800, "y": 0, "largeur": 3840, "hauteur": 4800},
+            {"nom": "a", "x": 0, "y": 0, "longueur": 4800, "largeur": 4800},
+            {"nom": "b", "x": 4800, "y": 0, "longueur": 3840, "largeur": 4800},
         ],
         "baies": [baie],
     }
@@ -389,8 +389,8 @@ def test_le_plan_derive_avec_baies_repasse_par_la_porte_d_entree(client: TestCli
         "/esquisse/plan",
         json={
             "pieces": [
-                {"nom": "a", "x": 0, "y": 0, "largeur": 4800, "hauteur": 4800},
-                {"nom": "b", "x": 4800, "y": 0, "largeur": 3840, "hauteur": 4800},
+                {"nom": "a", "x": 0, "y": 0, "longueur": 4800, "largeur": 4800},
+                {"nom": "b", "x": 4800, "y": 0, "longueur": 3840, "largeur": 4800},
             ],
             "baies": [
                 {
@@ -443,8 +443,8 @@ def test_une_esquisse_s_enregistre_et_se_rouvre(client: TestClient) -> None:
         "nom": "Maison Obstetar",
         "hauteur_sous_chainage": 2640,
         "pieces": [
-            {"nom": "séjour", "x": 0, "y": 0, "largeur": 4800, "hauteur": 4800},
-            {"nom": "cuisine", "x": 4800, "y": 0, "largeur": 3840, "hauteur": 4800},
+            {"nom": "séjour", "x": 0, "y": 0, "longueur": 4800, "largeur": 4800},
+            {"nom": "cuisine", "x": 4800, "y": 0, "longueur": 3840, "largeur": 4800},
         ],
         "baies": [
             {
@@ -472,6 +472,25 @@ def test_une_esquisse_s_enregistre_et_se_rouvre(client: TestClient) -> None:
     assert donnees["baies"][0]["depart"] == [1920, 0]
 
 
+def test_une_esquisse_de_l_ancien_vocabulaire_dit_quoi_renommer(client: TestClient) -> None:
+    """Une piece se cote en longueur et largeur : les vieux fichiers se corrigent.
+
+    Le message doit nommer le champ et le remplacement, sinon « Extra inputs are
+    not permitted » n'aide personne a reprendre un YAML a la main.
+    """
+    ancienne = (
+        "nom: ancienne\n"
+        "hauteur_sous_chainage: 2640\n"
+        "pieces:\n"
+        "  - {nom: séjour, x: 0, y: 0, largeur: 4800, hauteur: 3840}\n"
+    )
+    reponse = client.post("/esquisse/ouvrir", json={"source": ancienne})
+    assert reponse.status_code == 422
+    erreur = reponse.json()["erreur"]
+    assert "pieces.0.longueur" in erreur and "pieces.0.hauteur" in erreur
+    assert "renommez-les" in erreur
+
+
 def test_un_fichier_d_esquisse_illisible_est_explique(client: TestClient) -> None:
     reponse = client.post("/esquisse/ouvrir", json={"source": "juste du texte"})
     assert reponse.status_code == 422
@@ -486,8 +505,8 @@ def test_un_fichier_d_esquisse_illisible_est_explique(client: TestClient) -> Non
 
 ESQUISSE_COMPLETE: dict[str, object] = {
     "pieces": [
-        {"nom": "a", "x": 0, "y": 0, "largeur": 4800, "hauteur": 4800},
-        {"nom": "b", "x": 4800, "y": 0, "largeur": 3840, "hauteur": 4800},
+        {"nom": "a", "x": 0, "y": 0, "longueur": 4800, "largeur": 4800},
+        {"nom": "b", "x": 4800, "y": 0, "longueur": 3840, "largeur": 4800},
     ],
     "baies": [
         {
@@ -551,7 +570,7 @@ def test_un_plan_incomplet_ne_propose_que_de_l_ouvrir(client: TestClient) -> Non
     reponse = client.post(
         "/esquisse/plan",
         json={
-            "pieces": [{"nom": "a", "x": 0, "y": 0, "largeur": 9600, "hauteur": 9600}],
+            "pieces": [{"nom": "a", "x": 0, "y": 0, "longueur": 9600, "largeur": 9600}],
             "baies": [
                 {
                     "id": f"F{i}",

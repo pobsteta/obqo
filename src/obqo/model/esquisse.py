@@ -25,31 +25,26 @@ class Base(BaseModel):
 class Piece(Base):
     """Un rectangle du plan, en millimetres, cotes de mur a mur (axes compris).
 
-    **Ses deux cotes sont horizontales.** `largeur` est l'etendue en x et
-    `hauteur` l'etendue en y — une hauteur de rectangle a l'ecran, pas une
-    hauteur de mur. L'interface les nomme donc *longueur* et *largeur*, et la
-    seule hauteur de l'esquisse reste `hauteur_sous_chainage`, commune a tout
-    le batiment.
-
-    Les champs gardent ces noms parce que ce sont ceux des esquisses deja
-    enregistrees : les renommer casserait les fichiers pour un vocabulaire.
+    **Ses deux cotes sont horizontales** : une piece se cote en plan. La seule
+    hauteur d'une esquisse est `hauteur_sous_chainage`, commune a tout le
+    batiment — et celle d'une baie, qui est verticale.
     """
 
     nom: str = "piece"
     x: int
     y: int
+    longueur: Annotated[int, Field(gt=0)]
+    """Etendue en x, d'ouest en est."""
     largeur: Annotated[int, Field(gt=0)]
-    """Etendue en x, presentee comme la « longueur » de la piece."""
-    hauteur: Annotated[int, Field(gt=0)]
-    """Etendue en y, presentee comme la « largeur » de la piece."""
+    """Etendue en y, du sud au nord."""
 
     @property
     def droite(self) -> int:
-        return self.x + self.largeur
+        return self.x + self.longueur
 
     @property
     def haut(self) -> int:
-        return self.y + self.hauteur
+        return self.y + self.largeur
 
     def chevauche(self, autre: Piece) -> bool:
         return (
@@ -68,10 +63,10 @@ class Piece(Base):
         gauche, droite, bas, haut = murs_exterieurs
         demi = EPAISSEUR_MUR // 2
         return (
-            self.largeur
+            self.longueur
             - (EPAISSEUR_MUR if gauche else demi)
             - (EPAISSEUR_MUR if droite else demi),
-            self.hauteur - (EPAISSEUR_MUR if bas else demi) - (EPAISSEUR_MUR if haut else demi),
+            self.largeur - (EPAISSEUR_MUR if bas else demi) - (EPAISSEUR_MUR if haut else demi),
         )
 
 

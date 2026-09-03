@@ -279,12 +279,38 @@ def esquisse_deplacee() -> RedirectResponse:
     return RedirectResponse("/", status_code=308)
 
 
-def _esquisse_depuis(corps: dict[str, Any]) -> Esquisse:
-    """Construit l'esquisse, en traduisant les erreurs de schema en francais.
+ANCIENNES_COTES = ("largeur", "hauteur")
+"""Les cotes de piece d'avant la 0.6, quand la seconde s'appelait « hauteur »."""
 
-    Le message brut de Pydantic cite le type d'entree et une URL de
-    documentation : illisible dans une barre d'etat.
+
+def _details(erreur: ValidationError) -> str:
+    """Traduit une erreur Pydantic en une phrase qui nomme le champ fautif.
+
+    Le message brut cite le type d'entree et une URL de documentation :
+    illisible dans une barre d'etat. Sans le chemin du champ, « Extra inputs
+    are not permitted » n'aide pas non plus a corriger un fichier a la main.
     """
+    morceaux: list[str] = []
+    ancien_vocabulaire = False
+    for detail in erreur.errors():
+        ou = ".".join(str(part) for part in detail.get("loc", ()))
+        message = str(detail.get("msg", "")).removeprefix("Value error, ")
+        morceaux.append(f"{ou} : {message}" if ou else message)
+        if ou.startswith("pieces.") and ou.rsplit(".", 1)[-1] in ANCIENNES_COTES:
+            ancien_vocabulaire = True
+    details = "; ".join(m for m in morceaux if m)
+    if ancien_vocabulaire:
+        # Une piece se cote en plan depuis la 0.6 : le fichier se corrige en
+        # deux remplacements, autant les dire plutot que laisser deviner.
+        details += (
+            " — une esquisse ecrite avant la version 0.6 nomme les cotes d'une piece "
+            "« largeur » et « hauteur » : renommez-les en « longueur » et « largeur »"
+        )
+    return details or "esquisse invalide"
+
+
+def _esquisse_depuis(corps: dict[str, Any]) -> Esquisse:
+    """Construit l'esquisse, en traduisant les erreurs de schema en francais."""
     try:
         return Esquisse(
             nom=str(corps.get("nom") or "esquisse"),
@@ -294,10 +320,7 @@ def _esquisse_depuis(corps: dict[str, Any]) -> Esquisse:
             murs=[MurInterieur(**m) for m in corps.get("murs", [])],
         )
     except ValidationError as erreur:
-        details = "; ".join(
-            str(d.get("msg", "")).removeprefix("Value error, ") for d in erreur.errors()
-        )
-        raise ValueError(details or "esquisse invalide") from erreur
+        raise ValueError(_details(erreur)) from erreur
 
 
 @app.post("/esquisse/caler")
@@ -375,10 +398,7 @@ def ouvrir_esquisse(corps: Annotated[dict[str, Any], Body()]) -> JSONResponse:
     try:
         esquisse = esquisse_depuis_texte(str(corps.get("source", "")))
     except ValidationError as erreur:
-        details = "; ".join(
-            str(d.get("msg", "")).removeprefix("Value error, ") for d in erreur.errors()
-        )
-        return JSONResponse({"erreur": details or "esquisse invalide"}, status_code=422)
+        return JSONResponse({"erreur": _details(erreur)}, status_code=422)
     except ValueError as erreur:
         return JSONResponse({"erreur": str(erreur)}, status_code=422)
     return JSONResponse(

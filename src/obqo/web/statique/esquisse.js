@@ -13,8 +13,8 @@ const MONDE = { largeur: 19200, hauteur: 14400 };
 const MINI = 1920; // une piece plus petite n'a plus d'espace habitable
 
 let pieces = [
-  { nom: "séjour", x: 1920, y: 1920, largeur: 4800, hauteur: 3840 },
-  { nom: "cuisine", x: 6720, y: 1920, largeur: 3840, hauteur: 3840 },
+  { nom: "séjour", x: 1920, y: 1920, longueur: 4800, largeur: 3840 },
+  { nom: "cuisine", x: 6720, y: 1920, longueur: 3840, largeur: 3840 },
 ];
 let baies = [];
 let murs = [];
@@ -65,8 +65,8 @@ function lignesVoisines(sauf) {
   const y = new Set();
   pieces.forEach((piece, index) => {
     if (index === sauf) return;
-    x.add(piece.x).add(piece.x + piece.largeur);
-    y.add(piece.y).add(piece.y + piece.hauteur);
+    x.add(piece.x).add(piece.x + piece.longueur);
+    y.add(piece.y).add(piece.y + piece.largeur);
   });
   return { x: [...x], y: [...y] };
 }
@@ -108,8 +108,8 @@ function chevauchements() {
     pieces.forEach((b, j) => {
       if (
         i < j &&
-        a.x < b.x + b.largeur && b.x < a.x + a.largeur &&
-        a.y < b.y + b.hauteur && b.y < a.y + a.hauteur
+        a.x < b.x + b.longueur && b.x < a.x + a.longueur &&
+        a.y < b.y + b.largeur && b.y < a.y + a.largeur
       ) {
         conflits.add(i);
         conflits.add(j);
@@ -148,12 +148,12 @@ function dessiner() {
       (index === selection ? " piece--active" : "") +
       (conflits.has(index) ? " piece--conflit" : "");
     const groupe = svg("g", { class: classes });
-    const yEcran = MONDE.hauteur - piece.y - piece.hauteur;
+    const yEcran = MONDE.hauteur - piece.y - piece.largeur;
     groupe.appendChild(
-      svg("rect", { x: piece.x, y: yEcran, width: piece.largeur, height: piece.hauteur })
+      svg("rect", { x: piece.x, y: yEcran, width: piece.longueur, height: piece.largeur })
     );
-    const cx = piece.x + piece.largeur / 2;
-    const cy = yEcran + piece.hauteur / 2;
+    const cx = piece.x + piece.longueur / 2;
+    const cy = yEcran + piece.largeur / 2;
     groupe.appendChild(
       Object.assign(svg("text", { x: cx, y: cy - 130, class: "piece__nom" }), {
         textContent: piece.nom,
@@ -161,13 +161,13 @@ function dessiner() {
     );
     groupe.appendChild(
       Object.assign(svg("text", { x: cx, y: cy + 280, class: "piece__cote" }), {
-        textContent: `${piece.largeur} × ${piece.hauteur}`,
+        textContent: `${piece.longueur} × ${piece.largeur}`,
       })
     );
     if (index === selection) {
       groupe.appendChild(
         svg("rect", {
-          x: piece.x + piece.largeur - 260, y: yEcran + piece.hauteur - 260,
+          x: piece.x + piece.longueur - 260, y: yEcran + piece.largeur - 260,
           width: 260, height: 260, class: "poignee",
         })
       );
@@ -447,10 +447,10 @@ const dansLeCadre = (b) =>
 // qui rentre du cote interieur doit les eviter, sinon elle se lit par-dessus.
 function boitesDesNoms() {
   return pieces.map((piece) => {
-    const cote = `${piece.largeur} × ${piece.hauteur}`;
+    const cote = `${piece.longueur} × ${piece.largeur}`;
     const largeur = Math.max(piece.nom.length * 190, cote.length * 145);
-    const cx = piece.x + piece.largeur / 2;
-    const cy = piece.y + piece.hauteur / 2;
+    const cx = piece.x + piece.longueur / 2;
+    const cy = piece.y + piece.largeur / 2;
     return { x0: cx - largeur / 2, y0: cy - 280, x1: cx + largeur / 2, y1: cy + 470 };
   });
 }
@@ -474,8 +474,8 @@ function boiteDuBati() {
   return {
     x0: Math.min(...pieces.map((p) => p.x)),
     y0: Math.min(...pieces.map((p) => p.y)),
-    x1: Math.max(...pieces.map((p) => p.x + p.largeur)),
-    y1: Math.max(...pieces.map((p) => p.y + p.hauteur)),
+    x1: Math.max(...pieces.map((p) => p.x + p.longueur)),
+    y1: Math.max(...pieces.map((p) => p.y + p.largeur)),
   };
 }
 
@@ -516,7 +516,7 @@ function surLeMur(point) {
 // (qui compte l'epaisseur des murs exterieurs) ni la surface habitable (qui
 // retire la moitie de chaque mur) — les deux se lisent sur le plan derive.
 function surfaceTotale() {
-  const m2 = pieces.reduce((total, p) => total + p.largeur * p.hauteur, 0) / 1e6;
+  const m2 = pieces.reduce((total, p) => total + p.longueur * p.largeur, 0) / 1e6;
   return `${m2.toFixed(1).replace(".", ",")} m²`;
 }
 
@@ -614,7 +614,7 @@ toile.addEventListener("pointerdown", (evenement) => {
     selection = index;
     const piece = pieces[index];
     const surPoignee =
-      point.x > piece.x + piece.largeur - 260 && point.y < piece.y + 260;
+      point.x > piece.x + piece.longueur - 260 && point.y < piece.y + 260;
     geste = surPoignee
       ? { type: "redimensionner" }
       : { type: "deplacer", ecart: { x: point.x - piece.x, y: point.y - piece.y } };
@@ -706,7 +706,7 @@ toile.addEventListener("pointermove", (evenement) => {
     selection = pieces.length;
     pieces.push({
       nom: `pièce ${pieces.length + 1}`,
-      x: origine.x, y: origine.y, largeur: PAS_DESSIN, hauteur: PAS_DESSIN,
+      x: origine.x, y: origine.y, longueur: PAS_DESSIN, largeur: PAS_DESSIN,
     });
     delete geste.ne;
   }
@@ -732,16 +732,16 @@ toile.addEventListener("pointermove", (evenement) => {
     const { origine } = geste;
     piece.x = Math.min(origine.x, px);
     piece.y = Math.min(origine.y, py);
-    piece.largeur = Math.max(PAS_DESSIN, Math.abs(px - origine.x));
-    piece.hauteur = Math.max(PAS_DESSIN, Math.abs(py - origine.y));
+    piece.longueur = Math.max(PAS_DESSIN, Math.abs(px - origine.x));
+    piece.largeur = Math.max(PAS_DESSIN, Math.abs(py - origine.y));
   } else if (geste.type === "deplacer") {
     const x = Math.max(0, caler(point.x - geste.ecart.x));
     const y = Math.max(0, caler(point.y - geste.ecart.y));
-    piece.x = aimanter(x, [...lignes.x, ...lignes.x.map((v) => v - piece.largeur)]);
-    piece.y = aimanter(y, [...lignes.y, ...lignes.y.map((v) => v - piece.hauteur)]);
+    piece.x = aimanter(x, [...lignes.x, ...lignes.x.map((v) => v - piece.longueur)]);
+    piece.y = aimanter(y, [...lignes.y, ...lignes.y.map((v) => v - piece.largeur)]);
   } else {
-    piece.largeur = Math.max(PAS_DESSIN, px - piece.x);
-    piece.hauteur = Math.max(PAS_DESSIN, piece.y + piece.hauteur - py);
+    piece.longueur = Math.max(PAS_DESSIN, px - piece.x);
+    piece.largeur = Math.max(PAS_DESSIN, piece.y + piece.largeur - py);
     piece.y = Math.min(piece.y, py);
   }
   dessiner();
@@ -793,8 +793,8 @@ toile.addEventListener("pointerup", () => {
   }
   if (geste && !geste.ne && selection !== null) {
     const piece = pieces[selection];
-    if (piece.largeur < MINI || piece.hauteur < MINI) {
-      etat.textContent = `« ${piece.nom} » fait ${piece.largeur} × ${piece.hauteur} : au moins ${MINI} mm dans chaque sens pour rester habitable.`;
+    if (piece.longueur < MINI || piece.largeur < MINI) {
+      etat.textContent = `« ${piece.nom} » fait ${piece.longueur} × ${piece.largeur} : au moins ${MINI} mm dans chaque sens pour rester habitable.`;
     }
   }
   geste = null;
@@ -870,20 +870,20 @@ function montrerFormePiece() {
   // deja enregistre — mais une piece vue en plan n'a pas de hauteur : elle a
   // une longueur (en x) et une largeur (en y). La hauteur de la maison est la
   // hauteur sous chainage, commune a tout le batiment.
-  document.getElementById("piece-longueur").value = piece.largeur;
-  document.getElementById("piece-largeur").value = piece.hauteur;
+  document.getElementById("piece-longueur").value = piece.longueur;
+  document.getElementById("piece-largeur").value = piece.largeur;
   document.getElementById("piece-x").value = piece.x;
   document.getElementById("piece-y").value = piece.y;
   document.getElementById("piece-resume").textContent = resumeDeLaPiece(piece);
 }
 
 function resumeDeLaPiece(piece) {
-  const surface = (piece.largeur * piece.hauteur) / 1e6;
+  const surface = (piece.longueur * piece.largeur) / 1e6;
   const lignes = [
-    `« ${piece.nom} » : longueur ${piece.largeur} × largeur ${piece.hauteur} mm ` +
+    `« ${piece.nom} » : longueur ${piece.longueur} × largeur ${piece.largeur} mm ` +
       `d'axe à axe, ${surface.toFixed(1).replace(".", ",")} m²`,
   ];
-  if (Math.min(piece.largeur, piece.hauteur) < MINI) {
+  if (Math.min(piece.longueur, piece.largeur) < MINI) {
     lignes.push(
       `moins de ${MINI} mm dans un sens : les murs qui la bordent ne lui ` +
         "laisseraient presque pas d'espace habitable"
@@ -899,10 +899,10 @@ function resumeDeLaPiece(piece) {
 // sur 480 si on le lui demande.
 const CHAMPS_DE_PIECE = {
   longueur: (piece, valeur) => {
-    piece.largeur = Math.max(PAS_DESSIN, valeur);
+    piece.longueur = Math.max(PAS_DESSIN, valeur);
   },
   largeur: (piece, valeur) => {
-    piece.hauteur = Math.max(PAS_DESSIN, valeur);
+    piece.largeur = Math.max(PAS_DESSIN, valeur);
   },
   x: (piece, valeur) => {
     piece.x = Math.max(0, valeur);
@@ -1141,7 +1141,10 @@ document.getElementById("mode-pieces").addEventListener("click", () => basculer(
 document.getElementById("mode-baies").addEventListener("click", () => basculer("baies"));
 document.getElementById("mode-murs").addEventListener("click", () => basculer("murs"));
 
-const MEMOIRE = "obqo.esquisse";
+const MEMOIRE = "obqo.esquisse.2";
+// La clef porte un numero : une esquisse gardee par l'ancienne version nommait
+// ses cotes `largeur`/`hauteur`, et relue telle quelle elle donnerait des
+// rectangles de largeur NaN. Changer de clef l'oublie proprement.
 
 function identite() {
   return {
@@ -1158,8 +1161,8 @@ function corps() {
       nom: p.nom,
       x: Math.round(p.x),
       y: Math.round(p.y),
+      longueur: Math.round(p.longueur),
       largeur: Math.round(p.largeur),
-      hauteur: Math.round(p.hauteur),
     })),
     baies: baies.map((b) => ({
       id: b.id,

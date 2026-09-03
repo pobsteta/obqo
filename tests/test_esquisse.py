@@ -30,14 +30,14 @@ def codes(rapport) -> set[str]:
 
 def test_le_calage_ramene_tout_sur_le_pas() -> None:
     croquis = esquisse(
-        {"nom": "a", "x": 0, "y": 0, "largeur": 5100, "hauteur": 4300},
-        {"nom": "b", "x": 5100, "y": 0, "largeur": 3700, "hauteur": 4300},
+        {"nom": "a", "x": 0, "y": 0, "longueur": 5100, "largeur": 4300},
+        {"nom": "b", "x": 5100, "y": 0, "longueur": 3700, "largeur": 4300},
     )
     cale, ajustements = caler(croquis)
     for piece in cale.pieces:
         assert piece.x % PAS_RECOMMANDE == 0
+        assert piece.longueur % PAS_RECOMMANDE == 0
         assert piece.largeur % PAS_RECOMMANDE == 0
-        assert piece.hauteur % PAS_RECOMMANDE == 0
     assert len(ajustements) == 2
     assert "5100 x 4300 -> 5280 x 4320" in str(ajustements[0])
 
@@ -49,32 +49,32 @@ def test_le_calage_preserve_l_adjacence() -> None:
     le batiment se coupe en deux sans que personne l'ait demande.
     """
     croquis = esquisse(
-        {"nom": "a", "x": 0, "y": 0, "largeur": 5100, "hauteur": 4300},
-        {"nom": "b", "x": 5100, "y": 0, "largeur": 3700, "hauteur": 4300},
-        {"nom": "c", "x": 0, "y": 4300, "largeur": 8800, "hauteur": 3100},
+        {"nom": "a", "x": 0, "y": 0, "longueur": 5100, "largeur": 4300},
+        {"nom": "b", "x": 5100, "y": 0, "longueur": 3700, "largeur": 4300},
+        {"nom": "c", "x": 0, "y": 4300, "longueur": 8800, "largeur": 3100},
     )
     cale, _ = caler(croquis)
     a, b, c = cale.pieces
     assert a.droite == b.x, "les voisines de gauche et de droite se sont ecartees"
     assert a.haut == c.y, "la piece du dessus s'est decollee"
-    assert c.largeur == a.largeur + b.largeur
+    assert c.longueur == a.longueur + b.longueur
 
 
 def test_le_calage_ne_rend_jamais_une_piece_plate() -> None:
     croquis = esquisse(
-        {"nom": "a", "x": 0, "y": 0, "largeur": 100, "hauteur": 4800},
-        {"nom": "b", "x": 100, "y": 0, "largeur": 100, "hauteur": 4800},
+        {"nom": "a", "x": 0, "y": 0, "longueur": 100, "largeur": 4800},
+        {"nom": "b", "x": 100, "y": 0, "longueur": 100, "largeur": 4800},
     )
     cale, _ = caler(croquis)
-    assert all(p.largeur >= PAS_RECOMMANDE for p in cale.pieces)
+    assert all(p.longueur >= PAS_RECOMMANDE for p in cale.pieces)
     assert cale.pieces[0].droite == cale.pieces[1].x
 
 
 def test_deux_pieces_qui_se_chevauchent_sont_refusees_des_le_modele() -> None:
     with pytest.raises(ValueError, match="chevauchent"):
         esquisse(
-            {"nom": "a", "x": 0, "y": 0, "largeur": 4800, "hauteur": 4800},
-            {"nom": "b", "x": 2400, "y": 2400, "largeur": 4800, "hauteur": 4800},
+            {"nom": "a", "x": 0, "y": 0, "longueur": 4800, "largeur": 4800},
+            {"nom": "b", "x": 2400, "y": 2400, "longueur": 4800, "largeur": 4800},
         )
 
 
@@ -84,8 +84,8 @@ def test_deux_pieces_qui_se_chevauchent_sont_refusees_des_le_modele() -> None:
 def test_deux_pieces_donnent_un_contour_et_un_refend() -> None:
     plan, rapport = vers_plan(
         esquisse(
-            {"nom": "séjour", "x": 0, "y": 0, "largeur": 4800, "hauteur": 3840},
-            {"nom": "cuisine", "x": 4800, "y": 0, "largeur": 3840, "hauteur": 3840},
+            {"nom": "séjour", "x": 0, "y": 0, "longueur": 4800, "largeur": 3840},
+            {"nom": "cuisine", "x": 4800, "y": 0, "longueur": 3840, "largeur": 3840},
         )
     )
     assert plan is not None
@@ -103,9 +103,9 @@ def test_un_refend_ne_traverse_jamais_une_piece() -> None:
     """
     plan, _ = vers_plan(
         esquisse(
-            {"nom": "séjour", "x": 0, "y": 1920, "largeur": 4800, "hauteur": 3840},
-            {"nom": "ch1", "x": 0, "y": 0, "largeur": 2880, "hauteur": 1920},
-            {"nom": "ch2", "x": 2880, "y": 0, "largeur": 1920, "hauteur": 1920},
+            {"nom": "séjour", "x": 0, "y": 1920, "longueur": 4800, "largeur": 3840},
+            {"nom": "ch1", "x": 0, "y": 0, "longueur": 2880, "largeur": 1920},
+            {"nom": "ch2", "x": 2880, "y": 0, "longueur": 1920, "largeur": 1920},
         )
     )
     assert plan is not None
@@ -116,9 +116,9 @@ def test_un_refend_ne_traverse_jamais_une_piece() -> None:
 def test_un_mur_qui_ne_traverse_pas_devient_une_cloison() -> None:
     plan, rapport = vers_plan(
         esquisse(
-            {"nom": "séjour", "x": 0, "y": 0, "largeur": 4800, "hauteur": 7680},
-            {"nom": "ch1", "x": 4800, "y": 0, "largeur": 3840, "hauteur": 3840},
-            {"nom": "ch2", "x": 4800, "y": 3840, "largeur": 3840, "hauteur": 3840},
+            {"nom": "séjour", "x": 0, "y": 0, "longueur": 4800, "largeur": 7680},
+            {"nom": "ch1", "x": 4800, "y": 0, "longueur": 3840, "largeur": 3840},
+            {"nom": "ch2", "x": 4800, "y": 3840, "longueur": 3840, "largeur": 3840},
         )
     )
     assert plan is not None
@@ -130,10 +130,10 @@ def test_deux_refends_qui_se_croisent_sont_departages() -> None:
     """Le systeme ne decrit pas de jonction en croix : un sens doit ceder."""
     plan, rapport = vers_plan(
         esquisse(
-            {"nom": "a", "x": 0, "y": 0, "largeur": 4800, "hauteur": 3840},
-            {"nom": "b", "x": 4800, "y": 0, "largeur": 3840, "hauteur": 3840},
-            {"nom": "c", "x": 0, "y": 3840, "largeur": 4800, "hauteur": 3840},
-            {"nom": "d", "x": 4800, "y": 3840, "largeur": 3840, "hauteur": 3840},
+            {"nom": "a", "x": 0, "y": 0, "longueur": 4800, "largeur": 3840},
+            {"nom": "b", "x": 4800, "y": 0, "longueur": 3840, "largeur": 3840},
+            {"nom": "c", "x": 0, "y": 3840, "longueur": 4800, "largeur": 3840},
+            {"nom": "d", "x": 4800, "y": 3840, "longueur": 3840, "largeur": 3840},
         )
     )
     assert plan is not None
@@ -146,8 +146,8 @@ def test_deux_refends_qui_se_croisent_sont_departages() -> None:
 def test_un_plan_en_deux_morceaux_est_refuse_et_localise() -> None:
     plan, rapport = vers_plan(
         esquisse(
-            {"nom": "avant", "x": 0, "y": 0, "largeur": 4800, "hauteur": 3840},
-            {"nom": "arriere", "x": 0, "y": 4080, "largeur": 4800, "hauteur": 3840},
+            {"nom": "avant", "x": 0, "y": 0, "longueur": 4800, "largeur": 3840},
+            {"nom": "arriere", "x": 0, "y": 4080, "longueur": 4800, "largeur": 3840},
         )
     )
     assert plan is None
@@ -158,8 +158,8 @@ def test_un_plan_en_deux_morceaux_est_refuse_et_localise() -> None:
 def test_deux_pieces_qui_ne_se_touchent_que_par_un_coin_sont_refusees() -> None:
     plan, rapport = vers_plan(
         esquisse(
-            {"nom": "a", "x": 0, "y": 0, "largeur": 2880, "hauteur": 2880},
-            {"nom": "b", "x": 2880, "y": 2880, "largeur": 2880, "hauteur": 2880},
+            {"nom": "a", "x": 0, "y": 0, "longueur": 2880, "largeur": 2880},
+            {"nom": "b", "x": 2880, "y": 2880, "longueur": 2880, "largeur": 2880},
         )
     )
     assert plan is None
@@ -168,7 +168,7 @@ def test_deux_pieces_qui_ne_se_touchent_que_par_un_coin_sont_refusees() -> None:
 
 def test_une_esquisse_hors_grille_est_refusee_avec_le_remede() -> None:
     plan, rapport = vers_plan(
-        esquisse({"nom": "a", "x": 0, "y": 0, "largeur": 5100, "hauteur": 4300})
+        esquisse({"nom": "a", "x": 0, "y": 0, "longueur": 5100, "largeur": 4300})
     )
     assert plan is None
     constat = next(c for c in rapport.constats if c.code == "PIECE-HORS-GRILLE")
@@ -181,7 +181,7 @@ def test_une_esquisse_hors_grille_est_refusee_avec_le_remede() -> None:
 
 def test_une_piece_plus_petite_que_ses_murs_est_refusee() -> None:
     plan, rapport = vers_plan(
-        esquisse({"nom": "placard", "x": 0, "y": 0, "largeur": 240, "hauteur": 4800})
+        esquisse({"nom": "placard", "x": 0, "y": 0, "longueur": 240, "largeur": 4800})
     )
     assert plan is None
     assert "PIECE-TROP-PETITE" in codes(rapport)
@@ -190,8 +190,8 @@ def test_une_piece_plus_petite_que_ses_murs_est_refusee() -> None:
 def test_une_esquisse_en_L_donne_un_contour_a_six_sommets() -> None:
     plan, _ = vers_plan(
         esquisse(
-            {"nom": "séjour", "x": 0, "y": 0, "largeur": 4800, "hauteur": 7680},
-            {"nom": "cuisine", "x": 4800, "y": 0, "largeur": 3840, "hauteur": 3840},
+            {"nom": "séjour", "x": 0, "y": 0, "longueur": 4800, "largeur": 7680},
+            {"nom": "cuisine", "x": 4800, "y": 0, "longueur": 3840, "largeur": 3840},
         )
     )
     assert plan is not None
@@ -205,8 +205,8 @@ def test_le_plan_derive_se_calepine_une_fois_ses_baies_posees() -> None:
     """L'esquisse s'arrete au gros oeuvre : les baies restent a poser."""
     plan, _ = vers_plan(
         esquisse(
-            {"nom": "séjour", "x": 0, "y": 0, "largeur": 4800, "hauteur": 4800},
-            {"nom": "cuisine", "x": 4800, "y": 0, "largeur": 3840, "hauteur": 4800},
+            {"nom": "séjour", "x": 0, "y": 0, "longueur": 4800, "largeur": 4800},
+            {"nom": "cuisine", "x": 4800, "y": 0, "longueur": 3840, "largeur": 4800},
         )
     )
     assert plan is not None
@@ -228,8 +228,8 @@ def test_deux_pieces_quelconques_donnent_toujours_un_plan(a: int, b: int, h: int
     """Quelles que soient les cotes tapees, le calage doit produire un plan."""
     cale, _ = caler(
         esquisse(
-            {"nom": "a", "x": 0, "y": 0, "largeur": a, "hauteur": h},
-            {"nom": "b", "x": a, "y": 0, "largeur": b, "hauteur": h},
+            {"nom": "a", "x": 0, "y": 0, "longueur": a, "largeur": h},
+            {"nom": "b", "x": a, "y": 0, "longueur": b, "largeur": h},
         )
     )
     plan, rapport = vers_plan(cale)
@@ -254,8 +254,8 @@ def baie(**champs: Any) -> Baie:
 def deux_pieces(*baies: Baie) -> Esquisse:
     return Esquisse(
         pieces=[
-            Piece(nom="séjour", x=0, y=0, largeur=4800, hauteur=4800),
-            Piece(nom="cuisine", x=4800, y=0, largeur=3840, hauteur=4800),
+            Piece(nom="séjour", x=0, y=0, longueur=4800, largeur=4800),
+            Piece(nom="cuisine", x=4800, y=0, longueur=3840, largeur=4800),
         ],
         baies=list(baies),
     )
@@ -345,8 +345,8 @@ def test_le_calage_ne_deplace_pas_le_dessin_dans_le_coin() -> None:
     sous les baies posees, et le dessin bougerait sous la souris."""
     croquis = Esquisse(
         pieces=[
-            Piece(nom="a", x=1920, y=1920, largeur=4800, hauteur=3840),
-            Piece(nom="b", x=6720, y=1920, largeur=3840, hauteur=3840),
+            Piece(nom="a", x=1920, y=1920, longueur=4800, largeur=3840),
+            Piece(nom="b", x=6720, y=1920, longueur=3840, largeur=3840),
         ]
     )
     cale, ajustements = caler(croquis)
@@ -377,8 +377,8 @@ def test_une_esquisse_se_relit_a_l_identique() -> None:
     croquis = Esquisse(
         nom="Maison Obstetar",
         pieces=[
-            Piece(nom="séjour", x=1920, y=1920, largeur=4800, hauteur=3840),
-            Piece(nom="cuisine", x=6720, y=1920, largeur=3840, hauteur=3840),
+            Piece(nom="séjour", x=1920, y=1920, longueur=4800, largeur=3840),
+            Piece(nom="cuisine", x=6720, y=1920, longueur=3840, largeur=3840),
         ],
         baies=[
             baie(
@@ -398,7 +398,7 @@ def test_les_noms_delicats_survivent_a_l_ecriture() -> None:
     """Un nom avec « : » ou « # » casserait un scalaire YAML nu."""
     croquis = Esquisse(
         nom="Maison : le projet",
-        pieces=[Piece(nom="séjour # sud", x=0, y=0, largeur=4800, hauteur=4800)],
+        pieces=[Piece(nom="séjour # sud", x=0, y=0, longueur=4800, largeur=4800)],
         baies=[baie(id="- porte {bizarre}", depart=(1920, 0), arrivee=(3360, 0))],
     )
     relu = esquisse_depuis_texte(esquisse_en_yaml(croquis))
@@ -452,7 +452,7 @@ def croquis(**extra: object) -> Esquisse:
     """Une grande piece, sur laquelle tracer des murs interieurs."""
     return Esquisse(
         nom="essai",
-        pieces=[Piece(nom="grande", x=0, y=0, largeur=9600, hauteur=4800)],
+        pieces=[Piece(nom="grande", x=0, y=0, longueur=9600, largeur=4800)],
         **extra,
     )
 
@@ -499,8 +499,8 @@ def test_le_trace_complete_la_deduction_au_lieu_de_la_remplacer() -> None:
     esquisse = Esquisse(
         nom="essai",
         pieces=[
-            Piece(nom="a", x=0, y=0, largeur=4800, hauteur=9600),
-            Piece(nom="b", x=4800, y=0, largeur=4800, hauteur=9600),
+            Piece(nom="a", x=0, y=0, longueur=4800, largeur=9600),
+            Piece(nom="b", x=4800, y=0, longueur=4800, largeur=9600),
         ],
         murs=[{"id": "R-trace", "type": "cloison", "depart": (0, 4800), "arrivee": (9600, 4800)}],
     )
@@ -514,8 +514,8 @@ def test_retracer_un_refend_deja_deduit_ne_le_compte_pas_deux_fois() -> None:
     esquisse = Esquisse(
         nom="essai",
         pieces=[
-            Piece(nom="a", x=0, y=0, largeur=4800, hauteur=4800),
-            Piece(nom="b", x=4800, y=0, largeur=4800, hauteur=4800),
+            Piece(nom="a", x=0, y=0, longueur=4800, largeur=4800),
+            Piece(nom="b", x=4800, y=0, longueur=4800, largeur=4800),
         ],
         murs=[{"id": "doublon", "type": "refend", "depart": (4800, 0), "arrivee": (4800, 4800)}],
     )
@@ -530,8 +530,8 @@ def test_deux_refends_qui_se_croisent_ne_disparaissent_pas_en_silence() -> None:
     esquisse = Esquisse(
         nom="essai",
         pieces=[
-            Piece(nom="a", x=0, y=0, largeur=4800, hauteur=9600),
-            Piece(nom="b", x=4800, y=0, largeur=4800, hauteur=9600),
+            Piece(nom="a", x=0, y=0, longueur=4800, largeur=9600),
+            Piece(nom="b", x=4800, y=0, longueur=4800, largeur=9600),
         ],
         murs=[{"id": "travers", "type": "refend", "depart": (0, 4800), "arrivee": (9600, 4800)}],
     )

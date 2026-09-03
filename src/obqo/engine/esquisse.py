@@ -30,35 +30,45 @@ PAS_RECOMMANDE = 480
 Point = tuple[int, int]
 
 
+class Cote(NamedTuple):
+    """Une cote et ce que le calage lui a fait."""
+
+    nom: str
+    avant: int
+    apres: int
+
+    @property
+    def ecart(self) -> int:
+        return self.apres - self.avant
+
+
 class Ajustement(NamedTuple):
     """Ce que le calage a change sur une piece ou sur une baie.
 
-    Une baie n'a qu'une largeur a caler : sa hauteur se saisit au clavier, elle
-    ne se dessine pas. Les champs de hauteur valent alors None.
+    Une piece se cale sur ses deux cotes en plan — longueur et largeur ; une
+    baie n'en a qu'une, sa largeur : sa hauteur se saisit au clavier, elle ne
+    se dessine pas. Chaque cote porte son nom, plutot qu'une position dans un
+    tuple ou « la seconde » voudrait dire deux choses selon l'objet.
     """
 
     quoi: str
-    largeur_avant: int
-    largeur_apres: int
-    hauteur_avant: int | None = None
-    hauteur_apres: int | None = None
+    cotes: tuple[Cote, ...]
 
     @property
     def bouge(self) -> bool:
-        return self.largeur_avant != self.largeur_apres or self.hauteur_avant != self.hauteur_apres
+        return any(cote.ecart for cote in self.cotes)
 
     def __str__(self) -> str:
-        if self.hauteur_avant is None or self.hauteur_apres is None:
+        if len(self.cotes) == 1:
+            seule = self.cotes[0]
             return (
-                f"{self.quoi} : largeur {self.largeur_avant} -> {self.largeur_apres} mm "
-                f"({self.largeur_apres - self.largeur_avant:+d})"
+                f"{self.quoi} : {seule.nom} {seule.avant} -> {seule.apres} mm "
+                f"({seule.ecart:+d})"
             )
-        return (
-            f"{self.quoi} : {self.largeur_avant} x {self.hauteur_avant} -> "
-            f"{self.largeur_apres} x {self.hauteur_apres} mm "
-            f"({self.largeur_apres - self.largeur_avant:+d}, "
-            f"{self.hauteur_apres - self.hauteur_avant:+d})"
-        )
+        avant = " x ".join(str(cote.avant) for cote in self.cotes)
+        apres = " x ".join(str(cote.apres) for cote in self.cotes)
+        ecarts = ", ".join(f"{cote.ecart:+d}" for cote in self.cotes)
+        return f"{self.quoi} : {avant} -> {apres} mm ({ecarts})"
 
 
 def _caler_lignes(valeurs: list[int], pas: int) -> dict[int, int]:
@@ -108,12 +118,18 @@ def caler(esquisse: Esquisse, pas: int = PAS_RECOMMANDE) -> tuple[Esquisse, list
             nom=piece.nom,
             x=x[piece.x],
             y=y[piece.y],
-            largeur=x[piece.droite] - x[piece.x],
-            hauteur=y[piece.haut] - y[piece.y],
+            longueur=x[piece.droite] - x[piece.x],
+            largeur=y[piece.haut] - y[piece.y],
         )
         pieces.append(calee)
         ajustements.append(
-            Ajustement(piece.nom, piece.largeur, calee.largeur, piece.hauteur, calee.hauteur)
+            Ajustement(
+                piece.nom,
+                (
+                    Cote("longueur", piece.longueur, calee.longueur),
+                    Cote("largeur", piece.largeur, calee.largeur),
+                ),
+            )
         )
     baies: list[Baie] = []
     for baie in esquisse.baies:
@@ -130,7 +146,9 @@ def caler(esquisse: Esquisse, pas: int = PAS_RECOMMANDE) -> tuple[Esquisse, list
             }
         )
         baies.append(baie_calee)
-        ajustements.append(Ajustement(baie.id, baie.largeur, baie_calee.largeur))
+        ajustements.append(
+            Ajustement(baie.id, (Cote("largeur", baie.largeur, baie_calee.largeur),))
+        )
     murs: list[MurInterieur] = []
     for mur in esquisse.murs:
         mur_cale = mur.model_copy(
@@ -140,7 +158,9 @@ def caler(esquisse: Esquisse, pas: int = PAS_RECOMMANDE) -> tuple[Esquisse, list
             }
         )
         murs.append(mur_cale)
-        ajustements.append(Ajustement(mur.id, mur.longueur, mur_cale.longueur))
+        ajustements.append(
+            Ajustement(mur.id, (Cote("longueur", mur.longueur, mur_cale.longueur),))
+        )
     return (
         esquisse.model_copy(update={"pieces": pieces, "baies": baies, "murs": murs}),
         [a for a in ajustements if a.bouge],
@@ -567,9 +587,7 @@ def vers_plan(esquisse: Esquisse) -> tuple[Plan | None, Rapport]:
     """Convertit une esquisse en plan obqo. Retourne None si c'est impossible."""
     rapport = Rapport()
     for piece in esquisse.pieces:
-        # Une piece se cote en plan : longueur et largeur, jamais une hauteur.
-        # Les champs du modele gardent leurs noms — voir `model.esquisse.Piece`.
-        for cote, valeur in (("longueur", piece.largeur), ("largeur", piece.hauteur)):
+        for cote, valeur in (("longueur", piece.longueur), ("largeur", piece.largeur)):
             if valeur % GRILLE:
                 rapport.ajouter(
                     Gravite.ERREUR,
@@ -578,12 +596,12 @@ def vers_plan(esquisse: Esquisse) -> tuple[Plan | None, Rapport]:
                     f"{cote} {valeur} mm : multiple de {GRILLE} mm attendu — "
                     "caler l'esquisse avant de convertir",
                 )
-        if min(piece.largeur, piece.hauteur) <= EPAISSEUR_MUR:
+        if min(piece.longueur, piece.largeur) <= EPAISSEUR_MUR:
             rapport.ajouter(
                 Gravite.ERREUR,
                 "PIECE-TROP-PETITE",
                 piece.nom,
-                f"{piece.largeur} x {piece.hauteur} mm : les murs qui la bordent "
+                f"{piece.longueur} x {piece.largeur} mm : les murs qui la bordent "
                 "ne laisseraient aucun espace habitable",
             )
 

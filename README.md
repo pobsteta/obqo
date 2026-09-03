@@ -272,14 +272,22 @@ et y — sur le modèle de ceux de l'ouverture. Un plan se saisit souvent depuis
 cotes relevées : « le séjour fait 4,80 sur 3,84 » se tape, là où le retrouver à
 la souris au pas de 240 est un exercice inutile.
 
-**Une pièce n'a pas de hauteur, et l'interface ne le dit plus autrement.** Vue en
-plan, elle a deux cotes horizontales : une **longueur** en x, une **largeur** en
-y. La seule hauteur de l'esquisse est la *hauteur sous chaînage*, commune à tout
-le bâtiment — et celle d'une ouverture, qui est bien verticale, sous le linteau.
-Les constats du serveur suivent le même vocabulaire : « longueur 5100 mm :
-multiple de 240 attendu ». Le modèle, lui, garde `largeur` et `hauteur` : ce sont
-les noms des esquisses déjà enregistrées, et les renommer casserait les fichiers
-pour un vocabulaire. Le champ le documente.
+**Une pièce n'a pas de hauteur, et rien ne le dit plus autrement.** Vue en plan,
+elle a deux cotes horizontales : une **longueur** en x, une **largeur** en y. La
+seule hauteur de l'esquisse est la *hauteur sous chaînage*, commune à tout le
+bâtiment — et celle d'une ouverture, qui est bien verticale, sous le linteau.
+
+Le renommage va jusqu'au bout : le modèle, le fichier YAML enregistré, les
+constats du serveur (« longueur 5100 mm : multiple de 240 attendu ») et
+l'interface disent tous la même chose. Pas d'alias de compatibilité — un
+vocabulaire qui se dit de deux façons finit par s'en dire une troisième.
+
+Une esquisse écrite **avant la 0.6** se reprend donc à la main : `largeur:`
+devient `longueur:`, `hauteur:` devient `largeur:`, dans le bloc `pieces`
+seulement. L'application ne devine pas, mais elle le dit — ouvrir un tel fichier
+répond « pieces.0.longueur : Field required ; pieces.0.hauteur : Extra inputs are
+not permitted — une esquisse écrite avant la version 0.6 nomme les cotes d'une
+pièce « largeur » et « hauteur » : renommez-les en « longueur » et « largeur » ».
 
 Les murs sur lesquels on pose les ouvertures viennent du serveur, pas d'un
 calcul refait côté navigateur : une seule source de vérité pour la géométrie.
