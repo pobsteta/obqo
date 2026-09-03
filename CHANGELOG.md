@@ -7,6 +7,12 @@ n'y écrit pas à la main — on écrit ses messages de commit.
 
 Voir `docs/publier.md` pour la règle complète.
 
+## 0.5.0 — 2026-09-03
+
+### Nouveautés
+
+- **plans** — reperer les murs sur les dessins, et compter la surface
+
 ## 0.4.0 — 2026-09-03
 
 ### Nouveautés
