@@ -196,6 +196,32 @@
       "title": "Parametres",
       "type": "object"
     },
+    "Poteau": {
+      "additionalProperties": false,
+      "description": "Poteau raidisseur P10, pose dans un module de 240 de la course.\n\nL'application en ajoute d'elle-meme la ou un pan de mur depasse l'entraxe\ndu paragraphe 1.7 ; en declarer un ici le place ou vous voulez, et\nl'ajout automatique n'a alors plus lieu d'etre sur ce pan.",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "mur": {
+          "title": "Mur",
+          "type": "string"
+        },
+        "position": {
+          "minimum": 0,
+          "title": "Position",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "mur",
+        "position"
+      ],
+      "title": "Poteau",
+      "type": "object"
+    },
     "Refend": {
       "additionalProperties": false,
       "description": "Mur interieur porteur, attache a deux murs existants.",
@@ -353,6 +379,14 @@
         "$ref": "#/$defs/Refend"
       },
       "title": "Refends",
+      "type": "array"
+    },
+    "poteaux": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Poteau"
+      },
+      "title": "Poteaux",
       "type": "array"
     },
     "parametres": {

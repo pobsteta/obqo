@@ -10,12 +10,15 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from itertools import pairwise
 
+from obqo.engine.raidissement import coupures as points_raidisseurs
+from obqo.engine.raidissement import positions_manquantes
 from obqo.model.plan import Ouverture, Plan
 from obqo.units import (
     ENTRAXE_MAXI_RAIDISSEUR,
     GRILLE,
     HAUTEUR_MINI_PASSAGE,
     HAUTEUR_RANG,
+    MODULE_POTEAU,
     PORTEE_MAXI_LINTEAU,
     RECUL_MINI_BAIE_ANGLE,
     sur_grille,
@@ -94,8 +97,13 @@ def valider(
     longueurs_murs: dict[str, int],
     ancrages: dict[str, list[int]] | None = None,
     courses: dict[str, list[tuple[int, int]]] | None = None,
-) -> tuple[Rapport, list[Ouverture]]:
-    """Valide le plan et retourne le rapport et les ouvertures normalisees."""
+) -> tuple[Rapport, list[Ouverture], dict[str, list[int]]]:
+    """Valide le plan, normalise les ouvertures et arrete les poteaux raidisseurs.
+
+    Les poteaux rendus sont ceux du plan **plus** ceux que l'application ajoute
+    la ou un pan de mur depasse l'entraxe du paragraphe 1.7. Les arreter ici
+    plutot qu'ailleurs evite de parcourir deux fois les memes coupures.
+    """
     rapport = Rapport()
     mode = plan.parametres.hors_grille
 
@@ -211,22 +219,97 @@ def valider(
                 )
 
     # --- raidissement ----------------------------------------------------
+    poteaux = _raidir(plan, rapport, longueurs_murs, par_mur, ancrages or {})
+    return rapport, normalisees, poteaux
+
+
+def _poteaux_declares(
+    plan: Plan,
+    rapport: Rapport,
+    longueurs_murs: dict[str, int],
+    par_mur: dict[str, list[Ouverture]],
+) -> dict[str, list[int]]:
+    """Controle les poteaux poses a la main et les range par mur."""
+    declares: dict[str, list[int]] = {}
+    for poteau in plan.poteaux:
+        ou = f"{poteau.mur}/{poteau.id}"
+        longueur = longueurs_murs.get(poteau.mur)
+        if longueur is None:
+            rapport.ajouter(Gravite.ERREUR, "MUR-INCONNU", ou, f"le mur {poteau.mur} n'existe pas")
+            continue
+        if not sur_grille(poteau.position):
+            rapport.ajouter(
+                Gravite.ERREUR,
+                "HORS-GRILLE",
+                ou,
+                f"position = {poteau.position} mm n'est pas un multiple de {GRILLE} mm",
+            )
+            continue
+        # Un poteau colle a un angle prendrait la place de la brique filante du
+        # harpage : on lui laisse un module de degagement de chaque cote.
+        if poteau.position < GRILLE or poteau.fin > longueur - GRILLE:
+            rapport.ajouter(
+                Gravite.ERREUR,
+                "POTEAU-EN-ANGLE",
+                ou,
+                f"module {poteau.position}-{poteau.fin} mm sur un mur de {longueur} mm : "
+                f"laisser {GRILLE} mm de degagement a chaque extremite, la brique "
+                "filante du harpage y passe",
+            )
+            continue
+        for o in par_mur.get(poteau.mur, []):
+            if poteau.position < o.fin and o.position < poteau.fin:
+                rapport.ajouter(
+                    Gravite.ERREUR,
+                    "POTEAU-DANS-BAIE",
+                    ou,
+                    f"le module {poteau.position}-{poteau.fin} mm recouvre la baie "
+                    f"{o.id} ({o.position}-{o.fin} mm)",
+                )
+                break
+        else:
+            declares.setdefault(poteau.mur, []).append(poteau.position)
+    return declares
+
+
+def _raidir(
+    plan: Plan,
+    rapport: Rapport,
+    longueurs_murs: dict[str, int],
+    par_mur: dict[str, list[Ouverture]],
+    ancrages: dict[str, list[int]],
+) -> dict[str, list[int]]:
+    """Poteaux par mur : ceux du plan, puis ceux que l'application ajoute."""
+    declares = _poteaux_declares(plan, rapport, longueurs_murs, par_mur)
+    poteaux: dict[str, list[int]] = {}
     for identifiant, longueur in longueurs_murs.items():
-        coupures = sorted(
-            [0]
-            + [u for o in par_mur.get(identifiant, []) for u in (o.position, o.fin)]
-            + list((ancrages or {}).get(identifiant, []))
-            + [longueur]
-        )
-        for a, b in pairwise(coupures):
+        poses = sorted(declares.get(identifiant, []))
+        bornes = [u for o in par_mur.get(identifiant, []) for u in (o.position, o.fin)]
+        bornes += [u for p in poses for u in (p, p + MODULE_POTEAU)]
+        ajoutes = positions_manquantes(longueur, bornes, ancrages.get(identifiant, []))
+        if ajoutes:
+            rapport.ajouter(
+                Gravite.HYPOTHESE,
+                "POTEAU-AJOUTE",
+                identifiant,
+                f"{len(ajoutes)} poteau(x) raidisseur(s) P10 ajoute(s) a "
+                + ", ".join(f"{u} mm" for u in ajoutes)
+                + f" : au-dela de {ENTRAXE_MAXI_RAIDISSEUR} mm sans baie ni refend, "
+                "le paragraphe 1.7 en demande un. Chacun occupe un module de 240 "
+                "entre deux abouts fermes ; posez-en dans le plan pour choisir "
+                "vous-meme leur place",
+            )
+        poteaux[identifiant] = sorted(poses + ajoutes)
+        # Filet de securite : la repartition doit toujours ramener chaque pan
+        # sous l'entraxe. Si ce constat sort un jour, c'est le calcul qui a tort.
+        bornes += [u for p in ajoutes for u in (p, p + MODULE_POTEAU)]
+        for a, b in pairwise(points_raidisseurs(longueur, bornes, ancrages.get(identifiant, []))):
             if b - a > ENTRAXE_MAXI_RAIDISSEUR:
                 rapport.ajouter(
                     Gravite.ERREUR,
                     "RAIDISSEUR-MANQUANT",
                     identifiant,
                     f"{b - a} mm de mur sans baie ni refend entre {a} et {b} mm : "
-                    f"{ENTRAXE_MAXI_RAIDISSEUR} mm maximum, ajouter un refend, "
-                    "une baie ou un poteau raidisseur P10",
+                    f"{ENTRAXE_MAXI_RAIDISSEUR} mm maximum",
                 )
-
-    return rapport, normalisees
+    return poteaux

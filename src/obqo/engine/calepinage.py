@@ -27,11 +27,13 @@ from obqo.rules.catalogue import (
     CHAINAGE_PAR_BRIQUE,
     JOINT_COURANT,
     LINTEAU_PAR_MONTANT,
+    RAIDISSEUR_PAR_RANG,
 )
 from obqo.units import (
     APPUI_LINTEAU,
     LARGEUR_BAIE_JAMBAGE_DOUBLE,
     LONGUEUR_BRIQUE,
+    MODULE_POTEAU,
     PORTEE_MAXI_LINTEAU,
 )
 
@@ -81,6 +83,7 @@ def _poser_rang(
     rang: int,
     sq: Squelette,
     ouvertures: list[Ouverture],
+    poteaux: list[int],
     demi_briques_d_angle: list[tuple[str, int]],
 ) -> Rang:
     debut, fin = sq.course(mur, rang)
@@ -90,7 +93,12 @@ def _poser_rang(
     file_au_debut = angle_debut is not None and angle_debut.filant(rang) == mur.id
     file_a_la_fin = angle_fin is not None and angle_fin.filant(rang) == mur.id
 
+    # Un poteau raidisseur traverse tous les rangs : son module de 240 est un
+    # vide permanent, et les deux briques qui l'encadrent y ferment leur about
+    # d'elles-memes — c'est exactement le « insere entre briques d'about
+    # fermees » du paragraphe 1.7, sans une ligne de plus.
     vides = [v for o in ouvertures if (v := vide_du_rang(o, rang)) is not None]
+    vides += [(u, u + MODULE_POTEAU) for u in poteaux]
     troncons = _segments(debut, fin, vides)
     r = Rang(mur=mur.id, indice=rang, debut=debut, fin=fin)
 
@@ -139,6 +147,17 @@ def _poser_rang(
                     )
                 )
             u += longueur
+
+    for u in poteaux:
+        r.quincaillerie.append(
+            Quincaillerie(
+                mur=mur.id,
+                rang=rang,
+                u=u,
+                role="poteau raidisseur",
+                pieces=tuple(sorted(RAIDISSEUR_PAR_RANG.items())),
+            )
+        )
 
     # Quincaillerie d'angle : portee par le mur filant, une fois par rang.
     for angle, u_angle in ((angle_debut, 0), (angle_fin, mur.longueur)):
@@ -225,7 +244,7 @@ def calepiner(plan: Plan) -> tuple[Calepinage | None, Rapport]:
     sq = squelette(plan)
     longueurs = {m.id: m.longueur for m in sq.murs}
     courses = {m.id: [sq.course(m, r) for r in range(plan.rangs)] for m in sq.murs}
-    rapport, ouvertures = valider(plan, longueurs, sq.ancrages, courses)
+    rapport, ouvertures, poteaux = valider(plan, longueurs, sq.ancrages, courses)
     if not rapport.valide:
         return None, rapport
 
@@ -255,10 +274,12 @@ def calepiner(plan: Plan) -> tuple[Calepinage | None, Rapport]:
             arrivee=mur.arrivee,
             longueur_hors_tout=mur.longueur,
             interieur=mur.interieur,
+            poteaux=sorted(poteaux.get(mur.id, [])),
         )
         baies = par_mur.get(mur.id, [])
+        raidisseurs = mc.poteaux
         for rang in range(plan.rangs):
-            r = _poser_rang(mur, rang, sq, baies, demi_briques_d_angle)
+            r = _poser_rang(mur, rang, sq, baies, raidisseurs, demi_briques_d_angle)
             for o in baies:
                 if rang == o.rang_linteau:
                     r.quincaillerie.append(_montants_de_linteau(mur, o))
@@ -274,6 +295,19 @@ def calepiner(plan: Plan) -> tuple[Calepinage | None, Rapport]:
 
         for o in baies:
             mc.elements.extend(_poser_baie(mur, o, rapport))
+
+        # Le P10 court d'une seule piece du soubassement au chainage : c'est sa
+        # continuite qui raidit, pas sa section.
+        for numero, u in enumerate(raidisseurs, start=1):
+            mc.elements.append(
+                ElementPose(
+                    mur=mur.id,
+                    piece="P10",
+                    u=u,
+                    longueur=plan.hauteur_sous_chainage,
+                    role=f"poteau raidisseur {numero}",
+                )
+            )
 
         # Chainage haut : lisse filante chevillee sur le dernier rang.
         mc.elements.append(

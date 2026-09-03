@@ -54,7 +54,6 @@ console = Console()
 erreurs = Console(stderr=True)
 
 
-
 def _version(demandee: bool) -> None:
     """Repond a `--version` et sort, avant toute sous-commande.
 

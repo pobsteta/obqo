@@ -111,9 +111,55 @@ def test_baie_collee_a_l_angle_refusee() -> None:
     assert "BAIE-TROP-PRES-ANGLE" in codes(plan)
 
 
-def test_mur_de_plus_de_6_m_sans_raidisseur_refuse() -> None:
-    assert "RAIDISSEUR-MANQUANT" in codes(plan_rectangle(6240, 4800))
-    assert "RAIDISSEUR-MANQUANT" not in codes(plan_rectangle(5760, 4800))
+def test_un_mur_de_plus_de_6_m_recoit_ses_poteaux_au_lieu_d_etre_refuse() -> None:
+    """Le plan n'est plus refuse : l'application pose le P10 qui manque."""
+    long_mur = codes(plan_rectangle(6240, 4800))
+    assert "POTEAU-AJOUTE" in long_mur
+    assert "RAIDISSEUR-MANQUANT" not in long_mur, "le poteau ajoute doit suffire"
+    assert "POTEAU-AJOUTE" not in codes(plan_rectangle(5760, 4800))
+
+
+def test_les_poteaux_ajoutes_ramenent_chaque_pan_sous_l_entraxe() -> None:
+    from obqo.units import ENTRAXE_MAXI_RAIDISSEUR, MODULE_POTEAU
+
+    calepinage, _ = calepiner(plan_rectangle(24000, 4800))
+    assert calepinage is not None
+    for mur in calepinage.murs:
+        bornes = [0]
+        for u in mur.poteaux:
+            bornes += [u, u + MODULE_POTEAU]
+        bornes.append(mur.longueur_hors_tout)
+        pans = [b - a for a, b in zip(bornes[::2], bornes[1::2], strict=False)]
+        assert max(pans) <= ENTRAXE_MAXI_RAIDISSEUR, f"{mur.id} : {pans}"
+
+
+def test_un_poteau_pose_a_la_main_dispense_de_l_ajout_automatique() -> None:
+    pose = plan_rectangle(6240, 4800, poteaux=[{"id": "PR1", "mur": "M1", "position": 2880}])
+    calepinage, rapport = calepiner(pose)
+    assert calepinage is not None, [str(e) for e in rapport.erreurs]
+    m1 = next(m for m in calepinage.murs if m.id == "M1")
+    assert m1.poteaux == [2880], "la position choisie est respectee"
+    ajouts = [c for c in rapport.constats if c.code == "POTEAU-AJOUTE" and c.ou == "M1"]
+    assert not ajouts, "M1 est deja raidi, rien a ajouter"
+
+
+def test_un_poteau_dans_une_baie_ou_en_angle_est_refuse() -> None:
+    baie = {
+        "id": "F1",
+        "mur": "M1",
+        "type": "fenetre",
+        "position": 2400,
+        "largeur": 1200,
+        "allege": 960,
+        "hauteur": 1200,
+    }
+    dans_la_baie = plan_rectangle(
+        6240, 4800, ouvertures=[baie], poteaux=[{"id": "PR1", "mur": "M1", "position": 2880}]
+    )
+    assert "POTEAU-DANS-BAIE" in {c.code for c in calepiner(dans_la_baie)[1].erreurs}
+
+    en_angle = plan_rectangle(6240, 4800, poteaux=[{"id": "PR1", "mur": "M1", "position": 0}])
+    assert "POTEAU-EN-ANGLE" in {c.code for c in calepiner(en_angle)[1].erreurs}
 
 
 def test_baie_plus_haute_que_le_mur_refusee() -> None:

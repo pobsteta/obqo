@@ -111,6 +111,12 @@ class MurCalepine:
     rangs: list[Rang] = field(default_factory=list)
     elements: list[ElementPose] = field(default_factory=list)
     interieur: bool = False
+    poteaux: list[int] = field(default_factory=list)
+    """Rives gauches des modules de 240 occupes par un poteau raidisseur.
+
+    Le mur le dit lui-meme plutot que de laisser deduire la reponse des pieces
+    posees : les dessins et les controles de couverture en ont besoin.
+    """
 
     @property
     def briques(self) -> list[BriquePosee]:

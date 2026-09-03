@@ -33,6 +33,7 @@ class Calque(StrEnum):
     BAIE = "baies"
     LINTEAU = "linteaux"
     JAMBAGE = "jambages"
+    POTEAU = "poteaux raidisseurs"
     CHAINAGE = "chainage"
     REFEND = "refends"
     COTE = "cotation"
@@ -59,6 +60,7 @@ STYLES: dict[Calque, Style] = {
     Calque.BAIE: Style("#2f5d7c", "#eef4f8", 0.4, 5),
     Calque.LINTEAU: Style("#7a5c1e", "#f0e3bf", 0.4, 2),
     Calque.JAMBAGE: Style("#7a5c1e", "#e2d3a6", 0.35, 2),
+    Calque.POTEAU: Style("#5c4310", "#cdb87a", 0.4, 2),
     Calque.CHAINAGE: Style("#3f6212", "#e6efd4", 0.4, 3),
     Calque.REFEND: Style("#4a4a4a", "#eae4d8", 0.3, 9),
     Calque.COTE: Style("#2f5d7c", None, 0.18, 5),

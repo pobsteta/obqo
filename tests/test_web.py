@@ -525,11 +525,26 @@ def test_un_plan_complet_propose_de_calepiner_sans_copier_coller(client: TestCli
 def test_un_plan_incomplet_ne_propose_que_de_l_ouvrir(client: TestClient) -> None:
     """Chainer un plan a completer n'afficherait que ses propres erreurs.
 
-    Une piece de 9,60 m sans la moindre baie : aucun de ses murs n'est tenu.
+    Une baie de 3,12 m depasse la portee du linteau cheville, et deux baies
+    trop proches ne laissent pas le trumeau des deux appuis : le calepinage
+    s'arrete la.
     """
     reponse = client.post(
         "/esquisse/plan",
-        json={"pieces": [{"nom": "a", "x": 0, "y": 0, "largeur": 9600, "hauteur": 9600}]},
+        json={
+            "pieces": [{"nom": "a", "x": 0, "y": 0, "largeur": 9600, "hauteur": 9600}],
+            "baies": [
+                {
+                    "id": f"F{i}",
+                    "type": "fenetre",
+                    "depart": [p, 0],
+                    "arrivee": [p + 960, 0],
+                    "allege": 960,
+                    "hauteur": 1200,
+                }
+                for i, p in enumerate((2400, 3600))
+            ],
+        },
     )
     assert "À compléter" in reponse.text
     assert "Calepiner ce plan" not in reponse.text

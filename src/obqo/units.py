@@ -55,6 +55,22 @@ plus le jeu. Avec les 240 du linteau, 2400 mm sous un chainage a 2640."""
 HAUTEUR_TREMIE_FENETRE = 1200
 """Hauteur de tremie usuelle d'une fenetre, sous une allege de 960."""
 
+LARGEUR_POTEAU = 80
+"""Epaisseur d'un poteau raidisseur P10 mesuree le long du mur (paragraphe 1.3)."""
+
+MODULE_POTEAU = GRILLE
+"""Longueur de mur qu'occupe un poteau raidisseur : un module de 240.
+
+Le paragraphe 1.7 insere le P10 « entre briques d'about fermees ». Il consomme
+donc 80 mm de course, ce qui sortirait le mur de la grille. Le poteau occupe
+donc un module entier : 80 de P10 et 160 de remplissage, entre deux abouts
+fermes. Le mur reste exactement modulaire et le poteau reste continu du
+soubassement au chainage, ce qu'exige un raidisseur pour travailler.
+"""
+
+REMPLISSAGE_POTEAU = MODULE_POTEAU - LARGEUR_POTEAU
+"""Ce qui reste du module une fois le P10 pose : 160 mm de maconnerie."""
+
 HAUTEUR_MINI_PASSAGE = 1920
 """En dessous, on ne passe plus debout sous le linteau : 8 rangs.
 

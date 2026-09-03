@@ -12,7 +12,7 @@ from typing import Annotated, Final, Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from obqo.units import GRILLE, HAUTEUR_RANG, sur_grille
+from obqo.units import GRILLE, HAUTEUR_RANG, MODULE_POTEAU, sur_grille
 
 VERSION_SCHEMA: Final[Literal["1"]] = "1"
 
@@ -115,6 +115,24 @@ class Refend(Base):
     arrivee: tuple[int, int]
 
 
+class Poteau(Base):
+    """Poteau raidisseur P10, pose dans un module de 240 de la course.
+
+    L'application en ajoute d'elle-meme la ou un pan de mur depasse l'entraxe
+    du paragraphe 1.7 ; en declarer un ici le place ou vous voulez, et
+    l'ajout automatique n'a alors plus lieu d'etre sur ce pan.
+    """
+
+    id: str
+    mur: str
+    position: Annotated[int, Field(ge=0)]
+    """Abscisse de la rive gauche du module de 240, depuis l'origine du mur."""
+
+    @property
+    def fin(self) -> int:
+        return int(self.position + MODULE_POTEAU)
+
+
 class Parametres(Base):
     longueur_barre: Annotated[int, Field(gt=0)] = 4000
     """Longueur d'approvisionnement du carrelet 80x80. Voir
@@ -143,6 +161,7 @@ class Plan(Base):
     contour: Contour
     ouvertures: list[Ouverture] = []
     refends: list[Refend] = []
+    poteaux: list[Poteau] = []
     parametres: Parametres = Parametres()
 
     @model_validator(mode="after")

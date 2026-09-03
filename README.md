@@ -255,6 +255,37 @@ nomenclature et sur les élévations.
 **L'esquisse s'enregistre et se rouvre** — un YAML commenté, lisible et
 rechargeable — et le travail en cours survit à un rafraîchissement de page.
 
+## Le raidissement : les poteaux que l'application pose d'elle-même
+
+Le §1.7 demande un raidisseur tous les 6 m de mur sans refend ni jambage. Avant,
+un mur trop long était **refusé** : le message conseillait d'ajouter un poteau
+P10 que le format de plan ne permettait même pas de déclarer. L'application les
+pose maintenant elle-même, et dit où :
+
+```
+POTEAU-AJOUTE — M3 : 2 poteau(x) raidisseur(s) P10 ajoute(s) a 4800 mm, 9600 mm
+```
+
+Ils se répartissent également dans le pan, parce qu'un raidisseur travaille
+mieux au milieu qu'à une extrémité, et l'application en pose le **minimum** — un
+test à propriétés vérifie sur des murs jusqu'à 48 m qu'un poteau de moins
+laisserait toujours un pan hors entraxe. Déclarer un poteau dans le plan
+(`poteaux: [{id: PR1, mur: M1, position: 2880}]`) le place où vous voulez et
+dispense de l'ajout automatique sur ce pan.
+
+**Le poteau occupe un module de 240**, pas 80. Le §1.7 l'insère « entre briques
+d'about fermées » : il consomme donc de la course, et 80 mm sortiraient le mur
+de la grille. Le module se compose donc de 80 de P10 et 160 de remplissage —
+9 pièces P6 par rang, dont le volume tombe exactement juste. C'est aussi la
+lecture la plus solide : ce qui fait travailler un raidisseur, c'est sa
+continuité du soubassement au chaînage et son couplage à la maçonnerie à chaque
+rang, et un P10 plaqué contre le mur n'aurait ni l'un ni l'autre. Voir D6 dans
+`docs/hypotheses.md`.
+
+Le moteur n'a eu besoin d'aucune machinerie nouvelle : un poteau est un **vide
+permanent de 240** dans la course, et les deux briques qui l'encadrent ferment
+leur about d'elles-mêmes — exactement ce que dit le brief.
+
 ## Les contours non rectangulaires
 
 Le moteur accepte tout contour rectiligne fermé : L, U, T, escalier. Ce qui
@@ -378,6 +409,8 @@ porte plus large) et `publication.yml`.
   ou d'un plan d'architecte au fichier que l'application calepine
 - `docs/hypotheses.md` — les points du brief que l'application interprète, et les
   questions à trancher
+- [`docs/normes.md`](docs/normes.md) — quelles normes s'appliquent, laquelle ne
+  s'applique pas et pourquoi, et où se les procurer
 - [`docs/tester.md`](docs/tester.md) — comment vérifier que l'application marche,
   et ce que les tests automatiques ne voient pas
 - [`docs/publier.md`](docs/publier.md) — comment le message de commit décide de

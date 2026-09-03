@@ -57,6 +57,33 @@ chevillage traversant : **c'est un point à signaler au bureau d'études.**
 Cette règle n'est plus émise à l'exécution : elle est documentée dans
 `engine/calepinage` et vérifiée par les tests.
 
+## D6 — ✅ ACTÉ : le poteau raidisseur occupe un module de 240
+
+**Décidé le 2026-09-03.** Le §1.7 insère le P10 « entre briques d'about
+fermées ». Il consomme donc 80 mm de course — et 80 n'est pas un multiple de
+240. Trois lectures étaient possibles, une seule tient :
+
+| Lecture | Verdict |
+|---|---|
+| le module de 240 porte le poteau : 80 de P10 + 160 de remplissage | **retenue** |
+| le mur s'allonge de 80 mm par poteau | le contour sort de la grille, le moteur le refuse |
+| le P10 se plaque sans entrer dans la course | contredit « inséré entre briques d'about fermées » |
+
+La lecture retenue est aussi la meilleure structurellement : ce qui fait
+travailler un raidisseur, c'est sa **continuité** du soubassement au chaînage et
+son couplage à la maçonnerie à chaque rang. Logé dans la course entre deux
+abouts fermés et chevillé en travers à chaque rang, le P10 a les deux. Plaqué
+contre le mur, il n'aurait ni l'un ni l'autre.
+
+Le remplissage de 160 × 240 × 240 par rang se bâtit en P6 — du carrelet 80×80
+de 160 de long — soit trois rangées de trois lignes, **9 pièces par rang**. Le
+volume tombe exactement : 9 × 80 × 80 × 160 = 160 × 240 × 240. Un test le
+vérifie plutôt que de le croire.
+
+**Ce qui reste à valider par le bureau d'études** : la section 80 × 240 et
+l'entraxe de 6 m viennent du brief, pas d'une norme. Aucun DTU ne couvre ce
+système — voir [`docs/normes.md`](normes.md).
+
 ## H3 — La 240-ANR n'existe pas au catalogue
 
 Quand une course de longueur impaire en modules oblige la demi-brique à tomber à

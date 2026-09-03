@@ -21,7 +21,7 @@ from obqo.engine.calepinage import calepiner, vide_du_rang
 from obqo.engine.geometrie import squelette
 from obqo.model.plan import Plan
 from obqo.model.systeme import Calepinage
-from obqo.units import EPAISSEUR_MUR, GRILLE
+from obqo.units import EPAISSEUR_MUR, GRILLE, MODULE_POTEAU
 
 
 def plan(nom: str, segments: list[tuple[str, int]], **extra: Any) -> Plan:
@@ -103,6 +103,8 @@ def verifier(calepinage: Calepinage, plan_source: Plan) -> None:
     for mur in calepinage.murs:
         for rang in mur.rangs:
             vides = [v for o in par_mur.get(mur.id, []) if (v := vide_du_rang(o, rang.indice))]
+            # Un poteau raidisseur occupe un module de 240 a tous les rangs.
+            vides += [(u, u + MODULE_POTEAU) for u in mur.poteaux]
             retire = sum(
                 min(b, rang.fin) - max(a, rang.debut)
                 for a, b in vides

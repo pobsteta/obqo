@@ -20,6 +20,7 @@ from obqo.units import (
     EPAISSEUR_MUR,
     HAUTEUR_RANG,
     LONGUEUR_BRIQUE,
+    MODULE_POTEAU,
 )
 
 HAUTEUR_LISSE = 80
@@ -110,7 +111,22 @@ def elevation(mur: MurCalepine, plan: Plan, ouvertures: list[Ouverture]) -> Dess
                 )
         coter_horizontal(dessin, o.position, o.fin, -420)
 
+    # Le poteau raidisseur court d'un seul tenant sur toute la hauteur : c'est
+    # ce que l'elevation doit montrer, et ce qui le distingue d'un jambage.
     sommet = len(mur.rangs) * HAUTEUR_RANG
+    for numero, u in enumerate(mur.poteaux, start=1):
+        dessin.ajouter(
+            Rect(u, 0, MODULE_POTEAU, sommet, Calque.POTEAU),
+            Texte(
+                u + MODULE_POTEAU / 2,
+                sommet / 2,
+                # Le module ne fait que 240 : un libelle plus long deborde sur
+                # la maconnerie voisine et se lit par-dessus les briques.
+                f"P10-{numero}",
+                Calque.TEXTE,
+                taille_mm=1.6,
+            ),
+        )
     dessin.ajouter(
         Rect(0, sommet, mur.longueur_hors_tout, HAUTEUR_LISSE, Calque.CHAINAGE),
         Texte(
@@ -166,6 +182,25 @@ def plan_de_rang(calepinage: Calepinage, plan: Plan, rang: int) -> Dessin:
             ]
             calque = Calque.REFEND if mur.interieur else calque_de(brique)
             dessin.ajouter(Polyligne(tuple(coins), calque, ferme=True))
+        # Le poteau raidisseur traverse tous les rangs : il figure sur chacun,
+        # sans quoi le plan de pose montrerait un trou de 240 inexplique.
+        for u in mur.poteaux:
+            a = (mur.depart[0] + dx * u + nx * v0, mur.depart[1] + dy * u + ny * v0)
+            dessin.ajouter(
+                Polyligne(
+                    (
+                        a,
+                        (a[0] + dx * MODULE_POTEAU, a[1] + dy * MODULE_POTEAU),
+                        (
+                            a[0] + dx * MODULE_POTEAU + nx * EPAISSEUR_MUR,
+                            a[1] + dy * MODULE_POTEAU + ny * EPAISSEUR_MUR,
+                        ),
+                        (a[0] + nx * EPAISSEUR_MUR, a[1] + ny * EPAISSEUR_MUR),
+                    ),
+                    Calque.POTEAU,
+                    ferme=True,
+                )
+            )
         # Repere pose a l'exterieur du batiment pour les murs de facade, et
         # decale lateralement pour un refend, qui n'a pas de dehors.
         milieu = mur.longueur_hors_tout / 2
