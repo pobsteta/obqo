@@ -35,7 +35,8 @@ Deux points qui ne vont pas de soi :
    comprises. Une version ne se pose pas sur du rouge ;
 2. `outils/version.py --appliquer` écrit le même numéro dans **`pyproject.toml`**,
    **`src/obqo/__init__.py`** et **`CHANGELOG.md`**, où il insère les notes
-   groupées par section (Ruptures, Nouveautés, Corrections) ;
+   groupées par section (Ruptures, Nouveautés, Corrections) ; `uv lock` recale
+   ensuite **`uv.lock`**, qui porte lui aussi le numéro du projet ;
 3. `uv build` construit la roue ;
 4. le commit `chore(version): X.Y.Z`, le **tag `vX.Y.Z`** et la **release
    GitHub** — notes de version et roue attachée.

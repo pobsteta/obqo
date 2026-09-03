@@ -55,6 +55,14 @@ jobs:
         id: version
         run: uv run python -m outils.version --appliquer --notes notes-de-version.md
 
+      # `uv.lock` porte le numero du projet lui-meme : sans ce verrou remis a
+      # jour, il annonce la version precedente et quelqu'un doit le recaler a
+      # la main apres chaque publication. `uv lock` ne re-resout que ce qui a
+      # bouge — ici, la seule version d'obqo.
+      - name: Accorder le verrou
+        if: steps.version.outputs.version != ''
+        run: uv lock
+
       - name: Construire la roue
         if: steps.version.outputs.version != ''
         run: uv build
