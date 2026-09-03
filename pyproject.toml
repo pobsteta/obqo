@@ -1,6 +1,6 @@
 [project]
 name = "obqo"
-version = "0.2.1"
+version = "0.3.0"
 description = "Calepinage, nomenclature et metre pour le systeme constructif obqo (bois massif cheville)"
 readme = "README.md"
 requires-python = ">=3.12"

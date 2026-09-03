@@ -7,6 +7,12 @@ n'y écrit pas à la main — on écrit ses messages de commit.
 
 Voir `docs/publier.md` pour la règle complète.
 
+## 0.3.0 — 2026-09-03
+
+### Nouveautés
+
+- **raidissement** — poser les poteaux P10 qui manquent le long d'un mur
+
 ## 0.2.1 — 2026-09-03
 
 ### Corrections
