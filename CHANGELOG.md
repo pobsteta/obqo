@@ -7,6 +7,12 @@ n'y écrit pas à la main — on écrit ses messages de commit.
 
 Voir `docs/publier.md` pour la règle complète.
 
+## 0.5.1 — 2026-09-03
+
+### Corrections
+
+- **esquisse** — une piece se cote en longueur et largeur, pas en hauteur
+
 ## 0.5.0 — 2026-09-03
 
 ### Nouveautés
