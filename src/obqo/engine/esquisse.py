@@ -20,8 +20,8 @@ from dataclasses import dataclass
 from typing import NamedTuple
 
 from obqo.engine.validation import Gravite, Rapport
-from obqo.model.esquisse import Baie, Esquisse, Piece
-from obqo.model.plan import Contour, Ouverture, Plan, Refend
+from obqo.model.esquisse import Baie, Esquisse, MurInterieur, Piece
+from obqo.model.plan import Cloison, Contour, Ouverture, Plan, Refend
 from obqo.units import EPAISSEUR_MUR, GRILLE
 
 PAS_RECOMMANDE = 480
@@ -131,8 +131,18 @@ def caler(esquisse: Esquisse, pas: int = PAS_RECOMMANDE) -> tuple[Esquisse, list
         )
         baies.append(baie_calee)
         ajustements.append(Ajustement(baie.id, baie.largeur, baie_calee.largeur))
+    murs: list[MurInterieur] = []
+    for mur in esquisse.murs:
+        mur_cale = mur.model_copy(
+            update={
+                "depart": (_projeter(mur.depart[0], x, ox), _projeter(mur.depart[1], y, oy)),
+                "arrivee": (_projeter(mur.arrivee[0], x, ox), _projeter(mur.arrivee[1], y, oy)),
+            }
+        )
+        murs.append(mur_cale)
+        ajustements.append(Ajustement(mur.id, mur.longueur, mur_cale.longueur))
     return (
-        esquisse.model_copy(update={"pieces": pieces, "baies": baies}),
+        esquisse.model_copy(update={"pieces": pieces, "baies": baies, "murs": murs}),
         [a for a in ajustements if a.bouge],
     )
 
@@ -413,7 +423,8 @@ def _refends(t: Treillis, rapport: Rapport) -> list[Refend]:
         retenir(verdict, (bornes[0], y), (bornes[1], y), f"y = {y}")
 
     trouves, croises = _demeler(trouves)
-    cloisons.extend(croises)
+    trouves = [r.model_copy(update={"id": f"R{i + 1}"}) for i, r in enumerate(trouves)]
+    cloisons.extend(_repere(r) for r in croises)
     if cloisons:
         rapport.ajouter(
             Gravite.AVERTISSEMENT,
@@ -449,14 +460,17 @@ def _longueur(refend: Refend) -> int:
     return abs(refend.arrivee[0] - refend.depart[0]) + abs(refend.arrivee[1] - refend.depart[1])
 
 
-def _demeler(refends: list[Refend]) -> tuple[list[Refend], list[str]]:
-    """Ecarte les refends qui en croisent un autre.
+def _demeler(refends: list[Refend]) -> tuple[list[Refend], list[Refend]]:
+    """Ecarte les refends qui en croisent un autre, sans les renommer.
 
     Le systeme ne decrit pas de jonction en croix : deux refends qui se coupent
     se disputeraient la meme colonne de 240. Plutot que de produire un plan
     infaisable, on garde le sens qui porte le plus de mur — choix deterministe —
     et l'autre repasse en cloison legere. L'utilisateur voit ce qui a ete ecarte
     et peut redessiner s'il prefere l'inverse.
+
+    Les identifiants sont laisses tels quels : un refend que l'on a trace et
+    nomme soi-meme doit garder son nom jusque dans les elevations.
     """
     if not any(_se_croisent(a, b) for a in refends for b in refends):
         return refends, []
@@ -464,10 +478,89 @@ def _demeler(refends: list[Refend]) -> tuple[list[Refend], list[str]]:
     verticaux = [r for r in refends if not _horizontal(r)]
     total_h = sum(_longueur(r) for r in horizontaux)
     total_v = sum(_longueur(r) for r in verticaux)
-    gardes, ecartes = (verticaux, horizontaux) if total_v >= total_h else (horizontaux, verticaux)
-    repere = [f"y = {r.depart[1]}" if _horizontal(r) else f"x = {r.depart[0]}" for r in ecartes]
-    renumerotes = [r.model_copy(update={"id": f"R{index + 1}"}) for index, r in enumerate(gardes)]
-    return renumerotes, repere
+    return (verticaux, horizontaux) if total_v >= total_h else (horizontaux, verticaux)
+
+
+def _repere(refend: Refend) -> str:
+    return f"y = {refend.depart[1]}" if _horizontal(refend) else f"x = {refend.depart[0]}"
+
+
+def _bord_du_contour(point: Point, sommets: list[Point]) -> bool:
+    """Le point tombe-t-il sur un cote du contour ?"""
+    for a, b in zip(sommets, sommets[1:] + sommets[:1], strict=True):
+        if a[0] == b[0] == point[0] and min(a[1], b[1]) <= point[1] <= max(a[1], b[1]):
+            return True
+        if a[1] == b[1] == point[1] and min(a[0], b[0]) <= point[0] <= max(a[0], b[0]):
+            return True
+    return False
+
+
+def _meme_segment(a: Refend, depart: Point, arrivee: Point) -> bool:
+    return {a.depart, a.arrivee} == {depart, arrivee}
+
+
+def _murs_interieurs(
+    esquisse: Esquisse, t: Treillis, sommets: list[Point], rapport: Rapport
+) -> tuple[list[Refend], list[Cloison]]:
+    """Refends et cloisons du plan : ceux que le dessin donne, plus ceux traces.
+
+    Le trace **complete** la deduction, il ne la remplace pas : poser des
+    pieces suffit toujours, et l'on ajoute a la main ce que la geometrie ne
+    peut pas deviner. Un refend trace qui ne rejoint pas le contour par ses
+    deux bouts ne peut pas etre porteur — il redevient une cloison, et
+    l'application le dit plutot que de produire un plan infaisable.
+    """
+    refends = _refends(t, rapport)
+    cloisons: list[Cloison] = []
+    doublons: list[str] = []
+    degrades: list[str] = []
+
+    for mur in esquisse.murs:
+        depart, arrivee = mur.depart, mur.arrivee
+        if mur.type == "cloison":
+            cloisons.append(Cloison(id=mur.id, depart=depart, arrivee=arrivee))
+            continue
+        if any(_meme_segment(r, depart, arrivee) for r in refends):
+            doublons.append(mur.id)
+            continue
+        if not (_bord_du_contour(depart, sommets) and _bord_du_contour(arrivee, sommets)):
+            degrades.append(mur.id)
+            cloisons.append(Cloison(id=mur.id, depart=depart, arrivee=arrivee))
+            continue
+        refends.append(Refend(id=mur.id, depart=depart, arrivee=arrivee))
+
+    refends, croises = _demeler(refends)
+    # Un refend declasse par un croisement devient une cloison, qu'il ait ete
+    # trace ou deduit : le laisser disparaitre sans un mot ferait perdre un mur
+    # que l'on croyait avoir.
+    cloisons.extend(Cloison(id=r.id, depart=r.depart, arrivee=r.arrivee) for r in croises)
+    if croises:
+        rapport.ajouter(
+            Gravite.AVERTISSEMENT,
+            "REFEND-CROISE",
+            ", ".join(r.id for r in croises),
+            "deux refends qui se croisent se disputeraient la meme colonne de "
+            "240, et le systeme ne decrit pas la jonction en croix. Le sens qui "
+            "porte le plus de mur l'emporte ; celui-ci passe en cloison legere",
+        )
+    if doublons:
+        rapport.ajouter(
+            Gravite.HYPOTHESE,
+            "REFEND-DEJA-DEDUIT",
+            ", ".join(doublons),
+            "ce refend etait deja deduit du dessin des pieces : il n'est compte "
+            "qu'une fois",
+        )
+    if degrades:
+        rapport.ajouter(
+            Gravite.AVERTISSEMENT,
+            "REFEND-NON-TRAVERSANT",
+            ", ".join(degrades),
+            "un refend porteur doit rejoindre le contour par ses deux bouts pour "
+            "s'y ancrer : celui-ci s'arrete en chemin et devient une cloison "
+            "legere, hors calepinage",
+        )
+    return refends, cloisons
 
 
 def vers_plan(esquisse: Esquisse) -> tuple[Plan | None, Rapport]:
@@ -497,11 +590,13 @@ def vers_plan(esquisse: Esquisse) -> tuple[Plan | None, Rapport]:
     if sommets is None or not rapport.valide:
         return None, rapport
 
+    refends, cloisons = _murs_interieurs(esquisse, t, sommets, rapport)
     plan = Plan(
         nom=esquisse.nom,
         hauteur_sous_chainage=esquisse.hauteur_sous_chainage,
         contour=Contour(points=sommets),
-        refends=_refends(t, rapport),
+        refends=refends,
+        cloisons=cloisons,
     )
     if esquisse.baies:
         plan = plan.model_copy(update={"ouvertures": _poser_baies(plan, esquisse.baies, rapport)})

@@ -439,3 +439,123 @@ def test_une_hauteur_choisie_n_est_jamais_ecrasee() -> None:
 
     porte = Baie(id="P1", type="porte", depart=(0, 0), arrivee=(960, 0), hauteur=1920)
     assert porte.hauteur == 1920, "la cote saisie l'emporte sur le defaut du type"
+
+
+# --- murs interieurs traces a la main -----------------------------------------
+
+
+def croquis(**extra: object) -> Esquisse:
+    """Une grande piece, sur laquelle tracer des murs interieurs."""
+    return Esquisse(
+        nom="essai",
+        pieces=[Piece(nom="grande", x=0, y=0, largeur=9600, hauteur=4800)],
+        **extra,
+    )
+
+
+def test_un_refend_trace_qui_traverse_devient_porteur() -> None:
+    plan, rapport = vers_plan(
+        croquis(
+            murs=[{"id": "R-trace", "type": "refend", "depart": (4800, 0), "arrivee": (4800, 4800)}]
+        )
+    )
+    assert plan is not None, [str(e) for e in rapport.erreurs]
+    assert [r.id for r in plan.refends] == ["R-trace"], "le nom choisi survit jusqu'au plan"
+    assert not plan.cloisons
+
+
+def test_un_refend_trace_qui_s_arrete_en_chemin_devient_cloison() -> None:
+    """Un refend porteur doit s'ancrer au contour par ses deux bouts."""
+    plan, rapport = vers_plan(
+        croquis(
+            murs=[{"id": "R-court", "type": "refend", "depart": (4800, 0), "arrivee": (4800, 2400)}]
+        )
+    )
+    assert plan is not None
+    assert not plan.refends
+    assert [c.id for c in plan.cloisons] == ["R-court"]
+    assert "REFEND-NON-TRAVERSANT" in {c.code for c in rapport.constats}
+
+
+def test_une_cloison_tracee_reste_hors_calepinage() -> None:
+    plan, _ = vers_plan(
+        croquis(
+            murs=[
+                {"id": "placard", "type": "cloison", "depart": (7200, 0), "arrivee": (7200, 2400)}
+            ]
+        )
+    )
+    assert plan is not None
+    assert [c.id for c in plan.cloisons] == ["placard"]
+    assert not plan.refends, "une cloison ne porte rien, elle n'entre pas dans l'ossature"
+
+
+def test_le_trace_complete_la_deduction_au_lieu_de_la_remplacer() -> None:
+    """Deux pieces donnent deja un refend ; le trace en ajoute un second."""
+    esquisse = Esquisse(
+        nom="essai",
+        pieces=[
+            Piece(nom="a", x=0, y=0, largeur=4800, hauteur=9600),
+            Piece(nom="b", x=4800, y=0, largeur=4800, hauteur=9600),
+        ],
+        murs=[{"id": "R-trace", "type": "cloison", "depart": (0, 4800), "arrivee": (9600, 4800)}],
+    )
+    plan, _ = vers_plan(esquisse)
+    assert plan is not None
+    assert len(plan.refends) == 1, "le refend deduit des deux pieces est toujours la"
+    assert [c.id for c in plan.cloisons] == ["R-trace"]
+
+
+def test_retracer_un_refend_deja_deduit_ne_le_compte_pas_deux_fois() -> None:
+    esquisse = Esquisse(
+        nom="essai",
+        pieces=[
+            Piece(nom="a", x=0, y=0, largeur=4800, hauteur=4800),
+            Piece(nom="b", x=4800, y=0, largeur=4800, hauteur=4800),
+        ],
+        murs=[{"id": "doublon", "type": "refend", "depart": (4800, 0), "arrivee": (4800, 4800)}],
+    )
+    plan, rapport = vers_plan(esquisse)
+    assert plan is not None
+    assert len(plan.refends) == 1
+    assert "REFEND-DEJA-DEDUIT" in {c.code for c in rapport.constats}
+
+
+def test_deux_refends_qui_se_croisent_ne_disparaissent_pas_en_silence() -> None:
+    """Le sens le plus long l'emporte ; l'autre devient cloison, et se dit."""
+    esquisse = Esquisse(
+        nom="essai",
+        pieces=[
+            Piece(nom="a", x=0, y=0, largeur=4800, hauteur=9600),
+            Piece(nom="b", x=4800, y=0, largeur=4800, hauteur=9600),
+        ],
+        murs=[{"id": "travers", "type": "refend", "depart": (0, 4800), "arrivee": (9600, 4800)}],
+    )
+    plan, rapport = vers_plan(esquisse)
+    assert plan is not None
+    ecartes = {c.id for c in plan.cloisons}
+    assert len(plan.refends) == 1
+    assert ecartes and ecartes.isdisjoint({r.id for r in plan.refends})
+    assert "REFEND-CROISE" in {c.code for c in rapport.constats}
+
+
+def test_les_murs_traces_se_calent_comme_le_reste() -> None:
+    esquisse = croquis(
+        murs=[{"id": "R1", "type": "refend", "depart": (4800, 0), "arrivee": (4800, 4800)}]
+    )
+    calee, _ = caler(esquisse, 480)
+    assert calee.murs[0].depart == (4800, 0)
+    assert calee.murs[0].arrivee == (4800, 4800)
+
+
+def test_les_murs_traces_font_l_aller_retour_en_yaml() -> None:
+    esquisse = croquis(
+        murs=[
+            {"id": "R1", "type": "refend", "depart": (4800, 0), "arrivee": (4800, 4800)},
+            {"id": "placard", "type": "cloison", "depart": (7200, 0), "arrivee": (7200, 2400)},
+        ]
+    )
+    relu = esquisse_depuis_texte(esquisse_en_yaml(esquisse))
+    assert [(m.id, m.type, m.depart, m.arrivee) for m in relu.murs] == [
+        (m.id, m.type, m.depart, m.arrivee) for m in esquisse.murs
+    ]

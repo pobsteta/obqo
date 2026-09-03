@@ -214,6 +214,9 @@ def plan_de_rang(calepinage: Calepinage, plan: Plan, rang: int) -> Dessin:
                 taille_mm=3.0,
             )
         )
+    for cloison in plan.cloisons:
+        (x0, y0), (x1, y1) = cloison.depart, cloison.arrivee
+        dessin.ajouter(Trait(x0, y0, x1, y1, Calque.CLOISON))
     dessin.legende = [(c.value, c) for c in dessin.calques_de_legende()]
     return dessin
 
@@ -359,6 +362,13 @@ def apercu(plan: Plan) -> Dessin:
                 Calque.REFEND,
             ),
             Texte((x0 + x1) / 2, (y0 + y1) / 2, refend.id, Calque.REPERE, taille_mm=2.6),
+        )
+    # Une cloison ne porte rien : trait fin, et jamais l'epaisseur d'un refend.
+    for cloison in plan.cloisons:
+        (x0, y0), (x1, y1) = cloison.depart, cloison.arrivee
+        dessin.ajouter(
+            Trait(x0, y0, x1, y1, Calque.CLOISON),
+            Texte((x0 + x1) / 2, (y0 + y1) / 2, cloison.id, Calque.REPERE, taille_mm=2.2),
         )
     dessin.legende = [(c.value, c) for c in dessin.calques_de_legende()]
     return dessin

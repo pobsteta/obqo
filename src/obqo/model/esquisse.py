@@ -129,17 +129,57 @@ class Baie(Base):
         )
 
 
+class MurInterieur(Base):
+    """Mur interieur trace a la souris, avant que les murs aient un nom.
+
+    Comme une baie, il est decrit par le **segment** qu'il occupe. Le type dit
+    l'intention ; la conversion tranche : un refend qui ne traverse pas tout le
+    batiment ne peut pas etre porteur, et redevient une cloison.
+    """
+
+    id: str
+    type: Literal["refend", "cloison"] = "refend"
+    depart: tuple[int, int]
+    arrivee: tuple[int, int]
+
+    @model_validator(mode="after")
+    def _segment_axial(self) -> Self:
+        if self.depart == self.arrivee:
+            raise ValueError(f"le mur « {self.id} » est reduit a un point")
+        if self.depart[0] != self.arrivee[0] and self.depart[1] != self.arrivee[1]:
+            raise ValueError(f"le mur « {self.id} » n'est ni horizontal ni vertical")
+        return self
+
+    @property
+    def horizontal(self) -> bool:
+        return self.depart[1] == self.arrivee[1]
+
+    @property
+    def longueur(self) -> int:
+        return abs(self.arrivee[0] - self.depart[0]) + abs(self.arrivee[1] - self.depart[1])
+
+
 class Esquisse(Base):
     hauteur_sous_chainage: Annotated[int, Field(gt=0)] = 2640
     nom: str = "esquisse"
     pieces: Annotated[list[Piece], Field(min_length=1)]
     baies: list[Baie] = []
+    murs: list[MurInterieur] = []
+    """Murs interieurs traces a la main, qui s'ajoutent a ceux que le dessin
+    des pieces laisse deja deduire."""
 
     @model_validator(mode="after")
     def _identifiants_de_baie_uniques(self) -> Self:
         vus = [b.id for b in self.baies]
         if len(vus) != len(set(vus)):
             raise ValueError("deux baies portent le meme identifiant")
+        return self
+
+    @model_validator(mode="after")
+    def _identifiants_de_mur_uniques(self) -> Self:
+        vus = [m.id for m in self.murs]
+        if len(vus) != len(set(vus)):
+            raise ValueError("deux murs interieurs portent le meme identifiant")
         return self
 
     @model_validator(mode="after")

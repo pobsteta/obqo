@@ -14,6 +14,11 @@ let pieces = [
 ];
 let baies = [];
 let murs = [];
+// `murs` porte les murs **deduits** que le serveur renvoie ; `traces` porte
+// ceux que l'on dessine soi-meme. Les deux coexistent : le trace complete la
+// deduction, il ne la remplace pas.
+let traces = [];
+let traceActif = null;
 let mode = "pieces";
 let selection = null;
 let baieActive = null;
@@ -23,6 +28,8 @@ const HAUTEUR_MINI_BAIE = 240; // un rang
 const RECUL_MINI_ANGLE = 480; // 240 d'appui de linteau + 240 de maconnerie
 const HAUTEUR_RANG = 240;
 const LIBELLES = { porte: "porte", fenetre: "fenêtre", porte_fenetre: "porte-fenêtre" };
+const LIBELLES_MUR = { refend: "refend", cloison: "cloison" };
+const LONGUEUR_MINI_MUR = 960;
 
 // Cotes de tremie usuelles, reprises de `units.py`. Une porte de 1200 laisserait
 // un passage ou l'on ne tient pas debout : le type doit emmener sa hauteur.
@@ -35,6 +42,13 @@ function nomLibre(type) {
   const base = LIBELLES[type];
   let numero = 1;
   while (baies.some((b) => b.id === `${base} ${numero}`)) numero += 1;
+  return `${base} ${numero}`;
+}
+
+function nomLibreMur(type) {
+  const base = LIBELLES_MUR[type];
+  let numero = 1;
+  while (traces.some((m) => m.id === `${base} ${numero}`)) numero += 1;
   return `${base} ${numero}`;
 }
 
@@ -158,6 +172,50 @@ function dessiner() {
     toile.appendChild(groupe);
   });
 
+  if (mode === "murs") {
+    const couche = svg("g", { class: "murs" });
+    // Les murs deduits en filigrane : on voit ce que le dessin donne deja, et
+    // donc ce qu'il est inutile de retracer.
+    murs.filter((m) => m.interieur).forEach((mur) => {
+      couche.appendChild(
+        svg("line", {
+          x1: mur.depart[0], y1: MONDE.hauteur - mur.depart[1],
+          x2: mur.arrivee[0], y2: MONDE.hauteur - mur.arrivee[1],
+          class: "mur mur--deduit",
+        })
+      );
+    });
+    // Meme placement que pour les baies : l'etiquette s'ecarte du mur et evite
+    // le nom de la piece, sinon elle se lit par-dessus « sejour ».
+    const etiquettes = poserLesEtiquettes(
+      traces.map((m) => ({ ...m, etiquette: `${m.id} ${longueurDe(m)}` }))
+    );
+    traces.forEach((mur, index) => {
+      const ligne = svg("line", {
+        x1: mur.depart[0], y1: MONDE.hauteur - mur.depart[1],
+        x2: mur.arrivee[0], y2: MONDE.hauteur - mur.arrivee[1],
+        class:
+          `trace trace--${mur.type}` + (index === traceActif ? " trace--actif" : ""),
+      });
+      ligne.dataset.trace = index;
+      couche.appendChild(ligne);
+      const pose = etiquettes[index];
+      couche.appendChild(
+        Object.assign(
+          svg("text", {
+            x: pose.x,
+            y: MONDE.hauteur - pose.y,
+            class: "baie__cote",
+            "text-anchor": pose.ancre,
+            "dominant-baseline": pose.ligne,
+          }),
+          { textContent: pose.texte }
+        )
+      );
+    });
+    toile.appendChild(couche);
+  }
+
   if (typeof memoriser === "function") memoriser();
 
   if (conflits.size) {
@@ -177,7 +235,11 @@ function dessiner() {
       ligne.dataset.mur = mur.id;
       couche.appendChild(ligne);
     });
-    const etiquettes = poserLesEtiquettes();
+    // H et L sont ecrits : sur un plan, « 2160 × 960 » se lit dans les deux
+    // sens, et une porte posee a l'envers se paie en menuiserie.
+    const etiquettes = poserLesEtiquettes(
+      baies.map((b) => ({ ...b, etiquette: `${b.id} H${b.hauteur}×L${largeurDe(b)}` }))
+    );
     baies.forEach((baie, index) => {
       const ligne = svg("line", {
         x1: baie.depart[0], y1: MONDE.hauteur - baie.depart[1],
@@ -207,6 +269,12 @@ function dessiner() {
       ? `${pieces.length} pièce${pieces.length > 1 ? "s" : ""} — emprise ${emprise()}`
       : "Aucune pièce. Glissez sur le fond pour en créer une.";
   }
+}
+
+function longueurDe(mur) {
+  return (
+    Math.abs(mur.arrivee[0] - mur.depart[0]) + Math.abs(mur.arrivee[1] - mur.depart[1])
+  );
 }
 
 function largeurDe(baie) {
@@ -311,13 +379,11 @@ const ETIQUETTE = { hauteur: 240, parCaractere: 132, ecart: 300, marge: 120 };
 // mur de 240. On la decale donc perpendiculairement au mur, vers l'exterieur du
 // batiment, et on l'ecarte d'un cran de plus tant qu'elle mord sur une
 // etiquette deja posee.
-function poserLesEtiquettes() {
+function poserLesEtiquettes(segments) {
   const centre = centreDuBati();
   const posees = boitesDesNoms();
-  return baies.map((baie) => {
-    // H et L sont ecrits : sur un plan, « 2160 × 960 » se lit dans les deux
-    // sens, et une porte posee a l'envers se paie en menuiserie.
-    const texte = `${baie.id} H${baie.hauteur}×L${largeurDe(baie)}`;
+  return segments.map((baie) => {
+    const texte = baie.etiquette;
     const largeur = texte.length * ETIQUETTE.parCaractere;
     const mx = (baie.depart[0] + baie.arrivee[0]) / 2;
     const my = (baie.depart[1] + baie.arrivee[1]) / 2;
@@ -438,6 +504,27 @@ toile.addEventListener("pointerdown", (evenement) => {
   const point = pointSouris(evenement);
   toile.setPointerCapture(evenement.pointerId);
 
+  if (mode === "murs") {
+    const surTrace = evenement.target.dataset && evenement.target.dataset.trace;
+    if (surTrace !== undefined && surTrace !== null && surTrace !== "") {
+      traceActif = Number(surTrace);
+      montrerFormeMur();
+      dessiner();
+      return;
+    }
+    const origine = [caler(point.x), caler(point.y)];
+    traceActif = traces.length;
+    traces.push({
+      id: nomLibreMur("refend"),
+      type: "refend",
+      depart: [...origine],
+      arrivee: [...origine],
+    });
+    geste = { type: "mur", origine };
+    dessiner();
+    return;
+  }
+
   if (mode === "baies") {
     const surBaie = evenement.target.dataset && evenement.target.dataset.baie;
     if (surBaie !== undefined && surBaie !== null && surBaie !== "") {
@@ -527,6 +614,18 @@ toile.addEventListener("pointermove", (evenement) => {
     });
     delete geste.ne;
   }
+  if (geste && geste.type === "mur") {
+    // Un mur est horizontal ou vertical : le plus grand deplacement decide,
+    // et l'autre axe est ramene sur l'origine. Pas de mur en biais.
+    const [ox, oy] = geste.origine;
+    const dx = caler(point.x) - ox;
+    const dy = caler(point.y) - oy;
+    const mur = traces[traceActif];
+    mur.arrivee =
+      Math.abs(dx) >= Math.abs(dy) ? [ox + dx, oy] : [ox, oy + dy];
+    dessiner();
+    return;
+  }
   if (selection === null) return;
   const piece = pieces[selection];
   const lignes = lignesVoisines(selection);
@@ -553,6 +652,22 @@ toile.addEventListener("pointermove", (evenement) => {
 });
 
 toile.addEventListener("pointerup", () => {
+  if (geste && geste.type === "mur") {
+    const mur = traces[traceActif];
+    let avis;
+    if (longueurDe(mur) < LONGUEUR_MINI_MUR) {
+      traces.splice(traceActif, 1);
+      traceActif = null;
+      avis = `Un mur fait ${LONGUEUR_MINI_MUR} mm au minimum : glissez pour le tracer.`;
+    } else {
+      avis = resumeDuMur(mur);
+    }
+    geste = null;
+    montrerFormeMur();
+    dessiner();
+    etat.textContent = avis;
+    return;
+  }
   if (geste && geste.type === "baie") {
     const baie = baies[baieActive];
     let avis;
@@ -607,7 +722,12 @@ document.addEventListener("keydown", (evenement) => {
   if (evenement.key !== "Delete" && evenement.key !== "Backspace") return;
   const actif = document.activeElement;
   if (actif && (actif.tagName === "TEXTAREA" || actif.tagName === "INPUT")) return;
-  if (mode === "baies" && baieActive !== null) {
+  if (mode === "murs" && traceActif !== null) {
+    traces.splice(traceActif, 1);
+    traceActif = null;
+    montrerFormeMur();
+    dessiner();
+  } else if (mode === "baies" && baieActive !== null) {
     baies.splice(baieActive, 1);
     baieActive = null;
     montrerFormeBaie();
@@ -712,20 +832,109 @@ async function chargerMurs() {
   dessiner();
 }
 
+// Ce qu'un mur trace coute vraiment : porteur ou non, et pourquoi.
+function resumeDuMur(mur) {
+  const sens = mur.depart[0] === mur.arrivee[0] ? "vertical" : "horizontal";
+  const lignes = [`${mur.id} : ${sens}, ${longueurDe(mur)} mm`];
+  if (mur.type === "refend") {
+    lignes.push(
+      "refend porteur : il doit rejoindre le contour par ses deux bouts pour " +
+        "s'y ancrer, sinon la conversion le repassera en cloison"
+    );
+  } else {
+    lignes.push("cloison légère : dessinée sur les plans, hors calepinage");
+  }
+  return lignes.join(" — ");
+}
+
+function montrerFormeMur() {
+  const forme = document.getElementById("forme-mur");
+  if (traceActif === null || !traces[traceActif]) {
+    forme.hidden = true;
+    return;
+  }
+  const mur = traces[traceActif];
+  forme.hidden = false;
+  document.getElementById("mur-nom").value = mur.id;
+  document.getElementById("mur-type").value = mur.type;
+  document.getElementById("mur-longueur").value = longueurDe(mur);
+  document.getElementById("mur-resume").textContent = resumeDuMur(mur);
+}
+
+function redimensionnerMur(mur, longueur) {
+  const vertical = mur.depart[0] === mur.arrivee[0];
+  const [ox, oy] = mur.depart;
+  const sens = vertical
+    ? Math.sign(mur.arrivee[1] - oy) || 1
+    : Math.sign(mur.arrivee[0] - ox) || 1;
+  mur.arrivee = vertical ? [ox, oy + sens * longueur] : [ox + sens * longueur, oy];
+}
+
+for (const champ of ["type", "longueur"]) {
+  document.getElementById(`mur-${champ}`).addEventListener("change", (evenement) => {
+    if (traceActif === null) return;
+    const mur = traces[traceActif];
+    const nomAuto = Object.values(LIBELLES_MUR).some((l) => mur.id.startsWith(`${l} `));
+    if (champ === "type") {
+      mur.type = evenement.target.value;
+      // Un nom encore automatique suit le type, comme pour une baie.
+      if (nomAuto) mur.id = nomLibreMur(mur.type);
+    } else {
+      const valeur = Math.max(LONGUEUR_MINI_MUR, caler(Number(evenement.target.value) || 0));
+      redimensionnerMur(mur, valeur);
+    }
+    montrerFormeMur();
+    dessiner();
+    etat.textContent = resumeDuMur(mur);
+  });
+}
+
+document.getElementById("mur-nom").addEventListener("change", (evenement) => {
+  if (traceActif === null) return;
+  const nom = evenement.target.value.trim();
+  if (!nom) {
+    etat.textContent = "Un mur doit porter un nom.";
+    montrerFormeMur();
+    return;
+  }
+  if (traces.some((m, i) => i !== traceActif && m.id === nom)) {
+    etat.textContent = `« ${nom} » est déjà pris par un autre mur.`;
+    montrerFormeMur();
+    return;
+  }
+  traces[traceActif].id = nom;
+  montrerFormeMur();
+  dessiner();
+});
+
+document.getElementById("mur-supprimer").addEventListener("click", () => {
+  if (traceActif === null) return;
+  traces.splice(traceActif, 1);
+  traceActif = null;
+  montrerFormeMur();
+  dessiner();
+});
+
 function basculer(nouveau) {
   mode = nouveau;
-  document.getElementById("mode-pieces").classList.toggle("mode--actif", mode === "pieces");
-  document.getElementById("mode-baies").classList.toggle("mode--actif", mode === "baies");
-  document.body.classList.toggle("mode-baies", mode === "baies");
+  for (const nom of ["pieces", "baies", "murs"]) {
+    document.getElementById(`mode-${nom}`).classList.toggle("mode--actif", mode === nom);
+  }
+  // Les deux modes qui travaillent sur les murs grisent les pieces de la meme
+  // facon : la classe reste `mode-baies`, c'est elle que la feuille connait.
+  document.body.classList.toggle("mode-baies", mode !== "pieces");
   selection = null;
   baieActive = null;
+  traceActif = null;
   montrerFormeBaie();
-  if (mode === "baies") chargerMurs();
+  montrerFormeMur();
+  if (mode !== "pieces") chargerMurs();
   else dessiner();
 }
 
 document.getElementById("mode-pieces").addEventListener("click", () => basculer("pieces"));
 document.getElementById("mode-baies").addEventListener("click", () => basculer("baies"));
+document.getElementById("mode-murs").addEventListener("click", () => basculer("murs"));
 
 const MEMOIRE = "obqo.esquisse";
 
@@ -754,6 +963,12 @@ function corps() {
       arrivee: b.arrivee.map(Math.round),
       allege: b.allege,
       hauteur: b.hauteur,
+    })),
+    murs: traces.map((m) => ({
+      id: m.id,
+      type: m.type,
+      depart: m.depart.map(Math.round),
+      arrivee: m.arrivee.map(Math.round),
     })),
   };
 }
@@ -787,7 +1002,10 @@ document.getElementById("caler").addEventListener("click", async () => {
     return;
   }
   pieces = donnees.pieces;
+  traces = donnees.murs || traces;
   selection = null;
+  traceActif = null;
+  montrerFormeMur();
   dessiner();
   etat.textContent = donnees.ajustements.length
     ? `${donnees.ajustements.length} pièce(s) recalée(s) : ` + donnees.ajustements.join(" · ")
@@ -812,9 +1030,12 @@ document.getElementById("vider").addEventListener("click", () => {
   if (pieces.length && !window.confirm("Effacer toutes les pièces et les baies ?")) return;
   pieces = [];
   baies = [];
+  traces = [];
   selection = null;
   baieActive = null;
+  traceActif = null;
   montrerFormeBaie();
+  montrerFormeMur();
   dessiner();
 });
 
@@ -835,6 +1056,7 @@ function restaurer() {
     if (!Array.isArray(donnees.pieces) || !donnees.pieces.length) return false;
     pieces = donnees.pieces;
     baies = donnees.baies || [];
+    traces = donnees.murs || [];
     document.getElementById("nom-esquisse").value = donnees.nom || "Ma maison";
     document.getElementById("hauteur-chainage").value = donnees.hauteur_sous_chainage || 2640;
     return true;
@@ -846,12 +1068,15 @@ function restaurer() {
 function appliquer(donnees) {
   pieces = donnees.pieces || [];
   baies = donnees.baies || [];
+  traces = donnees.murs || [];
   document.getElementById("nom-esquisse").value = donnees.nom || "Ma maison";
   document.getElementById("hauteur-chainage").value = donnees.hauteur_sous_chainage || 2640;
   selection = null;
   baieActive = null;
+  traceActif = null;
   montrerFormeBaie();
-  if (mode === "baies") chargerMurs();
+  montrerFormeMur();
+  if (mode !== "pieces") chargerMurs();
   else dessiner();
 }
 

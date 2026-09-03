@@ -118,27 +118,32 @@ Le parcours à refaire après toute modification de l'éditeur :
    être en français et désigner les pièces, pas remonter une trace Pydantic.
 5. Laisser volontairement un **vide de 240** entre deux pièces : l'application
    doit refuser et donner la position de chaque bloc.
-6. **Onglet Baies** — poser une porte de 1 200 sur un mur, vérifier qu'elle
+6. **Onglet Murs intérieurs** — tracer un refend qui traverse tout le
+   bâtiment : il doit garder le nom qu'on lui donne jusque dans le plan
+   dérivé. Puis un qui s'arrête en chemin : il doit repasser en cloison,
+   avec un message qui dit pourquoi. Puis une cloison. Les refends déjà
+   déduits du dessin des pièces doivent apparaître en filigrane.
+7. **Onglet Baies** — poser une porte de 1 200 sur un mur, vérifier qu'elle
    reste à 1 200 après calage (les baies se calent sur 240, pas sur 480), lire
    le passage libre annoncé.
-7. **Redimensionner au clavier** — sur cette même porte, taper 2 160 en hauteur
+8. **Redimensionner au clavier** — sur cette même porte, taper 2 160 en hauteur
    et 1 440 en largeur : l'étiquette du dessin doit suivre. Taper 1 250 : la
    largeur doit retomber sur 1 200. Élargir une baie posée près d'un angle
    au-delà de ce que le mur porte encore : elle doit reculer le long du mur, pas
    en sortir. Demander plus large que le mur entier : la baie prend le mur et
    l'application le dit.
-8. **Les avertissements de cote** — donner à une fenêtre une allège de 960 et
+9. **Les avertissements de cote** — donner à une fenêtre une allège de 960 et
    une hauteur de 1 680 sous un chaînage à 2 640 : le résumé doit annoncer le
    dépassement avant même de générer le plan.
-9. Poser **deux baies côte à côte** sur un mur vertical, puis deux autres sur
+10. Poser **deux baies côte à côte** sur un mur vertical, puis deux autres sur
    un mur horizontal : chaque étiquette doit rester à côté de sa baie, sans
    recouvrir sa voisine ni sortir du cadre.
-10. Renommer une baie, **enregistrer** l'esquisse, rafraîchir la page, la
+11. Renommer une baie, **enregistrer** l'esquisse, rafraîchir la page, la
     **rouvrir** : le nom choisi doit revenir tel quel.
-11. Générer le plan, puis cliquer **« Calepiner ce plan »** : l'onglet Plan doit
+12. Générer le plan, puis cliquer **« Calepiner ce plan »** : l'onglet Plan doit
     s'ouvrir déjà rempli et lancer le calepinage tout seul. Sur un plan
     incomplet, ce bouton ne doit pas apparaître.
-12. Vérifier que les baies apparaissent sur les élévations, aux cotes tapées.
+13. Vérifier que les baies apparaissent sur les élévations, aux cotes tapées.
 
 Sont sortis de ce parcours, et d'aucun test : le clic simple qui créait une
 pièce fantôme de 240 × 240, la porte de 1 200 réduite à 960 par un calage sur

@@ -199,6 +199,30 @@ d'une pièce et peut traverser la voisine de part en part. Sans distinguer les
 deux, l'application posait un mur porteur au milieu du séjour, que personne
 n'avait dessiné.
 
+**Les murs intérieurs se tracent aussi à la main**, dans l'onglet *Murs
+intérieurs* : on glisse à l'intérieur du bâtiment, le mur se pose d'aplomb, et
+on choisit refend porteur ou cloison légère.
+
+Le tracé **complète** la déduction, il ne la remplace pas : les refends déduits
+du dessin des pièces restent, apparaissent en filigrane pour qu'on ne les
+retrace pas, et un doublon est signalé plutôt que compté deux fois. C'est le
+confort d'aujourd'hui — poser des pièces suffit — plus ce que la géométrie ne
+peut pas deviner.
+
+L'application tranche ensuite ce que le tracé prétend être :
+
+| Ce que vous tracez | Ce que l'application en fait |
+|---|---|
+| un refend qui rejoint le contour par ses deux bouts | refend porteur, calepiné, sous le nom que vous lui avez donné |
+| un refend qui s'arrête en chemin | cloison légère : il n'a nulle part où s'ancrer |
+| un refend qui en croise un autre | le sens le plus long l'emporte, l'autre passe en cloison |
+| une cloison | dessinée sur les plans de pose, jamais calepinée |
+
+Une cloison n'est pas rien : elle ne porte pas, donc elle sort de la
+nomenclature et du métré, mais celui qui monte la maison a besoin de savoir où
+elle tombe. Elle figure donc sur l'aperçu et sur chaque plan de pose, en trait
+fin.
+
 **Les baies se posent aussi à la souris**, dans l'onglet *Baies* : on glisse le
 long d'un mur, on choisit porte, fenêtre ou porte-fenêtre, on règle l'allège et
 la hauteur. L'application rappelle en direct le passage libre — la trémie moins

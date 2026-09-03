@@ -28,7 +28,9 @@ def esquisse_en_yaml(esquisse: Esquisse) -> str:
         "# Esquisse obqo — rouvrable depuis l'onglet « Esquisse » d'obqo web.",
         "# Les pieces se touchent : chaque ligne partagee est un axe de mur.",
         "# Les baies sont posees sur ces axes, decrites par le segment qu'elles",
-        "# occupent. Toutes les cotes sont en millimetres.",
+        "# occupent, et « murs » porte les refends et cloisons traces a la main,",
+        "# qui s'ajoutent a ceux que le dessin des pieces laisse deduire.",
+        "# Toutes les cotes sont en millimetres.",
         f"nom: {texte(esquisse.nom)}",
         f"hauteur_sous_chainage: {esquisse.hauteur_sous_chainage}",
         "pieces:",
@@ -50,5 +52,15 @@ def esquisse_en_yaml(esquisse: Esquisse) -> str:
                 f"hauteur: {baie.hauteur}}}"
                 f"   # {LIBELLES[baie.type]}, tremie {baie.largeur}, "
                 f"passage libre {passage}"
+            )
+    if esquisse.murs:
+        lignes.append("murs:   # murs interieurs traces a la main")
+        for mur in esquisse.murs:
+            sens = "horizontal" if mur.horizontal else "vertical"
+            lignes.append(
+                f"  - {{id: {texte(mur.id)}, type: {mur.type}, "
+                f"depart: [{mur.depart[0]}, {mur.depart[1]}], "
+                f"arrivee: [{mur.arrivee[0]}, {mur.arrivee[1]}]}}"
+                f"   # {sens}, {mur.longueur} mm"
             )
     return "\n".join(lignes) + "\n"

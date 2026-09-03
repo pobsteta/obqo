@@ -207,6 +207,12 @@ a.bouton { display: inline-block; }
 
 .mur { stroke: #6b6155; stroke-width: 240; stroke-linecap: butt; cursor: crosshair; }
 .mur--interieur { stroke: #a09380; }
+.mur--deduit { stroke: #c3b8a6; stroke-dasharray: 300 200; }
+.trace { stroke-width: 200; stroke-linecap: butt; cursor: pointer; }
+.trace--refend { stroke: #7a4f1e; }
+.trace--cloison { stroke: #9a9186; stroke-dasharray: 400 240; }
+.trace--actif { stroke: #b4531f; stroke-width: 260; }
+
 .baie { stroke: #2f5d7c; stroke-width: 240; stroke-linecap: butt; cursor: pointer; }
 .baie--active { stroke: #b4531f; }
 /* text-anchor vient du JS : une regle CSS l'emporterait sur l'attribut. */

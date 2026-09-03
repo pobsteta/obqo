@@ -115,6 +115,19 @@ class Refend(Base):
     arrivee: tuple[int, int]
 
 
+class Cloison(Base):
+    """Mur interieur non porteur : dessine, jamais calepine.
+
+    Une cloison legere ne fait pas partie de l'ossature et n'entre donc ni dans
+    la nomenclature ni dans le metre. Elle figure sur les plans de pose parce
+    que celui qui monte la maison a besoin de savoir ou elle tombe.
+    """
+
+    id: str
+    depart: tuple[int, int]
+    arrivee: tuple[int, int]
+
+
 class Poteau(Base):
     """Poteau raidisseur P10, pose dans un module de 240 de la course.
 
@@ -161,6 +174,7 @@ class Plan(Base):
     contour: Contour
     ouvertures: list[Ouverture] = []
     refends: list[Refend] = []
+    cloisons: list[Cloison] = []
     poteaux: list[Poteau] = []
     parametres: Parametres = Parametres()
 

@@ -46,7 +46,7 @@ from obqo.engine.calepinage import calepiner
 from obqo.engine.esquisse import PAS_RECOMMANDE, caler, murs_du_plan, vers_plan
 from obqo.engine.validation import Gravite
 from obqo.model.ecriture import esquisse_en_yaml, texte
-from obqo.model.esquisse import Baie, Esquisse, Piece
+from obqo.model.esquisse import Baie, Esquisse, MurInterieur, Piece
 from obqo.model.lecture import esquisse_depuis_texte
 from obqo.model.plan import Plan
 from obqo.web.etude import Brouillons, Depot, EchecDeValidation, Etude
@@ -291,6 +291,7 @@ def _esquisse_depuis(corps: dict[str, Any]) -> Esquisse:
             hauteur_sous_chainage=int(corps.get("hauteur_sous_chainage") or 2640),
             pieces=[Piece(**p) for p in corps.get("pieces", [])],
             baies=[Baie(**b) for b in corps.get("baies", [])],
+            murs=[MurInterieur(**m) for m in corps.get("murs", [])],
         )
     except ValidationError as erreur:
         details = "; ".join(
@@ -311,6 +312,10 @@ def caler_esquisse(corps: Annotated[dict[str, Any], Body()]) -> JSONResponse:
     return JSONResponse(
         {
             "pieces": [p.model_dump() for p in calee.pieces],
+            "murs": [
+                {**m.model_dump(), "depart": list(m.depart), "arrivee": list(m.arrivee)}
+                for m in calee.murs
+            ],
             "ajustements": [str(a) for a in ajustements],
         }
     )
@@ -385,6 +390,10 @@ def ouvrir_esquisse(corps: Annotated[dict[str, Any], Body()]) -> JSONResponse:
                 {**b.model_dump(), "depart": list(b.depart), "arrivee": list(b.arrivee)}
                 for b in esquisse.baies
             ],
+            "murs": [
+                {**m.model_dump(), "depart": list(m.depart), "arrivee": list(m.arrivee)}
+                for m in esquisse.murs
+            ],
         }
     )
 
@@ -448,6 +457,14 @@ def _en_yaml(plan: Plan, esquisse: Esquisse) -> str:
             lignes.append(
                 f"  - {{id: {refend.id}, depart: [{refend.depart[0]}, {refend.depart[1]}], "
                 f"arrivee: [{refend.arrivee[0]}, {refend.arrivee[1]}]}}"
+            )
+    if plan.cloisons:
+        lignes.append("cloisons:   # non porteuses : dessinees, jamais calepinees")
+        for cloison in plan.cloisons:
+            lignes.append(
+                f"  - {{id: {texte(cloison.id)}, "
+                f"depart: [{cloison.depart[0]}, {cloison.depart[1]}], "
+                f"arrivee: [{cloison.arrivee[0]}, {cloison.arrivee[1]}]}}"
             )
     if plan.ouvertures:
         lignes.append("ouvertures:")

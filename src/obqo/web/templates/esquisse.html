@@ -22,6 +22,7 @@
     <div class="modes" role="group" aria-label="Mode de dessin">
       <button type="button" id="mode-pieces" class="mode mode--actif">Pièces</button>
       <button type="button" id="mode-baies" class="mode">Baies</button>
+      <button type="button" id="mode-murs" class="mode">Murs intérieurs</button>
     </div>
     <svg id="toile" viewBox="0 0 19200 14400" preserveAspectRatio="xMidYMid meet"
          role="application" aria-label="Zone de dessin des pièces" tabindex="0"></svg>
@@ -46,6 +47,27 @@
         Les cotes portent sur la trémie et se saisissent en hauteur × largeur,
         au pas de 240&nbsp;mm. La largeur s'applique le long du mur, rive gauche
         fixe ; la baie recule d'elle-même si elle ne tient plus au bout du mur.
+      </p>
+    </fieldset>
+    <fieldset id="forme-mur" hidden>
+      <legend>Mur intérieur sélectionné</legend>
+      <label>nom <input id="mur-nom" type="text"></label>
+      <label>type
+        <select id="mur-type">
+          <option value="refend">refend porteur</option>
+          <option value="cloison">cloison légère</option>
+        </select>
+      </label>
+      <label>longueur <input id="mur-longueur" type="number" step="240" min="960"></label>
+      <button type="button" id="mur-supprimer" class="bouton">Supprimer</button>
+      <p class="aide" id="mur-resume"></p>
+      <p class="aide">
+        Glissez à l'intérieur du bâtiment pour tracer un mur ; il se place
+        d'aplomb, à l'horizontale ou à la verticale selon le sens du geste.
+        Les refends déjà déduits du dessin des pièces apparaissent en filigrane :
+        inutile de les retracer, le tracé <em>complète</em> la déduction.
+        Un refend porteur doit rejoindre le contour par ses deux bouts ; sinon
+        la conversion le repasse en cloison et vous le dit.
       </p>
     </fieldset>
     <div class="commandes">

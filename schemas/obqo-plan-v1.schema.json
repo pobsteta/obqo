@@ -1,5 +1,50 @@
 {
   "$defs": {
+    "Cloison": {
+      "additionalProperties": false,
+      "description": "Mur interieur non porteur : dessine, jamais calepine.\n\nUne cloison legere ne fait pas partie de l'ossature et n'entre donc ni dans\nla nomenclature ni dans le metre. Elle figure sur les plans de pose parce\nque celui qui monte la maison a besoin de savoir ou elle tombe.",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "depart": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            }
+          ],
+          "title": "Depart",
+          "type": "array"
+        },
+        "arrivee": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            }
+          ],
+          "title": "Arrivee",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "depart",
+        "arrivee"
+      ],
+      "title": "Cloison",
+      "type": "object"
+    },
     "Contour": {
       "additionalProperties": false,
       "description": "Contour exterieur des murs : soit une polyligne absolue, soit un trace.",
@@ -379,6 +424,14 @@
         "$ref": "#/$defs/Refend"
       },
       "title": "Refends",
+      "type": "array"
+    },
+    "cloisons": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Cloison"
+      },
+      "title": "Cloisons",
       "type": "array"
     },
     "poteaux": {

@@ -36,6 +36,7 @@ class Calque(StrEnum):
     POTEAU = "poteaux raidisseurs"
     CHAINAGE = "chainage"
     REFEND = "refends"
+    CLOISON = "cloisons legeres"
     COTE = "cotation"
     TEXTE = "texte"
     REPERE = "reperes"
@@ -63,6 +64,7 @@ STYLES: dict[Calque, Style] = {
     Calque.POTEAU: Style("#5c4310", "#cdb87a", 0.4, 2),
     Calque.CHAINAGE: Style("#3f6212", "#e6efd4", 0.4, 3),
     Calque.REFEND: Style("#4a4a4a", "#eae4d8", 0.3, 9),
+    Calque.CLOISON: Style("#8e8378", "#efe9e0", 0.2, 4),
     Calque.COTE: Style("#2f5d7c", None, 0.18, 5),
     Calque.TEXTE: Style("#1a1a1a", None, 0.18, 7),
     Calque.REPERE: Style("#6b6b6b", None, 0.18, 8),
