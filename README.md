@@ -258,11 +258,12 @@ refuser les gestes qui en partent interdirait de tracer, et les prendre tous
 pour des ouvertures aussi. Rien n'est tranché avant un déplacement d'un pas :
 plus tôt, la direction n'est que du bruit de souris.
 
-**La surface se compte au fur et à mesure.** Elle s'affiche en haut du volet, à
-côté du nom et de la hauteur sous chaînage — « surface au sol 33,2 m² » — et se
-met à jour à chaque geste : c'est le chiffre qu'on surveille en dessinant, il ne
-doit pas se chercher. La barre d'état le rappelle avec le nombre de pièces et
-l'emprise hors tout. Les murs
+**La surface se compte au fur et à mesure.** Chaque pièce porte la sienne sous
+ses cotes — « séjour · 4800 × 3840 · 18,4 m² » — et le total s'affiche en haut du
+volet, à côté du nom et de la hauteur sous chaînage. Les deux suivent chaque
+geste : c'est ce qu'on surveille en dessinant, et c'est la surface d'une pièce,
+pas ses deux nombres, qui dit si elle est habitable. La barre d'état rappelle le
+total avec le nombre de pièces et l'emprise hors tout. Les murs
 déduits par le serveur portent en outre leur repère — `M1` à `Mn`, `R1` à `Rn` —
 sur le dessin, dans les deux onglets qui les affichent : c'est ce qui répond à
 « quel mur est M1 ? » quand on relit une élévation ou le plan dérivé.

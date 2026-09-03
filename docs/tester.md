@@ -155,8 +155,10 @@ Le parcours à refaire après toute modification de l'éditeur :
     un mur doit naître. Cliquer un mur sans glisser ne doit rien créer.
 16. **Les repères et la surface** — en *Ouvertures*, chaque mur doit porter son
     nom (`M1`… et `R1`… pour les refends), à côté du trait et non dessus. Ajouter
-    une pièce : la surface au sol affichée en haut du volet doit suivre, comme
-    celle de la barre d'état et l'emprise. Vérifier le vocabulaire au passage :
+    une pièce : sa surface doit s'écrire sous ses cotes, et le total en haut du
+    volet suivre, comme la barre d'état et l'emprise. Les trois lignes d'une
+    pièce — nom, cotes, surface — ne doivent pas se faire recouvrir par une
+    étiquette de baie. Vérifier le vocabulaire au passage :
     la zone d'une pièce dit « longueur × largeur » (deux cotes en plan), celle
     d'une ouverture « hauteur × largeur » (la hauteur y est verticale). Sur les planches produites, l'élévation doit porter `MUR M1` sur le
     dessin, et l'aperçu annoncer l'emprise au sol en m².

@@ -164,6 +164,13 @@ function dessiner() {
         textContent: `${piece.longueur} × ${piece.largeur}`,
       })
     );
+    // La surface sous les cotes : c'est elle qu'on lit pour juger une piece,
+    // pas ses deux nombres. Le total en tete du volet en est la somme.
+    groupe.appendChild(
+      Object.assign(svg("text", { x: cx, y: cy + 620, class: "piece__surface" }), {
+        textContent: surfaceDe(piece),
+      })
+    );
     if (index === selection) {
       groupe.appendChild(
         svg("rect", {
@@ -451,7 +458,9 @@ function boitesDesNoms() {
     const largeur = Math.max(piece.nom.length * 190, cote.length * 145);
     const cx = piece.x + piece.longueur / 2;
     const cy = piece.y + piece.largeur / 2;
-    return { x0: cx - largeur / 2, y0: cy - 280, x1: cx + largeur / 2, y1: cy + 470 };
+    // Trois lignes desormais — nom, cotes, surface : la boite descend d'autant,
+    // sinon une etiquette de baie vient se poser sur les m2.
+    return { x0: cx - largeur / 2, y0: cy - 280, x1: cx + largeur / 2, y1: cy + 810 };
   });
 }
 
@@ -516,8 +525,17 @@ function surLeMur(point) {
 // (qui compte l'epaisseur des murs exterieurs) ni la surface habitable (qui
 // retire la moitie de chaque mur) — les deux se lisent sur le plan derive.
 function surfaceTotale() {
-  const m2 = pieces.reduce((total, p) => total + p.longueur * p.largeur, 0) / 1e6;
-  return `${m2.toFixed(1).replace(".", ",")} m²`;
+  return enM2(pieces.reduce((total, p) => total + p.longueur * p.largeur, 0));
+}
+
+// Une surface s'ecrit ici et nulle part ailleurs : un mm2 devenu m2, une
+// decimale, et la virgule francaise.
+function enM2(mm2) {
+  return `${(mm2 / 1e6).toFixed(1).replace(".", ",")} m²`;
+}
+
+function surfaceDe(piece) {
+  return enM2(piece.longueur * piece.largeur);
 }
 
 function emprise() {
@@ -878,10 +896,9 @@ function montrerFormePiece() {
 }
 
 function resumeDeLaPiece(piece) {
-  const surface = (piece.longueur * piece.largeur) / 1e6;
   const lignes = [
     `« ${piece.nom} » : longueur ${piece.longueur} × largeur ${piece.largeur} mm ` +
-      `d'axe à axe, ${surface.toFixed(1).replace(".", ",")} m²`,
+      `d'axe à axe, ${surfaceDe(piece)}`,
   ];
   if (Math.min(piece.longueur, piece.largeur) < MINI) {
     lignes.push(
