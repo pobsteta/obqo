@@ -7,6 +7,12 @@ n'y écrit pas à la main — on écrit ses messages de commit.
 
 Voir `docs/publier.md` pour la règle complète.
 
+## 0.2.1 — 2026-09-03
+
+### Corrections
+
+- **baies** — donner a chaque type sa hauteur de tremie
+
 ## 0.2.0 — 2026-09-02
 
 ### Nouveautés
