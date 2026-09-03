@@ -567,7 +567,9 @@ def vers_plan(esquisse: Esquisse) -> tuple[Plan | None, Rapport]:
     """Convertit une esquisse en plan obqo. Retourne None si c'est impossible."""
     rapport = Rapport()
     for piece in esquisse.pieces:
-        for cote, valeur in (("largeur", piece.largeur), ("hauteur", piece.hauteur)):
+        # Une piece se cote en plan : longueur et largeur, jamais une hauteur.
+        # Les champs du modele gardent leurs noms — voir `model.esquisse.Piece`.
+        for cote, valeur in (("longueur", piece.largeur), ("largeur", piece.hauteur)):
             if valeur % GRILLE:
                 rapport.ajouter(
                     Gravite.ERREUR,

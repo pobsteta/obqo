@@ -23,13 +23,25 @@ class Base(BaseModel):
 
 
 class Piece(Base):
-    """Un rectangle du plan, en millimetres, cotes de mur a mur (axes compris)."""
+    """Un rectangle du plan, en millimetres, cotes de mur a mur (axes compris).
+
+    **Ses deux cotes sont horizontales.** `largeur` est l'etendue en x et
+    `hauteur` l'etendue en y — une hauteur de rectangle a l'ecran, pas une
+    hauteur de mur. L'interface les nomme donc *longueur* et *largeur*, et la
+    seule hauteur de l'esquisse reste `hauteur_sous_chainage`, commune a tout
+    le batiment.
+
+    Les champs gardent ces noms parce que ce sont ceux des esquisses deja
+    enregistrees : les renommer casserait les fichiers pour un vocabulaire.
+    """
 
     nom: str = "piece"
     x: int
     y: int
     largeur: Annotated[int, Field(gt=0)]
+    """Etendue en x, presentee comme la « longueur » de la piece."""
     hauteur: Annotated[int, Field(gt=0)]
+    """Etendue en y, presentee comme la « largeur » de la piece."""
 
     @property
     def droite(self) -> int:

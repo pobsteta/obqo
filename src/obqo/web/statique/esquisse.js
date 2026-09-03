@@ -177,9 +177,10 @@ function dessiner() {
   });
 
   if (typeof memoriser === "function") memoriser();
-  // Le formulaire suit l'etat comme le dessin : une seule source, un seul
-  // endroit ou le rafraichir.
+  // Le formulaire et le compteur suivent l'etat comme le dessin : une seule
+  // source, un seul endroit ou les rafraichir.
   montrerFormePiece();
+  document.getElementById("surface-totale").textContent = surfaceTotale();
 
   if (conflits.size) {
     const noms = [...conflits].map((i) => `« ${pieces[i].nom} »`).join(", ");
@@ -865,8 +866,12 @@ function montrerFormePiece() {
   const piece = pieces[selection];
   forme.hidden = false;
   document.getElementById("piece-nom").value = piece.nom;
-  document.getElementById("piece-largeur").value = piece.largeur;
-  document.getElementById("piece-hauteur").value = piece.hauteur;
+  // Le modele dit `largeur`/`hauteur` — ce sont les noms du fichier d'esquisse
+  // deja enregistre — mais une piece vue en plan n'a pas de hauteur : elle a
+  // une longueur (en x) et une largeur (en y). La hauteur de la maison est la
+  // hauteur sous chainage, commune a tout le batiment.
+  document.getElementById("piece-longueur").value = piece.largeur;
+  document.getElementById("piece-largeur").value = piece.hauteur;
   document.getElementById("piece-x").value = piece.x;
   document.getElementById("piece-y").value = piece.y;
   document.getElementById("piece-resume").textContent = resumeDeLaPiece(piece);
@@ -875,8 +880,8 @@ function montrerFormePiece() {
 function resumeDeLaPiece(piece) {
   const surface = (piece.largeur * piece.hauteur) / 1e6;
   const lignes = [
-    `« ${piece.nom} » : ${piece.largeur} × ${piece.hauteur} mm d'axe à axe, ` +
-      `${surface.toFixed(1).replace(".", ",")} m²`,
+    `« ${piece.nom} » : longueur ${piece.largeur} × largeur ${piece.hauteur} mm ` +
+      `d'axe à axe, ${surface.toFixed(1).replace(".", ",")} m²`,
   ];
   if (Math.min(piece.largeur, piece.hauteur) < MINI) {
     lignes.push(
@@ -893,10 +898,10 @@ function resumeDeLaPiece(piece) {
 // Les cotes se calent sur 240 comme le dessin ; « Caler » ramenera l'ensemble
 // sur 480 si on le lui demande.
 const CHAMPS_DE_PIECE = {
-  largeur: (piece, valeur) => {
+  longueur: (piece, valeur) => {
     piece.largeur = Math.max(PAS_DESSIN, valeur);
   },
-  hauteur: (piece, valeur) => {
+  largeur: (piece, valeur) => {
     piece.hauteur = Math.max(PAS_DESSIN, valeur);
   },
   x: (piece, valeur) => {

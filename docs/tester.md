@@ -155,8 +155,10 @@ Le parcours à refaire après toute modification de l'éditeur :
     un mur doit naître. Cliquer un mur sans glisser ne doit rien créer.
 16. **Les repères et la surface** — en *Ouvertures*, chaque mur doit porter son
     nom (`M1`… et `R1`… pour les refends), à côté du trait et non dessus. Ajouter
-    une pièce : la surface totale de la barre d'état doit suivre, et l'emprise
-    aussi. Sur les planches produites, l'élévation doit porter `MUR M1` sur le
+    une pièce : la surface au sol affichée en haut du volet doit suivre, comme
+    celle de la barre d'état et l'emprise. Vérifier le vocabulaire au passage :
+    la zone d'une pièce dit « longueur × largeur » (deux cotes en plan), celle
+    d'une ouverture « hauteur × largeur » (la hauteur y est verticale). Sur les planches produites, l'élévation doit porter `MUR M1` sur le
     dessin, et l'aperçu annoncer l'emprise au sol en m².
 17. **Ce qui survit au rechargement** — tracer un mur intérieur, aller sur
     l'onglet *Plan* (qui recharge la page), revenir : le mur doit être encore

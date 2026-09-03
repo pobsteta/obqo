@@ -311,8 +311,12 @@ def test_les_trois_zones_de_saisie_sont_servies(client: TestClient) -> None:
     reponse = client.get("/")
     for zone in ('id="forme-piece"', 'id="forme-baie"', 'id="forme-mur"'):
         assert zone in reponse.text
-    for champ in ('id="piece-nom"', 'id="piece-largeur"', 'id="piece-x"'):
+    for champ in ('id="piece-nom"', 'id="piece-longueur"', 'id="piece-largeur"', 'id="piece-x"'):
         assert champ in reponse.text
+    # Une piece se cote en plan : deux cotes horizontales, aucune hauteur. La
+    # seule hauteur de l'esquisse est celle sous chainage, commune au batiment.
+    assert 'id="piece-hauteur"' not in reponse.text
+    assert 'id="surface-totale"' in reponse.text
     assert ">Ouvertures<" in reponse.text
     assert ">Baies<" not in reponse.text
 

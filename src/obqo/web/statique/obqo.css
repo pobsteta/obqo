@@ -245,6 +245,11 @@ a.bouton { display: inline-block; }
 .forme .cote-fois { margin-left: -.45rem; }
 
 .identite { display: flex; flex-wrap: wrap; gap: .9rem; margin: .3rem 0 .2rem; }
+/* Le compteur de surface se lit en meme temps que le nom et la hauteur : il
+   suit le dessin, il n'attend pas qu'on aille chercher la barre d'etat. */
+.compteur { display: flex; align-items: baseline; gap: .35rem; font-size: .88rem; }
+.compteur output { font-weight: 600; }
+.compteur__note { font-size: .78rem; color: var(--encre-douce); }
 .identite label { display: flex; align-items: center; gap: .35rem; font-size: .88rem; }
 .identite input { padding: .3rem .45rem; border: 1px solid var(--bord); border-radius: 4px; font: inherit; }
 #nom-esquisse { width: 11rem; }

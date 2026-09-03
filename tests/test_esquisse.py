@@ -173,6 +173,10 @@ def test_une_esquisse_hors_grille_est_refusee_avec_le_remede() -> None:
     assert plan is None
     constat = next(c for c in rapport.constats if c.code == "PIECE-HORS-GRILLE")
     assert "caler l'esquisse" in constat.message
+    # Le constat cote la piece en plan : « longueur 5100 », pas « hauteur ».
+    messages = " ".join(c.message for c in rapport.constats)
+    assert "longueur 5100" in messages and "largeur 4300" in messages
+    assert "hauteur" not in messages
 
 
 def test_une_piece_plus_petite_que_ses_murs_est_refusee() -> None:

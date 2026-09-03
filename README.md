@@ -258,17 +258,28 @@ refuser les gestes qui en partent interdirait de tracer, et les prendre tous
 pour des ouvertures aussi. Rien n'est tranché avant un déplacement d'un pas :
 plus tôt, la direction n'est que du bruit de souris.
 
-**La surface se compte au fur et à mesure.** La barre d'état annonce le nombre de
-pièces, leur **surface totale d'axe à axe** et l'emprise hors tout, et se met à
-jour à chaque geste : c'est le chiffre qu'on surveille en dessinant. Les murs
+**La surface se compte au fur et à mesure.** Elle s'affiche en haut du volet, à
+côté du nom et de la hauteur sous chaînage — « surface au sol 33,2 m² » — et se
+met à jour à chaque geste : c'est le chiffre qu'on surveille en dessinant, il ne
+doit pas se chercher. La barre d'état le rappelle avec le nombre de pièces et
+l'emprise hors tout. Les murs
 déduits par le serveur portent en outre leur repère — `M1` à `Mn`, `R1` à `Rn` —
 sur le dessin, dans les deux onglets qui les affichent : c'est ce qui répond à
 « quel mur est M1 ? » quand on relit une élévation ou le plan dérivé.
 
-**La pièce sélectionnée a elle aussi ses champs** — nom, largeur × hauteur, x et
-y — sur le modèle de ceux de l'ouverture. Un plan se saisit souvent depuis des
+**La pièce sélectionnée a elle aussi ses champs** — nom, longueur × largeur, x
+et y — sur le modèle de ceux de l'ouverture. Un plan se saisit souvent depuis des
 cotes relevées : « le séjour fait 4,80 sur 3,84 » se tape, là où le retrouver à
 la souris au pas de 240 est un exercice inutile.
+
+**Une pièce n'a pas de hauteur, et l'interface ne le dit plus autrement.** Vue en
+plan, elle a deux cotes horizontales : une **longueur** en x, une **largeur** en
+y. La seule hauteur de l'esquisse est la *hauteur sous chaînage*, commune à tout
+le bâtiment — et celle d'une ouverture, qui est bien verticale, sous le linteau.
+Les constats du serveur suivent le même vocabulaire : « longueur 5100 mm :
+multiple de 240 attendu ». Le modèle, lui, garde `largeur` et `hauteur` : ce sont
+les noms des esquisses déjà enregistrées, et les renommer casserait les fichiers
+pour un vocabulaire. Le champ le documente.
 
 Les murs sur lesquels on pose les ouvertures viennent du serveur, pas d'un
 calcul refait côté navigateur : une seule source de vérité pour la géométrie.
