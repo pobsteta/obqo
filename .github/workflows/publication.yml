@@ -68,11 +68,25 @@ jobs:
           set -euo pipefail
           git config user.name "obqo — publication"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git ls-remote --exit-code --tags origin "v$VERSION" >/dev/null 2>&1; then
+            echo "::error::le tag v$VERSION existe déjà sur le dépôt. Un tag posé" \
+                 "sans son commit de version bloque toute publication suivante :" \
+                 "supprimez-le (git push origin :refs/tags/v$VERSION) et relancez."
+            exit 1
+          fi
           git commit -am "chore(version): $VERSION"
           git tag -a "v$VERSION" -F notes-de-version.md
+          # « --atomic » ou rien : sans lui, une poussée humaine arrivée entre le
+          # checkout et ici fait rejeter la branche pendant que le tag, lui,
+          # passe. Le tag se retrouve alors sur un commit qui n'existe nulle
+          # part, `git describe` ne le voit plus, et chaque publication suivante
+          # recalcule la même version puis meurt sur « tag already exists ».
+          # Tout ou rien : la fusion suivante republiera, notes comprises,
+          # puisque rien n'aura ete pose.
+          #
           # Poussé avec le GITHUB_TOKEN : GitHub ne relance pas les workflows
           # sur ces commits, la publication ne se rappelle donc pas elle-même.
-          git push origin "HEAD:${{ github.ref_name }}" --follow-tags
+          git push --atomic origin "HEAD:${{ github.ref_name }}" --follow-tags
           gh release create "v$VERSION" \
             --title "obqo $VERSION" \
             --notes-file notes-de-version.md \

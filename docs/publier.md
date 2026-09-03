@@ -67,6 +67,27 @@ uv run obqo --version                    # ce que le paquet installé annonce
 Sans `--appliquer`, l'outil ne fait qu'annoncer — c'est la commande à lancer
 avant de fusionner quand on veut savoir ce qu'on déclenche.
 
+## Quand une publication échoue
+
+Le cas déjà vu, et corrigé : une poussée humaine arrivée pendant le workflow
+faisait **rejeter la branche pendant que le tag passait**. Le tag se retrouvait
+sur un commit inexistant, `git describe` ne le voyait plus, et chaque
+publication suivante recalculait la même version puis mourait sur
+`tag already exists` (`exit 128`). La poussée est désormais `--atomic` : tout ou
+rien, et la fusion suivante republie avec les bonnes notes.
+
+S'il reste un tag orphelin d'une ancienne exécution :
+
+```bash
+git tag -l                                  # les tags connus
+git merge-base --is-ancestor vX.Y.Z HEAD    # dans la branche ? sinon, orphelin
+git push origin :refs/tags/vX.Y.Z           # le supprimer du dépôt
+git tag -d vX.Y.Z                           # et en local
+```
+
+Rien n'est perdu : les notes se recalculent depuis le dernier tag encore
+atteignable, donc la version suivante reprendra tous les commits.
+
 ## Passer en 1.0, ou corriger une version
 
 Les deux se font à la main, et c'est voulu : ce sont des décisions.
