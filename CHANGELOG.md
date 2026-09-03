@@ -7,6 +7,12 @@ n'y écrit pas à la main — on écrit ses messages de commit.
 
 Voir `docs/publier.md` pour la règle complète.
 
+## 0.6.0 — 2026-09-03
+
+### Ruptures
+
+- **esquisse** — nommer les cotes d'une piece longueur et largeur
+
 ## 0.5.1 — 2026-09-03
 
 ### Corrections
