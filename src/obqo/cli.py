@@ -44,6 +44,9 @@ from obqo.gabarit import GABARIT
 from obqo.model.lecture import depuis_fichier
 from obqo.model.plan import Plan
 from obqo.model.systeme import Calepinage
+from obqo.structure.entraxe import HAUTEUR_PAR_DEFAUT
+from obqo.structure.materiaux import Hypotheses
+from obqo.units import ENTRAXE_MAXI_RAIDISSEUR
 
 app = typer.Typer(
     help="Calepinage, nomenclature et metre du systeme constructif obqo.",
@@ -52,6 +55,9 @@ app = typer.Typer(
 )
 console = Console()
 erreurs = Console(stderr=True)
+
+DEFAUTS = Hypotheses()
+"""Valeurs par defaut des options de `obqo entraxe`, une seule source de verite."""
 
 
 def _version(demandee: bool) -> None:
@@ -199,6 +205,24 @@ def serialiser(calepinage: Calepinage) -> dict[str, Any]:
     }
 
 
+def note_de_structure(
+    plan: Plan, calepinage: Calepinage, hypotheses: Hypotheses
+) -> list[str] | None:
+    """Note de justification structurale, ou None si l'extra manque.
+
+    Le dossier doit sortir entier sur une installation minimale : l'absence de
+    PyNite retire une piece du dossier, elle n'arrete pas le calepinage.
+    """
+    try:
+        from obqo.structure.entraxe import note_du_plan, pans_du_plan, verifier
+
+        verifications = [verifier(pan, hypotheses) for pan in pans_du_plan(plan, calepinage)]
+    except ImportError:
+        return None
+    refends = [m.id for m in calepinage.murs if m.interieur]
+    return note_du_plan(verifications, hypotheses, refends)
+
+
 EXTRAS: dict[Format, tuple[str, str]] = {
     Format.PDF: ("dessins", "reportlab"),
     Format.DXF: ("dessins", "ezdxf"),
@@ -227,7 +251,7 @@ def formats_servables(formats: list[Format]) -> list[Format]:
             erreurs.print(
                 f"[yellow]Format {demande.value} ignore[/yellow] : "
                 f"installer avec [bold]uv sync --extra {nom}[/bold] "
-                f"(ou pip install 'obqo[{nom}]')."
+                f"(ou pip install 'obqo\\[{nom}]')."
             )
         else:
             servables.append(demande)
@@ -377,9 +401,24 @@ def calepiner(
 
     ecrits = dessiner(calepinage, plan_valide, sortie, demandes)
 
+    structure = note_de_structure(plan_valide, calepinage, DEFAUTS)
+    if structure is not None:
+        (sortie / "structure.txt").write_text(
+            "\n".join(structure) + "\n", encoding="utf-8", newline="\n"
+        )
+        note_absente = ""
+    else:
+        note_absente = (
+            "\nJUSTIFICATION STRUCTURALE\n"
+            "  non produite : l'extra « structure » n'est pas installe "
+            "(uv sync --extra structure). L'entraxe des poteaux reste celui du "
+            "paragraphe 1.7, non justifie par le calcul.\n"
+        )
+
     chiffrage = chiffrer(metre, plan_valide.parametres)
     (sortie / "rapport.txt").write_text(
         rapport_texte(rapport)
+        + note_absente
         + synthese(
             calepinage,
             nomenclature,
@@ -411,6 +450,7 @@ def calepiner(
         "metre.csv",
         "debit.csv",
         "rapport.txt",
+        *(["structure.txt"] if structure is not None else []),
         *ecrits,
     ]
     console.print(f"\n[green]Ecrit dans {sortie}/[/green] : " + ", ".join(fichiers))
@@ -455,6 +495,143 @@ def debit(
         if plan_de_debit and plan_de_debit.barres:
             console.print()
             console.print(_table_debit(plan_de_debit))
+
+
+@app.command()
+def entraxe(
+    plan: Annotated[
+        Path | None,
+        typer.Argument(help="Plan a noter pan par pan. Omis : un pan abstrait.", exists=True),
+    ] = None,
+    pan: Annotated[
+        int | None,
+        typer.Option("--pan", help="Verifier ce pan (mm) au lieu de chercher le maximum."),
+    ] = None,
+    hauteur: Annotated[
+        int, typer.Option(help="Hauteur sous chainage, mm. Ignore avec un plan.")
+    ] = HAUTEUR_PAR_DEFAUT,
+    vent: Annotated[float, typer.Option(help="Pression de vent de calcul, kN/m2.")] = (
+        DEFAUTS.pression_vent
+    ),
+    charge: Annotated[
+        float, typer.Option(help="Charge verticale en tete de mur, kN/m.")
+    ] = DEFAUTS.charge_verticale,
+    part_poteau: Annotated[
+        float, typer.Option(help="Part de la charge verticale reprise par le poteau.")
+    ] = DEFAUTS.part_poteau,
+    efficacite: Annotated[
+        float, typer.Option(help="Efficacite d'un rang face a un bloc plein.")
+    ] = DEFAUTS.efficacite_rang,
+    cheville: Annotated[
+        float, typer.Option(help="Resistance caracteristique d'une C1, kN.")
+    ] = DEFAUTS.resistance_cheville_k,
+    classe: Annotated[str, typer.Option(help="Classe de resistance EN 338.")] = DEFAUTS.classe,
+    service: Annotated[int, typer.Option(help="Classe de service, 1 a 3.")] = (
+        DEFAUTS.classe_de_service
+    ),
+    duree: Annotated[str, typer.Option(help="Classe de duree du vent.")] = DEFAUTS.duree_du_vent,
+    fleche: Annotated[
+        int, typer.Option(help="Denominateur de la fleche admissible.")
+    ] = DEFAUTS.fleche_admissible,
+) -> None:
+    """Justifier l'entraxe des poteaux raidisseurs (extra « structure » requis).
+
+    Sans argument : le plus long pan admissible avec ces hypotheses. Avec
+    `--pan` : la note d'un pan donne. Avec un plan : un pan par ligne, pour
+    tous les murs exterieurs.
+    """
+    from obqo.structure.entraxe import entraxe_maxi, note, verifier
+    from obqo.structure.modele import Pan
+
+    hypotheses = Hypotheses(
+        classe=classe,
+        classe_de_service=service,
+        duree_du_vent=duree,
+        pression_vent=vent,
+        charge_verticale=charge,
+        part_poteau=part_poteau,
+        efficacite_rang=efficacite,
+        resistance_cheville_k=cheville,
+        fleche_admissible=fleche,
+    )
+    try:
+        if plan is not None:
+            _entraxe_du_plan(plan, hypotheses)
+            return
+        if pan is not None:
+            verification = verifier(Pan(longueur=pan, hauteur=hauteur), hypotheses)
+            console.print("\n".join(note(verification, hypotheses)))
+            raise typer.Exit(code=0 if verification.admis else 1)
+        maxi = entraxe_maxi(hypotheses, hauteur)
+        if not maxi:
+            erreurs.print(
+                "[bold red]Aucun pan admissible[/bold red], meme d'un seul module de 240 : "
+                "ce ne sont plus les poteaux qu'il faut revoir."
+            )
+            raise typer.Exit(code=1)
+        verification = verifier(Pan(longueur=maxi, hauteur=hauteur), hypotheses)
+        console.print("\n".join(note(verification, hypotheses)))
+        console.print(
+            f"\n[bold]Pan admissible maximal : {maxi} mm[/bold] "
+            f"(hauteur {hauteur} mm) — le brief en autorise "
+            f"{ENTRAXE_MAXI_RAIDISSEUR} mm."
+        )
+    except ImportError:
+        _sans_extra_structure()
+
+
+def _sans_extra_structure() -> None:
+    """Sortie 2 : l'extra n'est pas installe, et il n'y a rien a calculer."""
+    erreurs.print(
+        "[bold red]Justification structurale indisponible[/bold red] : "
+        "installer l'extra avec [bold]uv sync --extra structure[/bold] "
+        "(ou pip install 'obqo\\[structure]')."
+    )
+    raise typer.Exit(code=2)
+
+
+def _entraxe_du_plan(chemin: Path, hypotheses: Hypotheses) -> None:
+    """Note pan par pan d'un plan reel, murs exterieurs seulement."""
+    from obqo.structure.entraxe import pans_du_plan, verifier
+
+    plan_valide, calepinage, _ = _calepiner(chemin)
+    verifications = [verifier(p, hypotheses) for p in pans_du_plan(plan_valide, calepinage)]
+
+    table = Table(
+        title=f"Pans exterieurs de {plan_valide.nom}",
+        title_justify="left",
+        header_style="bold",
+    )
+    table.add_column("pan", style="cyan")
+    table.add_column("maconnerie", justify="right")
+    table.add_column("portee", justify="right")
+    table.add_column("critere dimensionnant")
+    table.add_column("taux", justify="right", style="bold")
+    table.add_column("verdict")
+    for v in verifications:
+        table.add_row(
+            v.pan.mur,
+            f"{v.pan.longueur} mm",
+            f"{v.pan.portee} mm",
+            v.critere,
+            f"{v.taux_maxi:.2f}",
+            "admis" if v.admis else "REFUSE",
+            style=None if v.admis else "bold red",
+        )
+    console.print()
+    console.print(table)
+
+    refends = [m.id for m in calepinage.murs if m.interieur]
+    if refends:
+        console.print(
+            f"\n[dim]Murs interieurs non verifies (aucun vent sur un refend) : "
+            f"{', '.join(refends)}.[/dim]"
+        )
+    refuses = [v for v in verifications if not v.admis]
+    if refuses:
+        erreurs.print(f"\n[bold red]{len(refuses)} pan(s) refuse(s).[/bold red]")
+        raise typer.Exit(code=1)
+    console.print("\n[green]Tous les pans exterieurs sont admis.[/green]")
 
 
 @app.command()

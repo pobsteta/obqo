@@ -89,9 +89,10 @@ Comportement attendu, sans aucun extra :
 | Commande | Résultat |
 |---|---|
 | `valider` | identique — le noyau n'a besoin de rien |
-| `calepiner` | 23 fichiers, SVG seul, avec un message par format écarté |
+| `calepiner` | 23 fichiers, SVG seul, avec un message par format écarté ; `structure.txt` en moins, et `rapport.txt` qui le dit |
 | `debit` | repli sur le solveur glouton : 1 229 barres, 3,13 % de chute |
 | `web` | « Interface web indisponible : installer l'extra avec `uv sync --extra web` » |
+| `entraxe` | « Justification structurale indisponible » et **sortie en 2** — c'est la seule commande dont l'extra est la raison d'être |
 
 La règle : **un extra manquant retire une sortie, il ne casse jamais une
 commande.** Les back-ends de dessin sont donc importés paresseusement, à
@@ -209,6 +210,7 @@ ReportLab, ezdxf ou trimesh.
 | port 8000 déjà pris | `uv run obqo web --port 8010` |
 | y accéder depuis un autre poste | `uv run obqo web --hote 0.0.0.0` |
 | `Interface web indisponible` | `uv sync --extra web` |
+| `Justification structurale indisponible` | `uv sync --extra structure` |
 
 **Sans `uv`**, à condition que `python3 --version` affiche 3.12 ou plus —
 Ubuntu 24.04 le fournit, 22.04 est en 3.10 et ne suffit pas :
@@ -323,6 +325,7 @@ ouvrez-en une seconde pour continuer à taper des commandes.
 | port 8000 déjà pris (fréquent avec Anaconda) | `uv run obqo web --port 8080` |
 | y accéder depuis un téléphone ou un autre poste | `uv run obqo web --hote 0.0.0.0`, et accepter le pare-feu |
 | `Interface web indisponible` | `uv sync --extra web` |
+| `Justification structurale indisponible` | `uv sync --extra structure` |
 
 Rien n'est persisté : les études vivent en mémoire, les huit dernières, et
 fermer le serveur les efface. C'est à cela que sert le bouton *Enregistrer* de

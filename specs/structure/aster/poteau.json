@@ -1,0 +1,2473 @@
+{
+  "unite": "mm",
+  "repere": {
+    "x": "le long du mur",
+    "y": "dans l'epaisseur, parement exterieur en y = 0",
+    "z": "en hauteur"
+  },
+  "briques_de_reference": {
+    "corps_480": {
+      "C1": 10,
+      "C2": 2,
+      "C3": 16,
+      "P1": 4,
+      "P2": 4,
+      "P3": 1,
+      "P4": 4,
+      "P5": 2,
+      "P6": 2
+    }
+  },
+  "echantillon": "poteau",
+  "essai": "E3 — liaison poteau-rang",
+  "rangs": 3,
+  "chevilles_par_rang_au_catalogue": 2,
+  "encombrement": [
+    1200,
+    240,
+    720
+  ],
+  "pieces": [
+    {
+      "ref": "P10",
+      "groupe": "P_P10",
+      "fil": "z",
+      "origine": [
+        480,
+        0,
+        0
+      ],
+      "dimensions": [
+        80,
+        240,
+        720
+      ]
+    },
+    {
+      "ref": "P2",
+      "groupe": "P_P2",
+      "fil": "y",
+      "origine": [
+        0,
+        0,
+        0
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P4",
+      "groupe": "P_P4",
+      "fil": "z",
+      "origine": [
+        80,
+        0,
+        0
+      ],
+      "dimensions": [
+        80,
+        80,
+        240
+      ]
+    },
+    {
+      "ref": "P1",
+      "groupe": "P_P1",
+      "fil": "y",
+      "origine": [
+        160,
+        0,
+        0
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P1",
+      "groupe": "P_P1",
+      "fil": "y",
+      "origine": [
+        240,
+        0,
+        0
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P4",
+      "groupe": "P_P4",
+      "fil": "z",
+      "origine": [
+        320,
+        0,
+        0
+      ],
+      "dimensions": [
+        80,
+        80,
+        240
+      ]
+    },
+    {
+      "ref": "P2",
+      "groupe": "P_P2",
+      "fil": "y",
+      "origine": [
+        400,
+        0,
+        0
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P4",
+      "groupe": "P_P4",
+      "fil": "z",
+      "origine": [
+        80,
+        160,
+        0
+      ],
+      "dimensions": [
+        80,
+        80,
+        240
+      ]
+    },
+    {
+      "ref": "P4",
+      "groupe": "P_P4",
+      "fil": "z",
+      "origine": [
+        320,
+        160,
+        0
+      ],
+      "dimensions": [
+        80,
+        80,
+        240
+      ]
+    },
+    {
+      "ref": "P8",
+      "groupe": "P_P8",
+      "fil": "y",
+      "origine": [
+        0,
+        0,
+        80
+      ],
+      "dimensions": [
+        80,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        160,
+        0,
+        80
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P8",
+      "groupe": "P_P8",
+      "fil": "y",
+      "origine": [
+        400,
+        0,
+        80
+      ],
+      "dimensions": [
+        80,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P3",
+      "groupe": "P_P3",
+      "fil": "x",
+      "origine": [
+        0,
+        80,
+        80
+      ],
+      "dimensions": [
+        480,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P8",
+      "groupe": "P_P8",
+      "fil": "y",
+      "origine": [
+        0,
+        160,
+        80
+      ],
+      "dimensions": [
+        80,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        160,
+        160,
+        80
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P8",
+      "groupe": "P_P8",
+      "fil": "y",
+      "origine": [
+        400,
+        160,
+        80
+      ],
+      "dimensions": [
+        80,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P2",
+      "groupe": "P_P2",
+      "fil": "y",
+      "origine": [
+        0,
+        0,
+        160
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P1",
+      "groupe": "P_P1",
+      "fil": "y",
+      "origine": [
+        160,
+        0,
+        160
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P1",
+      "groupe": "P_P1",
+      "fil": "y",
+      "origine": [
+        240,
+        0,
+        160
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P2",
+      "groupe": "P_P2",
+      "fil": "y",
+      "origine": [
+        400,
+        0,
+        160
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P5",
+      "groupe": "P_P5",
+      "fil": "z",
+      "origine": [
+        80,
+        80,
+        160
+      ],
+      "dimensions": [
+        80,
+        80,
+        160
+      ]
+    },
+    {
+      "ref": "P5",
+      "groupe": "P_P5",
+      "fil": "z",
+      "origine": [
+        320,
+        80,
+        160
+      ],
+      "dimensions": [
+        80,
+        80,
+        160
+      ]
+    },
+    {
+      "ref": "P2",
+      "groupe": "P_P2",
+      "fil": "y",
+      "origine": [
+        720,
+        0,
+        0
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P4",
+      "groupe": "P_P4",
+      "fil": "z",
+      "origine": [
+        800,
+        0,
+        0
+      ],
+      "dimensions": [
+        80,
+        80,
+        240
+      ]
+    },
+    {
+      "ref": "P1",
+      "groupe": "P_P1",
+      "fil": "y",
+      "origine": [
+        880,
+        0,
+        0
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P1",
+      "groupe": "P_P1",
+      "fil": "y",
+      "origine": [
+        960,
+        0,
+        0
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P4",
+      "groupe": "P_P4",
+      "fil": "z",
+      "origine": [
+        1040,
+        0,
+        0
+      ],
+      "dimensions": [
+        80,
+        80,
+        240
+      ]
+    },
+    {
+      "ref": "P2",
+      "groupe": "P_P2",
+      "fil": "y",
+      "origine": [
+        1120,
+        0,
+        0
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P4",
+      "groupe": "P_P4",
+      "fil": "z",
+      "origine": [
+        800,
+        160,
+        0
+      ],
+      "dimensions": [
+        80,
+        80,
+        240
+      ]
+    },
+    {
+      "ref": "P4",
+      "groupe": "P_P4",
+      "fil": "z",
+      "origine": [
+        1040,
+        160,
+        0
+      ],
+      "dimensions": [
+        80,
+        80,
+        240
+      ]
+    },
+    {
+      "ref": "P8",
+      "groupe": "P_P8",
+      "fil": "y",
+      "origine": [
+        720,
+        0,
+        80
+      ],
+      "dimensions": [
+        80,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        880,
+        0,
+        80
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P8",
+      "groupe": "P_P8",
+      "fil": "y",
+      "origine": [
+        1120,
+        0,
+        80
+      ],
+      "dimensions": [
+        80,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P3",
+      "groupe": "P_P3",
+      "fil": "x",
+      "origine": [
+        720,
+        80,
+        80
+      ],
+      "dimensions": [
+        480,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P8",
+      "groupe": "P_P8",
+      "fil": "y",
+      "origine": [
+        720,
+        160,
+        80
+      ],
+      "dimensions": [
+        80,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        880,
+        160,
+        80
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P8",
+      "groupe": "P_P8",
+      "fil": "y",
+      "origine": [
+        1120,
+        160,
+        80
+      ],
+      "dimensions": [
+        80,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P2",
+      "groupe": "P_P2",
+      "fil": "y",
+      "origine": [
+        720,
+        0,
+        160
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P1",
+      "groupe": "P_P1",
+      "fil": "y",
+      "origine": [
+        880,
+        0,
+        160
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P1",
+      "groupe": "P_P1",
+      "fil": "y",
+      "origine": [
+        960,
+        0,
+        160
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P2",
+      "groupe": "P_P2",
+      "fil": "y",
+      "origine": [
+        1120,
+        0,
+        160
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P5",
+      "groupe": "P_P5",
+      "fil": "z",
+      "origine": [
+        800,
+        80,
+        160
+      ],
+      "dimensions": [
+        80,
+        80,
+        160
+      ]
+    },
+    {
+      "ref": "P5",
+      "groupe": "P_P5",
+      "fil": "z",
+      "origine": [
+        1040,
+        80,
+        160
+      ],
+      "dimensions": [
+        80,
+        80,
+        160
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        560,
+        0,
+        0
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        560,
+        0,
+        80
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        560,
+        0,
+        160
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        560,
+        80,
+        0
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        560,
+        80,
+        80
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        560,
+        80,
+        160
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        560,
+        160,
+        0
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        560,
+        160,
+        80
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        560,
+        160,
+        160
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P2",
+      "groupe": "P_P2",
+      "fil": "y",
+      "origine": [
+        0,
+        0,
+        240
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P4",
+      "groupe": "P_P4",
+      "fil": "z",
+      "origine": [
+        80,
+        0,
+        240
+      ],
+      "dimensions": [
+        80,
+        80,
+        240
+      ]
+    },
+    {
+      "ref": "P1",
+      "groupe": "P_P1",
+      "fil": "y",
+      "origine": [
+        160,
+        0,
+        240
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P1",
+      "groupe": "P_P1",
+      "fil": "y",
+      "origine": [
+        240,
+        0,
+        240
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P4",
+      "groupe": "P_P4",
+      "fil": "z",
+      "origine": [
+        320,
+        0,
+        240
+      ],
+      "dimensions": [
+        80,
+        80,
+        240
+      ]
+    },
+    {
+      "ref": "P2",
+      "groupe": "P_P2",
+      "fil": "y",
+      "origine": [
+        400,
+        0,
+        240
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P4",
+      "groupe": "P_P4",
+      "fil": "z",
+      "origine": [
+        80,
+        160,
+        240
+      ],
+      "dimensions": [
+        80,
+        80,
+        240
+      ]
+    },
+    {
+      "ref": "P4",
+      "groupe": "P_P4",
+      "fil": "z",
+      "origine": [
+        320,
+        160,
+        240
+      ],
+      "dimensions": [
+        80,
+        80,
+        240
+      ]
+    },
+    {
+      "ref": "P8",
+      "groupe": "P_P8",
+      "fil": "y",
+      "origine": [
+        0,
+        0,
+        320
+      ],
+      "dimensions": [
+        80,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        160,
+        0,
+        320
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P8",
+      "groupe": "P_P8",
+      "fil": "y",
+      "origine": [
+        400,
+        0,
+        320
+      ],
+      "dimensions": [
+        80,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P3",
+      "groupe": "P_P3",
+      "fil": "x",
+      "origine": [
+        0,
+        80,
+        320
+      ],
+      "dimensions": [
+        480,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P8",
+      "groupe": "P_P8",
+      "fil": "y",
+      "origine": [
+        0,
+        160,
+        320
+      ],
+      "dimensions": [
+        80,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        160,
+        160,
+        320
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P8",
+      "groupe": "P_P8",
+      "fil": "y",
+      "origine": [
+        400,
+        160,
+        320
+      ],
+      "dimensions": [
+        80,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P2",
+      "groupe": "P_P2",
+      "fil": "y",
+      "origine": [
+        0,
+        0,
+        400
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P1",
+      "groupe": "P_P1",
+      "fil": "y",
+      "origine": [
+        160,
+        0,
+        400
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P1",
+      "groupe": "P_P1",
+      "fil": "y",
+      "origine": [
+        240,
+        0,
+        400
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P2",
+      "groupe": "P_P2",
+      "fil": "y",
+      "origine": [
+        400,
+        0,
+        400
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P5",
+      "groupe": "P_P5",
+      "fil": "z",
+      "origine": [
+        80,
+        80,
+        400
+      ],
+      "dimensions": [
+        80,
+        80,
+        160
+      ]
+    },
+    {
+      "ref": "P5",
+      "groupe": "P_P5",
+      "fil": "z",
+      "origine": [
+        320,
+        80,
+        400
+      ],
+      "dimensions": [
+        80,
+        80,
+        160
+      ]
+    },
+    {
+      "ref": "P2",
+      "groupe": "P_P2",
+      "fil": "y",
+      "origine": [
+        720,
+        0,
+        240
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P4",
+      "groupe": "P_P4",
+      "fil": "z",
+      "origine": [
+        800,
+        0,
+        240
+      ],
+      "dimensions": [
+        80,
+        80,
+        240
+      ]
+    },
+    {
+      "ref": "P1",
+      "groupe": "P_P1",
+      "fil": "y",
+      "origine": [
+        880,
+        0,
+        240
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P1",
+      "groupe": "P_P1",
+      "fil": "y",
+      "origine": [
+        960,
+        0,
+        240
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P4",
+      "groupe": "P_P4",
+      "fil": "z",
+      "origine": [
+        1040,
+        0,
+        240
+      ],
+      "dimensions": [
+        80,
+        80,
+        240
+      ]
+    },
+    {
+      "ref": "P2",
+      "groupe": "P_P2",
+      "fil": "y",
+      "origine": [
+        1120,
+        0,
+        240
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P4",
+      "groupe": "P_P4",
+      "fil": "z",
+      "origine": [
+        800,
+        160,
+        240
+      ],
+      "dimensions": [
+        80,
+        80,
+        240
+      ]
+    },
+    {
+      "ref": "P4",
+      "groupe": "P_P4",
+      "fil": "z",
+      "origine": [
+        1040,
+        160,
+        240
+      ],
+      "dimensions": [
+        80,
+        80,
+        240
+      ]
+    },
+    {
+      "ref": "P8",
+      "groupe": "P_P8",
+      "fil": "y",
+      "origine": [
+        720,
+        0,
+        320
+      ],
+      "dimensions": [
+        80,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        880,
+        0,
+        320
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P8",
+      "groupe": "P_P8",
+      "fil": "y",
+      "origine": [
+        1120,
+        0,
+        320
+      ],
+      "dimensions": [
+        80,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P3",
+      "groupe": "P_P3",
+      "fil": "x",
+      "origine": [
+        720,
+        80,
+        320
+      ],
+      "dimensions": [
+        480,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P8",
+      "groupe": "P_P8",
+      "fil": "y",
+      "origine": [
+        720,
+        160,
+        320
+      ],
+      "dimensions": [
+        80,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        880,
+        160,
+        320
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P8",
+      "groupe": "P_P8",
+      "fil": "y",
+      "origine": [
+        1120,
+        160,
+        320
+      ],
+      "dimensions": [
+        80,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P2",
+      "groupe": "P_P2",
+      "fil": "y",
+      "origine": [
+        720,
+        0,
+        400
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P1",
+      "groupe": "P_P1",
+      "fil": "y",
+      "origine": [
+        880,
+        0,
+        400
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P1",
+      "groupe": "P_P1",
+      "fil": "y",
+      "origine": [
+        960,
+        0,
+        400
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P2",
+      "groupe": "P_P2",
+      "fil": "y",
+      "origine": [
+        1120,
+        0,
+        400
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P5",
+      "groupe": "P_P5",
+      "fil": "z",
+      "origine": [
+        800,
+        80,
+        400
+      ],
+      "dimensions": [
+        80,
+        80,
+        160
+      ]
+    },
+    {
+      "ref": "P5",
+      "groupe": "P_P5",
+      "fil": "z",
+      "origine": [
+        1040,
+        80,
+        400
+      ],
+      "dimensions": [
+        80,
+        80,
+        160
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        560,
+        0,
+        240
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        560,
+        0,
+        320
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        560,
+        0,
+        400
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        560,
+        80,
+        240
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        560,
+        80,
+        320
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        560,
+        80,
+        400
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        560,
+        160,
+        240
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        560,
+        160,
+        320
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        560,
+        160,
+        400
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P2",
+      "groupe": "P_P2",
+      "fil": "y",
+      "origine": [
+        0,
+        0,
+        480
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P4",
+      "groupe": "P_P4",
+      "fil": "z",
+      "origine": [
+        80,
+        0,
+        480
+      ],
+      "dimensions": [
+        80,
+        80,
+        240
+      ]
+    },
+    {
+      "ref": "P1",
+      "groupe": "P_P1",
+      "fil": "y",
+      "origine": [
+        160,
+        0,
+        480
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P1",
+      "groupe": "P_P1",
+      "fil": "y",
+      "origine": [
+        240,
+        0,
+        480
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P4",
+      "groupe": "P_P4",
+      "fil": "z",
+      "origine": [
+        320,
+        0,
+        480
+      ],
+      "dimensions": [
+        80,
+        80,
+        240
+      ]
+    },
+    {
+      "ref": "P2",
+      "groupe": "P_P2",
+      "fil": "y",
+      "origine": [
+        400,
+        0,
+        480
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P4",
+      "groupe": "P_P4",
+      "fil": "z",
+      "origine": [
+        80,
+        160,
+        480
+      ],
+      "dimensions": [
+        80,
+        80,
+        240
+      ]
+    },
+    {
+      "ref": "P4",
+      "groupe": "P_P4",
+      "fil": "z",
+      "origine": [
+        320,
+        160,
+        480
+      ],
+      "dimensions": [
+        80,
+        80,
+        240
+      ]
+    },
+    {
+      "ref": "P8",
+      "groupe": "P_P8",
+      "fil": "y",
+      "origine": [
+        0,
+        0,
+        560
+      ],
+      "dimensions": [
+        80,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        160,
+        0,
+        560
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P8",
+      "groupe": "P_P8",
+      "fil": "y",
+      "origine": [
+        400,
+        0,
+        560
+      ],
+      "dimensions": [
+        80,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P3",
+      "groupe": "P_P3",
+      "fil": "x",
+      "origine": [
+        0,
+        80,
+        560
+      ],
+      "dimensions": [
+        480,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P8",
+      "groupe": "P_P8",
+      "fil": "y",
+      "origine": [
+        0,
+        160,
+        560
+      ],
+      "dimensions": [
+        80,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        160,
+        160,
+        560
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P8",
+      "groupe": "P_P8",
+      "fil": "y",
+      "origine": [
+        400,
+        160,
+        560
+      ],
+      "dimensions": [
+        80,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P2",
+      "groupe": "P_P2",
+      "fil": "y",
+      "origine": [
+        0,
+        0,
+        640
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P1",
+      "groupe": "P_P1",
+      "fil": "y",
+      "origine": [
+        160,
+        0,
+        640
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P1",
+      "groupe": "P_P1",
+      "fil": "y",
+      "origine": [
+        240,
+        0,
+        640
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P2",
+      "groupe": "P_P2",
+      "fil": "y",
+      "origine": [
+        400,
+        0,
+        640
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P5",
+      "groupe": "P_P5",
+      "fil": "z",
+      "origine": [
+        80,
+        80,
+        640
+      ],
+      "dimensions": [
+        80,
+        80,
+        160
+      ]
+    },
+    {
+      "ref": "P5",
+      "groupe": "P_P5",
+      "fil": "z",
+      "origine": [
+        320,
+        80,
+        640
+      ],
+      "dimensions": [
+        80,
+        80,
+        160
+      ]
+    },
+    {
+      "ref": "P2",
+      "groupe": "P_P2",
+      "fil": "y",
+      "origine": [
+        720,
+        0,
+        480
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P4",
+      "groupe": "P_P4",
+      "fil": "z",
+      "origine": [
+        800,
+        0,
+        480
+      ],
+      "dimensions": [
+        80,
+        80,
+        240
+      ]
+    },
+    {
+      "ref": "P1",
+      "groupe": "P_P1",
+      "fil": "y",
+      "origine": [
+        880,
+        0,
+        480
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P1",
+      "groupe": "P_P1",
+      "fil": "y",
+      "origine": [
+        960,
+        0,
+        480
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P4",
+      "groupe": "P_P4",
+      "fil": "z",
+      "origine": [
+        1040,
+        0,
+        480
+      ],
+      "dimensions": [
+        80,
+        80,
+        240
+      ]
+    },
+    {
+      "ref": "P2",
+      "groupe": "P_P2",
+      "fil": "y",
+      "origine": [
+        1120,
+        0,
+        480
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P4",
+      "groupe": "P_P4",
+      "fil": "z",
+      "origine": [
+        800,
+        160,
+        480
+      ],
+      "dimensions": [
+        80,
+        80,
+        240
+      ]
+    },
+    {
+      "ref": "P4",
+      "groupe": "P_P4",
+      "fil": "z",
+      "origine": [
+        1040,
+        160,
+        480
+      ],
+      "dimensions": [
+        80,
+        80,
+        240
+      ]
+    },
+    {
+      "ref": "P8",
+      "groupe": "P_P8",
+      "fil": "y",
+      "origine": [
+        720,
+        0,
+        560
+      ],
+      "dimensions": [
+        80,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        880,
+        0,
+        560
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P8",
+      "groupe": "P_P8",
+      "fil": "y",
+      "origine": [
+        1120,
+        0,
+        560
+      ],
+      "dimensions": [
+        80,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P3",
+      "groupe": "P_P3",
+      "fil": "x",
+      "origine": [
+        720,
+        80,
+        560
+      ],
+      "dimensions": [
+        480,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P8",
+      "groupe": "P_P8",
+      "fil": "y",
+      "origine": [
+        720,
+        160,
+        560
+      ],
+      "dimensions": [
+        80,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        880,
+        160,
+        560
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P8",
+      "groupe": "P_P8",
+      "fil": "y",
+      "origine": [
+        1120,
+        160,
+        560
+      ],
+      "dimensions": [
+        80,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P2",
+      "groupe": "P_P2",
+      "fil": "y",
+      "origine": [
+        720,
+        0,
+        640
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P1",
+      "groupe": "P_P1",
+      "fil": "y",
+      "origine": [
+        880,
+        0,
+        640
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P1",
+      "groupe": "P_P1",
+      "fil": "y",
+      "origine": [
+        960,
+        0,
+        640
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P2",
+      "groupe": "P_P2",
+      "fil": "y",
+      "origine": [
+        1120,
+        0,
+        640
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P5",
+      "groupe": "P_P5",
+      "fil": "z",
+      "origine": [
+        800,
+        80,
+        640
+      ],
+      "dimensions": [
+        80,
+        80,
+        160
+      ]
+    },
+    {
+      "ref": "P5",
+      "groupe": "P_P5",
+      "fil": "z",
+      "origine": [
+        1040,
+        80,
+        640
+      ],
+      "dimensions": [
+        80,
+        80,
+        160
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        560,
+        0,
+        480
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        560,
+        0,
+        560
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        560,
+        0,
+        640
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        560,
+        80,
+        480
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        560,
+        80,
+        560
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        560,
+        80,
+        640
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        560,
+        160,
+        480
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        560,
+        160,
+        560
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        560,
+        160,
+        640
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    }
+  ],
+  "chevilles": [
+    {
+      "ref": "C1",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        330,
+        120,
+        40
+      ],
+      "longueur": 230,
+      "diametre": 20,
+      "hypothese": "H-A4",
+      "nom": "C001"
+    },
+    {
+      "ref": "C1",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        480,
+        120,
+        200
+      ],
+      "longueur": 230,
+      "diametre": 20,
+      "hypothese": "H-A4",
+      "nom": "C002"
+    },
+    {
+      "ref": "C1",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        330,
+        120,
+        280
+      ],
+      "longueur": 230,
+      "diametre": 20,
+      "hypothese": "H-A4",
+      "nom": "C003"
+    },
+    {
+      "ref": "C1",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        480,
+        120,
+        440
+      ],
+      "longueur": 230,
+      "diametre": 20,
+      "hypothese": "H-A4",
+      "nom": "C004"
+    },
+    {
+      "ref": "C1",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        330,
+        120,
+        520
+      ],
+      "longueur": 230,
+      "diametre": 20,
+      "hypothese": "H-A4",
+      "nom": "C005"
+    },
+    {
+      "ref": "C1",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        480,
+        120,
+        680
+      ],
+      "longueur": 230,
+      "diametre": 20,
+      "hypothese": "H-A4",
+      "nom": "C006"
+    }
+  ],
+  "faces": [
+    {
+      "nom": "PIED",
+      "normale": "z",
+      "coordonnee": 0,
+      "role": "pied du poteau : DX DY DZ bloques"
+    },
+    {
+      "nom": "TETE",
+      "normale": "z",
+      "coordonnee": 720,
+      "role": "tete du poteau : DX DY DZ bloques"
+    },
+    {
+      "nom": "PAREMENT_EXT",
+      "normale": "y",
+      "coordonnee": 0,
+      "role": "pression sur les briques, 0 a 3 kN/m2"
+    },
+    {
+      "nom": "BORD_GAUCHE",
+      "normale": "x",
+      "coordonnee": 0,
+      "role": "le mur continue : DX bloque"
+    },
+    {
+      "nom": "BORD_DROIT",
+      "normale": "x",
+      "coordonnee": 1200,
+      "role": "le mur continue : DX bloque"
+    }
+  ],
+  "lecture": "deplacement relatif brique/poteau en y a chaque rang, resultante sur chaque FUT_*, contraintes de fendage dans le P10 autour des trous.",
+  "notes": [
+    "Les chevilles d'atelier et les piges des briques ne sont pas percees ici : E3 mesure la liaison poteau-rang, et un contact de plus par cheville doublerait le maillage sans rien changer a ce qu'on lit. Les interfaces bois/bois interieures aux briques sont donc collees."
+  ],
+  "hypotheses": {
+    "H-A1": "chevilles de joint courant : 2 C1 verticales, une par raccord P6, chacune dans la brique dont le raccord depasse (x = joint +/- 40, y = 40 et 200). Le paragraphe 1.2 dit « 1 cheville par brique » sans donner la position.",
+    "H-A2": "chevilles d'atelier d'une 480 : 6 C1 verticales au centre de l'epaisseur (y = 120), une par ligne ; 4 C1 traversantes selon y dans les 4 montants P4, a deux hauteurs (z = 60 et 180). Lecture de « 6 verticales + 4 traversantes de montants ».",
+    "H-A3": "piges C3 de 40 mm : 2 par montant et par couche, de part et d'autre de l'interface avec le traversant voisin, selon x. 4 montants x 2 couches x 2 = 16 par brique, comme le catalogue.",
+    "H-A4": "liaison poteau-rang : 2 C1 par rang, decalees, y = 120, z = 40 et 200 dans le rang, 80 mm dans le poteau et 150 dans l'about voisin. C'est la regle D7, desormais au catalogue.",
+    "H-A5": "jeu fut/trou nul, pas de serrage a l'humidite.",
+    "H-A6": "frottement bois/bois 0,35.",
+    "H-A7": "echantillon E1 : le brief decrit deux traversants P2 exterieurs « fil selon y » et une cheville selon y, donc parallele a leur fil — ce qui ne peut pas se batir, un P2 ne faisant que 80 mm en y. La configuration reellement percee dans la brique est retenue : la cheville selon y traverse deux montants P4 (fil z) et l'ame P3 (fil x) entre eux, et c'est elle qui donne les conditions aux limites du brief (appuis en x = 0 des pieces exterieures, DX impose sur la piece centrale)."
+  }
+}

@@ -82,3 +82,23 @@ def positions_manquantes(
     for a, b in pairwise(coupures(longueur, bornes_de_baies, ancrages)):
         manquants.extend(positions_dans_un_pan(a, b))
     return manquants
+
+
+def pans_maconnes(
+    longueur: int,
+    baies: list[tuple[int, int]],
+    poteaux: list[int],
+    ancrages: list[int],
+) -> list[tuple[int, int]]:
+    """Troncons de **maconnerie** entre deux raidisseurs, baies exclues.
+
+    `coupures` rend les points qui raidissent ; les intervalles entre ces points
+    ne sont pas tous de la maconnerie : celui d'une baie est une tremie, celui
+    d'un poteau est le module du P10. Ce sont ces deux-la qu'on ecarte, pour ne
+    garder que les pans dont il y a quelque chose a verifier.
+
+    C'est la decoupe que lit le module `structure` pour noter un plan reel.
+    """
+    interdits = {(a, b) for a, b in baies} | {(u, u + MODULE_POTEAU) for u in poteaux}
+    bornes = sorted({0, longueur} | {x for paire in interdits for x in paire} | set(ancrages))
+    return [(a, b) for a, b in pairwise(bornes) if b > a and (a, b) not in interdits]

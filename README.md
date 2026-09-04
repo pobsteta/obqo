@@ -22,6 +22,7 @@ uv run obqo calepiner exemples/maison.json -o sortie/   # dossier complet
 | `obqo calepiner PLAN -o DOSSIER` | le dossier complet : modèle, nomenclature, métré, débit, plans |
 | `obqo nomenclature PLAN` | la nomenclature à l'écran, sans rien écrire |
 | `obqo debit PLAN` | le plan de découpe optimisé, sans rien écrire |
+| `obqo entraxe [PLAN]` | justification structurale de l'entraxe des poteaux ; sort en 1 si un pan est refusé |
 | `obqo web` | interface web sur http://127.0.0.1:8000 — l'esquisse à l'accueil, le calepinage sur `/plan` |
 | `obqo gabarit -o FICHIER` | écrit un plan de départ commenté, à modifier |
 | `obqo schema -o DOSSIER` | régénère le schéma JSON du format de plan |
@@ -55,6 +56,7 @@ schéma commité suit le modèle : sans cela l'autocomplétion mentirait.
 | — | esquisse → calepinage sans copier-coller | **livré** |
 | — | poteaux raidisseurs posés d'eux-mêmes là où il en manque | **livré** |
 | — | esquisse : tracer refends et cloisons à la main | **livré** |
+| — | justification structurale de l'entraxe (PyNite + Eurocode 5) | **livrée** |
 
 ## Architecture
 
@@ -73,6 +75,10 @@ src/obqo/
                 debit.py         cutting-stock 1D, glouton et optimum exact
                 metre.py         métrés linéaires, masse, chiffrage
                 sorties.py       CSV et tableaux texte
+  structure/    materiaux.py     EN 338 et EN 1995-1-1, en tables numerotees
+                eurocode5.py     les formules, et aucun nombre de norme
+                modele.py        le grillage rangs / poteaux (PyNite)
+                entraxe.py       les taux de travail, et la note
   web/          app.py           routes FastAPI, gabarits Jinja2
                 etude.py         cache borné des études en mémoire
   model/        esquisse.py      les pièces dessinées, avant tout calepinage
@@ -92,7 +98,8 @@ src/obqo/
 la seule bibliothèque standard. Pydantic ne sert qu'à la frontière d'entrée,
 Typer et Rich qu'à la CLI, FastAPI et Jinja2 qu'à l'interface web, OR-Tools qu'au
 solveur exact (avec un repli glouton), ReportLab, ezdxf et trimesh qu'aux
-back-ends de dessin. La CLI et le web sont deux clients du même cœur.
+back-ends de dessin, PyNite qu'au grillage de `structure`. La CLI et le web
+sont deux clients du même cœur.
 
 ### Trois principes
 
@@ -359,6 +366,66 @@ Le moteur n'a eu besoin d'aucune machinerie nouvelle : un poteau est un **vide
 permanent de 240** dans la course, et les deux briques qui l'encadrent ferment
 leur about d'elles-mêmes — exactement ce que dit le brief.
 
+## La justification structurale : d'où vient le 6 m ?
+
+Le §1.7 fixe un poteau tous les 6 m. **Personne ne sait d'où vient ce 6 m.** Le
+module `structure/` répond par le calcul : quel est le plus long pan de
+maçonnerie qui tient, au vent et sous la toiture, entre deux P10 ?
+
+```bash
+uv sync --extra structure
+uv run obqo entraxe                        # le plus long pan admissible
+uv run obqo entraxe --pan 6000             # la note d'un pan donné
+uv run obqo entraxe exemples/maison.json   # un pan par ligne, murs extérieurs
+```
+
+```
+Taux de travail
+  flexion du rang                     0.12
+  cisaillement du rang                0.03
+  fleche du rang                      0.17
+  compression et flexion du poteau    0.36  <-- dimensionnant
+  fleche du poteau                    0.13
+  chevillage rang-poteau              0.22
+
+Verdict : admis (taux maxi 0.36 — compression et flexion du poteau)
+```
+
+Le modèle est un **grillage** : chaque rang de 240 est une poutre articulée sur
+les deux poteaux, chaque poteau une poutre continue du pied au chaînage, et les
+rangs déversent dans les poteaux ce que le vent leur applique. Les efforts vont
+ensuite se confronter aux résistances de l'Eurocode 5, un taux par critère — et
+la note nomme celui qui commande, parce qu'un résultat dont on ne voit pas le
+critère dimensionnant ne s'argumente pas.
+
+Trois natures de choses y sont tenues séparées, et c'est tout l'intérêt :
+
+| Nature | Où | Qui peut le changer |
+|---|---|---|
+| valeurs de **norme** (EN 338, EN 1995-1-1) | `structure/materiaux.py`, en tables avec le numéro de tableau | personne, sauf changement de norme |
+| valeurs **d'essai** (efficacité d'un rang, résistance d'une C1) | `Hypotheses`, défauts prudents et commentés | le résultat d'un essai |
+| le **modèle** (grillage, appuis, combinaisons) | `structure/modele.py` | le bureau d'études, s'il conteste le schéma |
+
+**Le résultat : 11 040 mm admissibles, soit presque le double des 6 m du brief.**
+Et pourtant `ENTRAXE_MAXI_RAIDISSEUR` reste à 6 000 mm, parce que cette marge
+est une marge sur des hypothèses, pas sur du bois : ni l'efficacité d'un rang
+ni la résistance d'une cheville de hêtre n'ont jamais été mesurées, et le
+critère qui borne l'entraxe est une flèche de service dont le seuil est un
+choix. Deux essais la mériteraient — ils sont chiffrés en D7 dans
+`docs/hypotheses.md`.
+
+La critique du modèle, sans complaisance — dont le fait que **l'entraxe calculé
+ne dépend pas de la hauteur du mur**, ce qui en dit long sur ses limites — est
+dans [`docs/etudes/structure.md`](docs/etudes/structure.md).
+
+Le calcul est un **extra** : `materiaux` et `eurocode5` s'importent avec la
+seule bibliothèque standard, PyNite ne s'importe que dans `modele.py` et à
+l'intérieur de la fonction. Sans l'extra, `obqo calepiner` produit le dossier
+entier moins `structure.txt`, et `rapport.txt` dit pourquoi ; `obqo entraxe`
+sort en 2 avec la commande à copier. C'est aussi le seul endroit d'obqo où des
+flottants sont légitimes — contraintes et flèches n'ont pas de sens en entiers.
+Ils n'en sortent pas : ce qui repart vers `engine` est un entier de millimètres.
+
 ## Les contours non rectangulaires
 
 Le moteur accepte tout contour rectiligne fermé : L, U, T, escalier. Ce qui
@@ -495,6 +562,9 @@ porte plus large) et `publication.yml`.
 - `docs/00-choix-techniques.md` — pourquoi cette pile technique
 - `docs/etudes/longueur-de-barre.md` — pourquoi la barre de 4 m, et pourquoi
   2,40 m est le pire choix
+- [`docs/etudes/structure.md`](docs/etudes/structure.md) — ce que vaut la
+  justification d'entraxe, ce que son modèle ignore, et ce qu'un bureau
+  d'études contestera
 - [`docs/saisir-un-plan.md`](docs/saisir-un-plan.md) — comment passer d'une idée
   ou d'un plan d'architecte au fichier que l'application calepine
 - `docs/hypotheses.md` — les points du brief que l'application interprète, et les
@@ -505,3 +575,6 @@ porte plus large) et `publication.yml`.
   et ce que les tests automatiques ne voient pas
 - [`docs/publier.md`](docs/publier.md) — comment le message de commit décide de
   la version, du tag et de la release
+- `specs/structure/` — les deux briefs de référence, et le dossier
+  Code_Aster qui dimensionne les essais dont dépendent les hypothèses du
+  module `structure`

@@ -1,0 +1,115 @@
+{
+  "unite": "mm",
+  "repere": {
+    "x": "le long du mur",
+    "y": "dans l'epaisseur, parement exterieur en y = 0",
+    "z": "en hauteur"
+  },
+  "briques_de_reference": {
+    "corps_480": {
+      "C1": 10,
+      "C2": 2,
+      "C3": 16,
+      "P1": 4,
+      "P2": 4,
+      "P3": 1,
+      "P4": 4,
+      "P5": 2,
+      "P6": 2
+    }
+  },
+  "echantillon": "cheville",
+  "essai": "E1 — cheville en double cisaillement",
+  "encombrement": [
+    240,
+    240,
+    80
+  ],
+  "pieces": [
+    {
+      "ref": "P4",
+      "groupe": "P_P4",
+      "fil": "z",
+      "origine": [
+        0,
+        0,
+        0
+      ],
+      "dimensions": [
+        240,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P4",
+      "groupe": "P_P4",
+      "fil": "z",
+      "origine": [
+        0,
+        160,
+        0
+      ],
+      "dimensions": [
+        240,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P3",
+      "groupe": "P_P3",
+      "fil": "x",
+      "origine": [
+        0,
+        80,
+        0
+      ],
+      "dimensions": [
+        240,
+        80,
+        80
+      ]
+    }
+  ],
+  "chevilles": [
+    {
+      "ref": "C1",
+      "groupe": "CHEVILLES",
+      "axe": "y",
+      "origine": [
+        120,
+        5,
+        40
+      ],
+      "longueur": 230,
+      "diametre": 20,
+      "hypothese": "H-A7",
+      "nom": "C001"
+    }
+  ],
+  "faces": [
+    {
+      "nom": "APPUI_EXT",
+      "normale": "x",
+      "coordonnee": 0,
+      "role": "faces x = 0 des deux montants : bloquees"
+    },
+    {
+      "nom": "CHARGE_CENTRE",
+      "normale": "x",
+      "coordonnee": 240,
+      "role": "face x = 240 de l'ame : DX impose 0 a 15 mm"
+    }
+  ],
+  "lecture": "F(u) au point de charge, 30 pas jusqu'a 15 mm. K_ser = pente entre 0,1 et 0,4 F_max (EN 26891) ; F_v,R = min(F_max, F a 15 mm).",
+  "hypotheses": {
+    "H-A1": "chevilles de joint courant : 2 C1 verticales, une par raccord P6, chacune dans la brique dont le raccord depasse (x = joint +/- 40, y = 40 et 200). Le paragraphe 1.2 dit « 1 cheville par brique » sans donner la position.",
+    "H-A2": "chevilles d'atelier d'une 480 : 6 C1 verticales au centre de l'epaisseur (y = 120), une par ligne ; 4 C1 traversantes selon y dans les 4 montants P4, a deux hauteurs (z = 60 et 180). Lecture de « 6 verticales + 4 traversantes de montants ».",
+    "H-A3": "piges C3 de 40 mm : 2 par montant et par couche, de part et d'autre de l'interface avec le traversant voisin, selon x. 4 montants x 2 couches x 2 = 16 par brique, comme le catalogue.",
+    "H-A4": "liaison poteau-rang : 2 C1 par rang, decalees, y = 120, z = 40 et 200 dans le rang, 80 mm dans le poteau et 150 dans l'about voisin. C'est la regle D7, desormais au catalogue.",
+    "H-A5": "jeu fut/trou nul, pas de serrage a l'humidite.",
+    "H-A6": "frottement bois/bois 0,35.",
+    "H-A7": "echantillon E1 : le brief decrit deux traversants P2 exterieurs « fil selon y » et une cheville selon y, donc parallele a leur fil — ce qui ne peut pas se batir, un P2 ne faisant que 80 mm en y. La configuration reellement percee dans la brique est retenue : la cheville selon y traverse deux montants P4 (fil z) et l'ame P3 (fil x) entre eux, et c'est elle qui donne les conditions aux limites du brief (appuis en x = 0 des pieces exterieures, DX impose sur la piece centrale)."
+  }
+}
