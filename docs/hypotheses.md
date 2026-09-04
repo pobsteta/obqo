@@ -279,6 +279,33 @@ C'est pourquoi `exemples/maison.json` fait 13,92 × 10,56 m plutôt que les
 10,80 × 13,92 suggérés au §2.1. **Question :** cette contrainte est-elle
 acceptable sur ton plan réel ?
 
+## Q6 — L'échantillon E1 du brief Code_Aster ne peut pas se bâtir tel quel
+
+Le §4 du [brief Code_Aster](../specs/structure/aster/BRIEF-aster.md) décrit
+l'essai de cisaillement double ainsi : « Deux carrelets extérieurs P2 (fil selon
+y) et un montant central P4 (fil selon z), la cheville selon y : elle est donc
+**parallèle au fil des traversants** ».
+
+Cette éprouvette ne peut pas exister. Trois pièces empilées le long de l'axe de
+la cheville occupent chacune 80 mm en y ; aucune ne peut avoir son fil — donc sa
+longueur — selon y. Et les conditions aux limites du même paragraphe (« faces
+x = 0 des pièces extérieures bloquées, face x = 240 de la pièce centrale : DX
+imposé ») supposent des pièces longues de 240 mm **selon x**, pas selon y.
+
+`geometrie_echantillon.py` retient donc la configuration réellement percée dans
+la brique, sous le code **H-A7** : la cheville selon y traverse deux montants P4
+(fil z) et l'âme P3 (fil x) entre eux. Les conditions aux limites du brief y
+tombent juste, mot pour mot ; seul le « parallèle au fil des traversants »
+tombe.
+
+**Questions :** l'essai visé est-il bien la traversante de montant du §1.2 —
+celle qui traverse P4 / P3 / P4 ? Ou bien la cheville verticale d'atelier, qui
+elle traverse effectivement les traversants dans le sens de leur fil, mais selon
+z et non selon y ? Les deux existent dans la brique, et elles n'ont pas la même
+résistance : c'est la seconde qui fend le bois le long du fil, donc la
+défavorable. Si c'est elle qu'il faut mesurer, corrigez `FIL` et la fonction
+`cheville()` du script, et régénérez le JSON — ne retouchez pas le maillage.
+
 ## Q4 — Paramètres de débit
 
 Voir `docs/etudes/longueur-de-barre.md` pour l'analyse complète. Le jalon 2 est

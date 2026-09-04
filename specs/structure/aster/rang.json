@@ -1,0 +1,2096 @@
+{
+  "unite": "mm",
+  "repere": {
+    "x": "le long du mur",
+    "y": "dans l'epaisseur, parement exterieur en y = 0",
+    "z": "en hauteur"
+  },
+  "briques_de_reference": {
+    "corps_480": {
+      "C1": 10,
+      "C2": 2,
+      "C3": 16,
+      "P1": 4,
+      "P2": 4,
+      "P3": 1,
+      "P4": 4,
+      "P5": 2,
+      "P6": 2
+    }
+  },
+  "echantillon": "rang",
+  "essai": "E2 — rang en flexion hors plan",
+  "briques": 3,
+  "encombrement": [
+    1440,
+    240,
+    240
+  ],
+  "pieces": [
+    {
+      "ref": "P2",
+      "groupe": "P_P2",
+      "fil": "y",
+      "origine": [
+        0,
+        0,
+        0
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P4",
+      "groupe": "P_P4",
+      "fil": "z",
+      "origine": [
+        80,
+        0,
+        0
+      ],
+      "dimensions": [
+        80,
+        80,
+        240
+      ]
+    },
+    {
+      "ref": "P1",
+      "groupe": "P_P1",
+      "fil": "y",
+      "origine": [
+        160,
+        0,
+        0
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P1",
+      "groupe": "P_P1",
+      "fil": "y",
+      "origine": [
+        240,
+        0,
+        0
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P4",
+      "groupe": "P_P4",
+      "fil": "z",
+      "origine": [
+        320,
+        0,
+        0
+      ],
+      "dimensions": [
+        80,
+        80,
+        240
+      ]
+    },
+    {
+      "ref": "P2",
+      "groupe": "P_P2",
+      "fil": "y",
+      "origine": [
+        400,
+        0,
+        0
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P4",
+      "groupe": "P_P4",
+      "fil": "z",
+      "origine": [
+        80,
+        160,
+        0
+      ],
+      "dimensions": [
+        80,
+        80,
+        240
+      ]
+    },
+    {
+      "ref": "P4",
+      "groupe": "P_P4",
+      "fil": "z",
+      "origine": [
+        320,
+        160,
+        0
+      ],
+      "dimensions": [
+        80,
+        80,
+        240
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        160,
+        0,
+        80
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P3",
+      "groupe": "P_P3",
+      "fil": "x",
+      "origine": [
+        0,
+        80,
+        80
+      ],
+      "dimensions": [
+        480,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        160,
+        160,
+        80
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P2",
+      "groupe": "P_P2",
+      "fil": "y",
+      "origine": [
+        0,
+        0,
+        160
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P1",
+      "groupe": "P_P1",
+      "fil": "y",
+      "origine": [
+        160,
+        0,
+        160
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P1",
+      "groupe": "P_P1",
+      "fil": "y",
+      "origine": [
+        240,
+        0,
+        160
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P2",
+      "groupe": "P_P2",
+      "fil": "y",
+      "origine": [
+        400,
+        0,
+        160
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P5",
+      "groupe": "P_P5",
+      "fil": "z",
+      "origine": [
+        80,
+        80,
+        160
+      ],
+      "dimensions": [
+        80,
+        80,
+        160
+      ]
+    },
+    {
+      "ref": "P5",
+      "groupe": "P_P5",
+      "fil": "z",
+      "origine": [
+        320,
+        80,
+        160
+      ],
+      "dimensions": [
+        80,
+        80,
+        160
+      ]
+    },
+    {
+      "ref": "P2",
+      "groupe": "P_P2",
+      "fil": "y",
+      "origine": [
+        480,
+        0,
+        0
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P4",
+      "groupe": "P_P4",
+      "fil": "z",
+      "origine": [
+        560,
+        0,
+        0
+      ],
+      "dimensions": [
+        80,
+        80,
+        240
+      ]
+    },
+    {
+      "ref": "P1",
+      "groupe": "P_P1",
+      "fil": "y",
+      "origine": [
+        640,
+        0,
+        0
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P1",
+      "groupe": "P_P1",
+      "fil": "y",
+      "origine": [
+        720,
+        0,
+        0
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P4",
+      "groupe": "P_P4",
+      "fil": "z",
+      "origine": [
+        800,
+        0,
+        0
+      ],
+      "dimensions": [
+        80,
+        80,
+        240
+      ]
+    },
+    {
+      "ref": "P2",
+      "groupe": "P_P2",
+      "fil": "y",
+      "origine": [
+        880,
+        0,
+        0
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P4",
+      "groupe": "P_P4",
+      "fil": "z",
+      "origine": [
+        560,
+        160,
+        0
+      ],
+      "dimensions": [
+        80,
+        80,
+        240
+      ]
+    },
+    {
+      "ref": "P4",
+      "groupe": "P_P4",
+      "fil": "z",
+      "origine": [
+        800,
+        160,
+        0
+      ],
+      "dimensions": [
+        80,
+        80,
+        240
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        640,
+        0,
+        80
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P3",
+      "groupe": "P_P3",
+      "fil": "x",
+      "origine": [
+        480,
+        80,
+        80
+      ],
+      "dimensions": [
+        480,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        640,
+        160,
+        80
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P2",
+      "groupe": "P_P2",
+      "fil": "y",
+      "origine": [
+        480,
+        0,
+        160
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P1",
+      "groupe": "P_P1",
+      "fil": "y",
+      "origine": [
+        640,
+        0,
+        160
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P1",
+      "groupe": "P_P1",
+      "fil": "y",
+      "origine": [
+        720,
+        0,
+        160
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P2",
+      "groupe": "P_P2",
+      "fil": "y",
+      "origine": [
+        880,
+        0,
+        160
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P5",
+      "groupe": "P_P5",
+      "fil": "z",
+      "origine": [
+        560,
+        80,
+        160
+      ],
+      "dimensions": [
+        80,
+        80,
+        160
+      ]
+    },
+    {
+      "ref": "P5",
+      "groupe": "P_P5",
+      "fil": "z",
+      "origine": [
+        800,
+        80,
+        160
+      ],
+      "dimensions": [
+        80,
+        80,
+        160
+      ]
+    },
+    {
+      "ref": "P2",
+      "groupe": "P_P2",
+      "fil": "y",
+      "origine": [
+        960,
+        0,
+        0
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P4",
+      "groupe": "P_P4",
+      "fil": "z",
+      "origine": [
+        1040,
+        0,
+        0
+      ],
+      "dimensions": [
+        80,
+        80,
+        240
+      ]
+    },
+    {
+      "ref": "P1",
+      "groupe": "P_P1",
+      "fil": "y",
+      "origine": [
+        1120,
+        0,
+        0
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P1",
+      "groupe": "P_P1",
+      "fil": "y",
+      "origine": [
+        1200,
+        0,
+        0
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P4",
+      "groupe": "P_P4",
+      "fil": "z",
+      "origine": [
+        1280,
+        0,
+        0
+      ],
+      "dimensions": [
+        80,
+        80,
+        240
+      ]
+    },
+    {
+      "ref": "P2",
+      "groupe": "P_P2",
+      "fil": "y",
+      "origine": [
+        1360,
+        0,
+        0
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P4",
+      "groupe": "P_P4",
+      "fil": "z",
+      "origine": [
+        1040,
+        160,
+        0
+      ],
+      "dimensions": [
+        80,
+        80,
+        240
+      ]
+    },
+    {
+      "ref": "P4",
+      "groupe": "P_P4",
+      "fil": "z",
+      "origine": [
+        1280,
+        160,
+        0
+      ],
+      "dimensions": [
+        80,
+        80,
+        240
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        1120,
+        0,
+        80
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P3",
+      "groupe": "P_P3",
+      "fil": "x",
+      "origine": [
+        960,
+        80,
+        80
+      ],
+      "dimensions": [
+        480,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        1120,
+        160,
+        80
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P2",
+      "groupe": "P_P2",
+      "fil": "y",
+      "origine": [
+        960,
+        0,
+        160
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P1",
+      "groupe": "P_P1",
+      "fil": "y",
+      "origine": [
+        1120,
+        0,
+        160
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P1",
+      "groupe": "P_P1",
+      "fil": "y",
+      "origine": [
+        1200,
+        0,
+        160
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P2",
+      "groupe": "P_P2",
+      "fil": "y",
+      "origine": [
+        1360,
+        0,
+        160
+      ],
+      "dimensions": [
+        80,
+        240,
+        80
+      ]
+    },
+    {
+      "ref": "P5",
+      "groupe": "P_P5",
+      "fil": "z",
+      "origine": [
+        1040,
+        80,
+        160
+      ],
+      "dimensions": [
+        80,
+        80,
+        160
+      ]
+    },
+    {
+      "ref": "P5",
+      "groupe": "P_P5",
+      "fil": "z",
+      "origine": [
+        1280,
+        80,
+        160
+      ],
+      "dimensions": [
+        80,
+        80,
+        160
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        400,
+        0,
+        80
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        400,
+        160,
+        80
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        880,
+        0,
+        80
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P6",
+      "groupe": "P_P6",
+      "fil": "x",
+      "origine": [
+        880,
+        160,
+        80
+      ],
+      "dimensions": [
+        160,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P8",
+      "groupe": "P_P8",
+      "fil": "y",
+      "origine": [
+        0,
+        0,
+        80
+      ],
+      "dimensions": [
+        80,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P8",
+      "groupe": "P_P8",
+      "fil": "y",
+      "origine": [
+        0,
+        160,
+        80
+      ],
+      "dimensions": [
+        80,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P8",
+      "groupe": "P_P8",
+      "fil": "y",
+      "origine": [
+        1360,
+        0,
+        80
+      ],
+      "dimensions": [
+        80,
+        80,
+        80
+      ]
+    },
+    {
+      "ref": "P8",
+      "groupe": "P_P8",
+      "fil": "y",
+      "origine": [
+        1360,
+        160,
+        80
+      ],
+      "dimensions": [
+        80,
+        80,
+        80
+      ]
+    }
+  ],
+  "chevilles": [
+    {
+      "ref": "C1",
+      "groupe": "CHEVILLES",
+      "axe": "z",
+      "origine": [
+        40,
+        120,
+        5
+      ],
+      "longueur": 230,
+      "diametre": 20,
+      "hypothese": "H-A2",
+      "nom": "C001"
+    },
+    {
+      "ref": "C1",
+      "groupe": "CHEVILLES",
+      "axe": "z",
+      "origine": [
+        120,
+        120,
+        5
+      ],
+      "longueur": 230,
+      "diametre": 20,
+      "hypothese": "H-A2",
+      "nom": "C002"
+    },
+    {
+      "ref": "C1",
+      "groupe": "CHEVILLES",
+      "axe": "z",
+      "origine": [
+        200,
+        120,
+        5
+      ],
+      "longueur": 230,
+      "diametre": 20,
+      "hypothese": "H-A2",
+      "nom": "C003"
+    },
+    {
+      "ref": "C1",
+      "groupe": "CHEVILLES",
+      "axe": "z",
+      "origine": [
+        280,
+        120,
+        5
+      ],
+      "longueur": 230,
+      "diametre": 20,
+      "hypothese": "H-A2",
+      "nom": "C004"
+    },
+    {
+      "ref": "C1",
+      "groupe": "CHEVILLES",
+      "axe": "z",
+      "origine": [
+        360,
+        120,
+        5
+      ],
+      "longueur": 230,
+      "diametre": 20,
+      "hypothese": "H-A2",
+      "nom": "C005"
+    },
+    {
+      "ref": "C1",
+      "groupe": "CHEVILLES",
+      "axe": "z",
+      "origine": [
+        440,
+        120,
+        5
+      ],
+      "longueur": 230,
+      "diametre": 20,
+      "hypothese": "H-A2",
+      "nom": "C006"
+    },
+    {
+      "ref": "C1",
+      "groupe": "CHEVILLES",
+      "axe": "y",
+      "origine": [
+        120,
+        5,
+        60
+      ],
+      "longueur": 230,
+      "diametre": 20,
+      "hypothese": "H-A2",
+      "nom": "C007"
+    },
+    {
+      "ref": "C1",
+      "groupe": "CHEVILLES",
+      "axe": "y",
+      "origine": [
+        120,
+        5,
+        180
+      ],
+      "longueur": 230,
+      "diametre": 20,
+      "hypothese": "H-A2",
+      "nom": "C008"
+    },
+    {
+      "ref": "C1",
+      "groupe": "CHEVILLES",
+      "axe": "y",
+      "origine": [
+        360,
+        5,
+        60
+      ],
+      "longueur": 230,
+      "diametre": 20,
+      "hypothese": "H-A2",
+      "nom": "C009"
+    },
+    {
+      "ref": "C1",
+      "groupe": "CHEVILLES",
+      "axe": "y",
+      "origine": [
+        360,
+        5,
+        180
+      ],
+      "longueur": 230,
+      "diametre": 20,
+      "hypothese": "H-A2",
+      "nom": "C010"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        60,
+        40,
+        40
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C011"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        140,
+        40,
+        40
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C012"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        60,
+        40,
+        200
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C013"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        140,
+        40,
+        200
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C014"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        60,
+        200,
+        40
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C015"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        140,
+        200,
+        40
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C016"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        60,
+        200,
+        200
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C017"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        140,
+        200,
+        200
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C018"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        300,
+        40,
+        40
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C019"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        380,
+        40,
+        40
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C020"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        300,
+        40,
+        200
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C021"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        380,
+        40,
+        200
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C022"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        300,
+        200,
+        40
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C023"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        380,
+        200,
+        40
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C024"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        300,
+        200,
+        200
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C025"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        380,
+        200,
+        200
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C026"
+    },
+    {
+      "ref": "C1",
+      "groupe": "CHEVILLES",
+      "axe": "z",
+      "origine": [
+        520,
+        120,
+        5
+      ],
+      "longueur": 230,
+      "diametre": 20,
+      "hypothese": "H-A2",
+      "nom": "C027"
+    },
+    {
+      "ref": "C1",
+      "groupe": "CHEVILLES",
+      "axe": "z",
+      "origine": [
+        600,
+        120,
+        5
+      ],
+      "longueur": 230,
+      "diametre": 20,
+      "hypothese": "H-A2",
+      "nom": "C028"
+    },
+    {
+      "ref": "C1",
+      "groupe": "CHEVILLES",
+      "axe": "z",
+      "origine": [
+        680,
+        120,
+        5
+      ],
+      "longueur": 230,
+      "diametre": 20,
+      "hypothese": "H-A2",
+      "nom": "C029"
+    },
+    {
+      "ref": "C1",
+      "groupe": "CHEVILLES",
+      "axe": "z",
+      "origine": [
+        760,
+        120,
+        5
+      ],
+      "longueur": 230,
+      "diametre": 20,
+      "hypothese": "H-A2",
+      "nom": "C030"
+    },
+    {
+      "ref": "C1",
+      "groupe": "CHEVILLES",
+      "axe": "z",
+      "origine": [
+        840,
+        120,
+        5
+      ],
+      "longueur": 230,
+      "diametre": 20,
+      "hypothese": "H-A2",
+      "nom": "C031"
+    },
+    {
+      "ref": "C1",
+      "groupe": "CHEVILLES",
+      "axe": "z",
+      "origine": [
+        920,
+        120,
+        5
+      ],
+      "longueur": 230,
+      "diametre": 20,
+      "hypothese": "H-A2",
+      "nom": "C032"
+    },
+    {
+      "ref": "C1",
+      "groupe": "CHEVILLES",
+      "axe": "y",
+      "origine": [
+        600,
+        5,
+        60
+      ],
+      "longueur": 230,
+      "diametre": 20,
+      "hypothese": "H-A2",
+      "nom": "C033"
+    },
+    {
+      "ref": "C1",
+      "groupe": "CHEVILLES",
+      "axe": "y",
+      "origine": [
+        600,
+        5,
+        180
+      ],
+      "longueur": 230,
+      "diametre": 20,
+      "hypothese": "H-A2",
+      "nom": "C034"
+    },
+    {
+      "ref": "C1",
+      "groupe": "CHEVILLES",
+      "axe": "y",
+      "origine": [
+        840,
+        5,
+        60
+      ],
+      "longueur": 230,
+      "diametre": 20,
+      "hypothese": "H-A2",
+      "nom": "C035"
+    },
+    {
+      "ref": "C1",
+      "groupe": "CHEVILLES",
+      "axe": "y",
+      "origine": [
+        840,
+        5,
+        180
+      ],
+      "longueur": 230,
+      "diametre": 20,
+      "hypothese": "H-A2",
+      "nom": "C036"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        540,
+        40,
+        40
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C037"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        620,
+        40,
+        40
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C038"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        540,
+        40,
+        200
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C039"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        620,
+        40,
+        200
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C040"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        540,
+        200,
+        40
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C041"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        620,
+        200,
+        40
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C042"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        540,
+        200,
+        200
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C043"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        620,
+        200,
+        200
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C044"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        780,
+        40,
+        40
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C045"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        860,
+        40,
+        40
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C046"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        780,
+        40,
+        200
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C047"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        860,
+        40,
+        200
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C048"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        780,
+        200,
+        40
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C049"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        860,
+        200,
+        40
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C050"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        780,
+        200,
+        200
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C051"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        860,
+        200,
+        200
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C052"
+    },
+    {
+      "ref": "C1",
+      "groupe": "CHEVILLES",
+      "axe": "z",
+      "origine": [
+        1000,
+        120,
+        5
+      ],
+      "longueur": 230,
+      "diametre": 20,
+      "hypothese": "H-A2",
+      "nom": "C053"
+    },
+    {
+      "ref": "C1",
+      "groupe": "CHEVILLES",
+      "axe": "z",
+      "origine": [
+        1080,
+        120,
+        5
+      ],
+      "longueur": 230,
+      "diametre": 20,
+      "hypothese": "H-A2",
+      "nom": "C054"
+    },
+    {
+      "ref": "C1",
+      "groupe": "CHEVILLES",
+      "axe": "z",
+      "origine": [
+        1160,
+        120,
+        5
+      ],
+      "longueur": 230,
+      "diametre": 20,
+      "hypothese": "H-A2",
+      "nom": "C055"
+    },
+    {
+      "ref": "C1",
+      "groupe": "CHEVILLES",
+      "axe": "z",
+      "origine": [
+        1240,
+        120,
+        5
+      ],
+      "longueur": 230,
+      "diametre": 20,
+      "hypothese": "H-A2",
+      "nom": "C056"
+    },
+    {
+      "ref": "C1",
+      "groupe": "CHEVILLES",
+      "axe": "z",
+      "origine": [
+        1320,
+        120,
+        5
+      ],
+      "longueur": 230,
+      "diametre": 20,
+      "hypothese": "H-A2",
+      "nom": "C057"
+    },
+    {
+      "ref": "C1",
+      "groupe": "CHEVILLES",
+      "axe": "z",
+      "origine": [
+        1400,
+        120,
+        5
+      ],
+      "longueur": 230,
+      "diametre": 20,
+      "hypothese": "H-A2",
+      "nom": "C058"
+    },
+    {
+      "ref": "C1",
+      "groupe": "CHEVILLES",
+      "axe": "y",
+      "origine": [
+        1080,
+        5,
+        60
+      ],
+      "longueur": 230,
+      "diametre": 20,
+      "hypothese": "H-A2",
+      "nom": "C059"
+    },
+    {
+      "ref": "C1",
+      "groupe": "CHEVILLES",
+      "axe": "y",
+      "origine": [
+        1080,
+        5,
+        180
+      ],
+      "longueur": 230,
+      "diametre": 20,
+      "hypothese": "H-A2",
+      "nom": "C060"
+    },
+    {
+      "ref": "C1",
+      "groupe": "CHEVILLES",
+      "axe": "y",
+      "origine": [
+        1320,
+        5,
+        60
+      ],
+      "longueur": 230,
+      "diametre": 20,
+      "hypothese": "H-A2",
+      "nom": "C061"
+    },
+    {
+      "ref": "C1",
+      "groupe": "CHEVILLES",
+      "axe": "y",
+      "origine": [
+        1320,
+        5,
+        180
+      ],
+      "longueur": 230,
+      "diametre": 20,
+      "hypothese": "H-A2",
+      "nom": "C062"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        1020,
+        40,
+        40
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C063"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        1100,
+        40,
+        40
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C064"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        1020,
+        40,
+        200
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C065"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        1100,
+        40,
+        200
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C066"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        1020,
+        200,
+        40
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C067"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        1100,
+        200,
+        40
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C068"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        1020,
+        200,
+        200
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C069"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        1100,
+        200,
+        200
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C070"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        1260,
+        40,
+        40
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C071"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        1340,
+        40,
+        40
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C072"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        1260,
+        40,
+        200
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C073"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        1340,
+        40,
+        200
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C074"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        1260,
+        200,
+        40
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C075"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        1340,
+        200,
+        40
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C076"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        1260,
+        200,
+        200
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C077"
+    },
+    {
+      "ref": "C3",
+      "groupe": "CHEVILLES",
+      "axe": "x",
+      "origine": [
+        1340,
+        200,
+        200
+      ],
+      "longueur": 40,
+      "diametre": 20,
+      "hypothese": "H-A3",
+      "nom": "C078"
+    },
+    {
+      "ref": "C1",
+      "groupe": "CHEVILLES",
+      "axe": "z",
+      "origine": [
+        440,
+        40,
+        5
+      ],
+      "longueur": 230,
+      "diametre": 20,
+      "hypothese": "H-A1",
+      "nom": "C079"
+    },
+    {
+      "ref": "C1",
+      "groupe": "CHEVILLES",
+      "axe": "z",
+      "origine": [
+        520,
+        200,
+        5
+      ],
+      "longueur": 230,
+      "diametre": 20,
+      "hypothese": "H-A1",
+      "nom": "C080"
+    },
+    {
+      "ref": "C1",
+      "groupe": "CHEVILLES",
+      "axe": "z",
+      "origine": [
+        920,
+        40,
+        5
+      ],
+      "longueur": 230,
+      "diametre": 20,
+      "hypothese": "H-A1",
+      "nom": "C081"
+    },
+    {
+      "ref": "C1",
+      "groupe": "CHEVILLES",
+      "axe": "z",
+      "origine": [
+        1000,
+        200,
+        5
+      ],
+      "longueur": 230,
+      "diametre": 20,
+      "hypothese": "H-A1",
+      "nom": "C082"
+    }
+  ],
+  "faces": [
+    {
+      "nom": "APPUI_GAUCHE",
+      "normale": "x",
+      "coordonnee": 0,
+      "role": "bloque DY (appui simple), libre en x et z"
+    },
+    {
+      "nom": "APPUI_DROIT",
+      "normale": "x",
+      "coordonnee": 1440,
+      "role": "bloque DY (appui simple)"
+    },
+    {
+      "nom": "PAREMENT_EXT",
+      "normale": "y",
+      "coordonnee": 0,
+      "role": "pression uniforme du vent, 0 a 5 kN/m2"
+    }
+  ],
+  "lecture": "fleche au milieu de la ligne mediane du parement interieur, sigma_LL dans les ames P3 et les raccords P6, sigma_TT autour des chevilles de joint, glissement fut/trou.",
+  "hypotheses": {
+    "H-A1": "chevilles de joint courant : 2 C1 verticales, une par raccord P6, chacune dans la brique dont le raccord depasse (x = joint +/- 40, y = 40 et 200). Le paragraphe 1.2 dit « 1 cheville par brique » sans donner la position.",
+    "H-A2": "chevilles d'atelier d'une 480 : 6 C1 verticales au centre de l'epaisseur (y = 120), une par ligne ; 4 C1 traversantes selon y dans les 4 montants P4, a deux hauteurs (z = 60 et 180). Lecture de « 6 verticales + 4 traversantes de montants ».",
+    "H-A3": "piges C3 de 40 mm : 2 par montant et par couche, de part et d'autre de l'interface avec le traversant voisin, selon x. 4 montants x 2 couches x 2 = 16 par brique, comme le catalogue.",
+    "H-A4": "liaison poteau-rang : 2 C1 par rang, decalees, y = 120, z = 40 et 200 dans le rang, 80 mm dans le poteau et 150 dans l'about voisin. C'est la regle D7, desormais au catalogue.",
+    "H-A5": "jeu fut/trou nul, pas de serrage a l'humidite.",
+    "H-A6": "frottement bois/bois 0,35.",
+    "H-A7": "echantillon E1 : le brief decrit deux traversants P2 exterieurs « fil selon y » et une cheville selon y, donc parallele a leur fil — ce qui ne peut pas se batir, un P2 ne faisant que 80 mm en y. La configuration reellement percee dans la brique est retenue : la cheville selon y traverse deux montants P4 (fil z) et l'ame P3 (fil x) entre eux, et c'est elle qui donne les conditions aux limites du brief (appuis en x = 0 des pieces exterieures, DX impose sur la piece centrale)."
+  }
+}

@@ -575,3 +575,6 @@ porte plus large) et `publication.yml`.
   et ce que les tests automatiques ne voient pas
 - [`docs/publier.md`](docs/publier.md) — comment le message de commit décide de
   la version, du tag et de la release
+- `specs/structure/` — les deux briefs de référence, et le dossier
+  Code_Aster qui dimensionne les essais dont dépendent les hypothèses du
+  module `structure`

@@ -1,0 +1,207 @@
+# ==============================================================================
+# E1 — cheville C1 en double cisaillement
+#
+# NON TESTE. Ce fichier a ete ecrit sans Code_Aster sous la main. Relisez chaque
+# mot-cle contre la documentation de votre version avant de vous fier au
+# resultat : DEFI_CONTACT et STAT_NON_LINE sont les deux endroits ou les
+# signatures bougent d'une version a l'autre.
+#
+# Geometrie : specs/structure/aster/cheville.json, maille par
+# salome_echantillon.py. Trois carrelets 80x80x240 empiles selon y, la cheville
+# de hetre Ø20 selon y les traversant tous. Les deux exterieurs sont des
+# montants P4 (fil z), le central est l'ame P3 (fil x). Voir H-A7 : ce n'est pas
+# tout a fait la description du brief, et le JSON dit pourquoi.
+#
+# Unites : N, mm, MPa. La masse volumique se donne donc en t/mm3.
+#
+# Ce qu'on en sort : la table TFU, soit F(u) de 0 a 15 mm en 30 pas. Puis, a la
+# main et selon l'EN 26891 :
+#   K_ser = pente entre 0,1 F_max et 0,4 F_max
+#   F_v,R = min(F_max, F a 15 mm)
+# et l'on porte F_v,R / 1000 dans Hypotheses.resistance_cheville_k (kN).
+# Attendu : 3 a 8 kN. En dessous de 2 kN, le 6 m du paragraphe 1.7 tombe.
+# ==============================================================================
+
+DEBUT(LANG='FR')
+
+MAIL = LIRE_MAILLAGE(FORMAT='MED', UNITE=20)
+
+MODE = AFFE_MODELE(
+    MAILLAGE=MAIL,
+    AFFE=_F(TOUT='OUI', PHENOMENE='MECANIQUE', MODELISATION='3D'),
+)
+
+# --- Materiaux (tableau M du brief) -------------------------------------------
+# Bois = materiau orthotrope. Le repere local L-T-N est tourne par ANGL_REP
+# selon le groupe FIL_*, plus bas dans AFFE_CARA_ELEM.
+#
+# H-M1 : G roulant (G_TN) pris a G/10 pour les resineux.
+# H-M2 : resistances du hetre indicatives, a confirmer.
+
+EPICEA = DEFI_MATERIAU(
+    ELAS_ORTH=_F(
+        E_L=11000.0,   # EN 338, C24, E_0,mean
+        E_T=370.0,     # EN 338, E_90,mean
+        E_N=370.0,
+        G_LT=690.0,    # EN 338, G_mean
+        G_LN=690.0,
+        G_TN=69.0,     # H-M1 : G/10
+        NU_LT=0.40,    # Kollmann, Bodig & Jayne
+        NU_LN=0.40,
+        NU_TN=0.50,
+        RHO=4.5e-10,   # 450 kg/m3 en t/mm3
+    ),
+)
+
+HETRE = DEFI_MATERIAU(
+    ELAS_ORTH=_F(
+        E_L=14000.0,
+        E_T=1100.0,
+        E_N=1100.0,
+        G_LT=1000.0,
+        G_LN=1000.0,
+        G_TN=300.0,
+        NU_LT=0.45,
+        NU_LN=0.45,
+        NU_TN=0.60,
+        RHO=7.0e-10,   # 700 kg/m3
+    ),
+)
+
+CHMAT = AFFE_MATERIAU(
+    MAILLAGE=MAIL,
+    AFFE=(
+        _F(GROUP_MA=('P_P3', 'P_P4'), MATER=EPICEA),
+        _F(GROUP_MA='CHEVILLES', MATER=HETRE),
+    ),
+)
+
+# Orientation du fil, groupe par groupe. ANGL_REP = (alpha, beta, gamma) amene
+# l'axe L du materiau sur la direction du fil : (0,0,0) le laisse selon x,
+# (90,0,0) l'amene selon y, (0,-90,0) selon z.
+CARA = AFFE_CARA_ELEM(
+    MODELE=MODE,
+    MASSIF=(
+        _F(GROUP_MA='FIL_X', ANGL_REP=(0.0, 0.0, 0.0)),
+        _F(GROUP_MA='FIL_Y', ANGL_REP=(90.0, 0.0, 0.0)),
+        _F(GROUP_MA='FIL_Z', ANGL_REP=(0.0, -90.0, 0.0)),
+        _F(GROUP_MA='CHEVILLES', ANGL_REP=(90.0, 0.0, 0.0)),  # fut selon y
+    ),
+)
+
+# --- Conditions aux limites ----------------------------------------------------
+# Les deux montants sont tenus par leur face x = 0 ; l'ame centrale est poussee
+# par sa face x = 240. Deux blocages ponctuels de plus empechent les modes de
+# corps rigide selon y et z sans rien contraindre du mecanisme etudie.
+
+BLOQ = AFFE_CHAR_MECA(
+    MODELE=MODE,
+    DDL_IMPO=(
+        _F(GROUP_MA='APPUI_EXT', DX=0.0, DY=0.0, DZ=0.0),
+        _F(GROUP_MA='CHARGE_CENTRE', DY=0.0, DZ=0.0),
+    ),
+)
+
+DEPL = AFFE_CHAR_MECA(
+    MODELE=MODE,
+    DDL_IMPO=_F(GROUP_MA='CHARGE_CENTRE', DX=1.0),
+)
+
+# --- Contact fut / trou --------------------------------------------------------
+# H-A5 : jeu nul, pas de serrage a l'humidite. H-A6 : frottement bois/bois 0,35.
+# Les interfaces bois/bois sont **collees** en premiere passe : la partition
+# Salome leur a donne des noeuds communs, et elles sont peu sollicitees ici. On
+# ne paie donc le contact qu'au fut de la cheville, la ou tout se joue.
+
+CONT = DEFI_CONTACT(
+    MODELE=MODE,
+    FORMULATION='CONTINUE',
+    FROTTEMENT='COULOMB',
+    ZONE=_F(
+        GROUP_MA_MAIT='FUT_C001',
+        GROUP_MA_ESCL='TROU_C001',
+        COULOMB=0.35,
+        ALGO_CONT='STANDARD',
+        ALGO_FROT='STANDARD',
+    ),
+)
+
+# --- Pilotage : 15 mm en 30 pas ------------------------------------------------
+
+RAMPE = DEFI_FONCTION(
+    NOM_PARA='INST',
+    VALE=(0.0, 0.0, 1.0, 15.0),
+    PROL_DROITE='LINEAIRE',
+    PROL_GAUCHE='CONSTANT',
+)
+
+LINST = DEFI_LIST_REEL(DEBUT=0.0, INTERVALLE=_F(JUSQU_A=1.0, NOMBRE=30))
+
+LARCH = DEFI_LIST_INST(
+    DEFI_LIST=_F(
+        LIST_INST=LINST,
+        # Le contact fait perdre la convergence : on subdivise plutot que
+        # d'echouer, jusqu'a quatre fois.
+        ECHEC=_F(EVENEMENT='ERREUR', ACTION='DECOUPE', SUBD_NIVEAU=4),
+    ),
+)
+
+RESU = STAT_NON_LINE(
+    MODELE=MODE,
+    CHAM_MATER=CHMAT,
+    CARA_ELEM=CARA,
+    EXCIT=(
+        _F(CHARGE=BLOQ),
+        _F(CHARGE=DEPL, FONC_MULT=RAMPE),
+    ),
+    CONTACT=CONT,
+    # Le bois reste elastique : il n'y a donc pas de F_max, et les criteres de
+    # rupture du tableau R s'appliquent a la main sur les champs. Pour obtenir
+    # une courbe qui plafonne, donner au hetre un VMIS_ISOT_LINE avec
+    # SY = f_v apparent — c'est une modelisation, a ecrire comme telle.
+    COMPORTEMENT=_F(RELATION='ELAS', DEFORMATION='PETIT', TOUT='OUI'),
+    INCREMENT=_F(LIST_INST=LARCH),
+    NEWTON=_F(REAC_ITER=1),
+    CONVERGENCE=_F(RESI_GLOB_RELA=1.0e-6, ITER_GLOB_MAXI=30),
+    SOLVEUR=_F(METHODE='MUMPS', NPREC=10),
+)
+
+RESU = CALC_CHAMP(
+    reuse=RESU,
+    RESULTAT=RESU,
+    CONTRAINTE=('SIGM_ELNO', 'SIGM_NOEU'),
+    FORCE='REAC_NODA',
+)
+
+# --- Sorties -------------------------------------------------------------------
+# TFU : le deplacement impose et la reaction totale des deux appuis. C'est la
+# courbe F(u) de l'EN 26891, et c'est tout ce que le module `structure` demande.
+
+TFU = POST_RELEVE_T(
+    ACTION=(
+        _F(
+            OPERATION='EXTRACTION',
+            INTITULE='DEPLACEMENT',
+            RESULTAT=RESU,
+            NOM_CHAM='DEPL',
+            GROUP_MA='CHARGE_CENTRE',
+            RESULTANTE='DX',
+            NOM_CMP='DX',
+        ),
+        _F(
+            OPERATION='EXTRACTION',
+            INTITULE='REACTION',
+            RESULTAT=RESU,
+            NOM_CHAM='REAC_NODA',
+            GROUP_MA='APPUI_EXT',
+            RESULTANTE='DX',
+            NOM_CMP='DX',
+        ),
+    ),
+)
+
+IMPR_TABLE(TABLE=TFU, UNITE=8, FORMAT='TABLEAU', SEPARATEUR=';')
+
+IMPR_RESU(FORMAT='MED', UNITE=80, RESU=_F(RESULTAT=RESU, NOM_CHAM=('DEPL', 'SIGM_NOEU')))
+
+FIN()
