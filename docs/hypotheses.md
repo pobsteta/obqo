@@ -84,6 +84,66 @@ vérifie plutôt que de le croire.
 l'entraxe de 6 m viennent du brief, pas d'une norme. Aucun DTU ne couvre ce
 système — voir [`docs/normes.md`](normes.md).
 
+## D7 — ✅ ACTÉ : deux chevilles par rang au poteau, et l'entraxe reste celui du brief
+
+**Décidé le 2026-09-04.** Deux décisions liées, parce qu'elles portent sur le
+même objet — la liaison entre le poteau raidisseur et la maçonnerie qu'il tient.
+
+### a) Deux C1 par rang, décalées en hauteur
+
+`RAIDISSEUR_PAR_RANG` passe de `C1: 1` à `C1: 2`. Une seule cheville ne liait le
+poteau qu'à un côté et le laissait pivoter dans son module. Elles sont
+**décalées** : celle de la couche 1 part vers la maçonnerie de gauche, celle de
+la couche 3 vers celle de droite, chacune traversant 80 mm de P10 et pénétrant
+de 150 mm dans l'about voisin — 230 mm, la longueur d'une C1 au catalogue.
+
+Où ces chevilles atterrissent n'est pas une question de goût, et la table de
+géométrie permet de le **vérifier** plutôt que de l'espérer :
+
+| Cheville | Ce qu'elle traverse sur ses 150 mm | Verdict |
+|---|---|---|
+| couche 3, z = 200 | la ligne 1 (P2), puis le tenon P5 | plein, à tous les rangs |
+| couche 1, z = 40 | la ligne 1 (P2), puis la mortaise de la ligne 2 | plein **dès le rang 1** : c'est le tenon du rang inférieur qui l'occupe |
+
+Le rang 0 fait donc exception : il repose sur le soubassement, sa mortaise est
+vide, et sa cheville basse traverserait 70 mm d'air. Le calepinage va chercher
+le tenon dans le rang d'en dessous et émet le constat `POTEAU-CHEVILLE-VIDE`
+pour les seules chevilles concernées — une par poteau, au premier rang. Deux
+remèdes au choix du chantier : poser les deux chevilles du rang 0 en couche 3,
+ou boucher la mortaise par un carré P8.
+
+**Ce qui reste à valider par le bureau d'études** : que deux chevilles de hêtre
+de 20 mm suffisent à transmettre la réaction d'un rang. Voir b).
+
+### b) `ENTRAXE_MAXI_RAIDISSEUR` reste la valeur du brief
+
+L'entraxe des raidisseurs est désormais une **valeur calculée** : `obqo entraxe`
+la produit, et `structure.txt` la justifie pan par pan. Avec les hypothèses par
+défaut, le pan admissible atteint 11 040 mm, presque le double des 6 000 mm du
+§1.7.
+
+**`units.ENTRAXE_MAXI_RAIDISSEUR` reste néanmoins à 6 000 mm**, et le moteur
+continue de poser les poteaux sur cette base. La raison est simple : la marge
+calculée est une marge sur des hypothèses, pas sur du bois. Les deux paramètres
+qui commandent le résultat — l'efficacité d'un rang et la résistance d'une
+cheville — ne sont mesurés par personne, et le critère qui borne l'entraxe est
+une flèche de service dont le seuil est un choix, pas une norme. Voir
+[`docs/etudes/structure.md`](etudes/structure.md) pour la critique complète.
+
+La constante bougera quand deux essais l'auront méritée :
+
+| Essai | Éprouvettes | Norme | Ce qu'il fixe |
+|---|---|---|---|
+| **E1** — cisaillement double d'une C1 Ø20 hêtre, entre carrelets épicéa C24 à 12 % d'humidité | 5 | EN 26891 / EN 383 | `resistance_cheville_k` (aujourd'hui 3 kN, borne basse assumée) et la raideur `K_ser` de la liaison |
+| **E2** — flexion 4 points d'un rang de 3 briques 480-S, joints courants chevillés | 3 | EN 408, adaptée | `efficacite_rang` (aujourd'hui 0,30), et **si la raideur et la résistance s'écartent d'un facteur 2, le paramètre doit se dédoubler** |
+
+Une variante E2b sur 3 rangs empilés (2 éprouvettes) dirait ce que le chevillage
+vertical apporte — le modèle calcule chaque rang seul, ce qui est défavorable et
+qu'aucune mesure ne confirme pour l'instant.
+
+**Question ouverte :** ces essais valent 1 500 à 4 000 € en laboratoire d'école.
+Est-ce un budget du projet, ou l'entraxe reste-t-il celui du brief pour toujours ?
+
 ## H3 — La 240-ANR n'existe pas au catalogue
 
 Quand une course de longueur impaire en modules oblige la demi-brique à tomber à
