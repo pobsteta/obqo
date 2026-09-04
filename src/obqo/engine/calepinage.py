@@ -29,6 +29,7 @@ from obqo.rules.catalogue import (
     LINTEAU_PAR_MONTANT,
     RAIDISSEUR_PAR_RANG,
 )
+from obqo.rules.geometrie_brique import CHEVILLES_POTEAU, pieces_de, vides_traverses
 from obqo.units import (
     APPUI_LINTEAU,
     LARGEUR_BAIE_JAMBAGE_DOUBLE,
@@ -239,6 +240,56 @@ def _montants_de_linteau(mur: Mur, o: Ouverture) -> Quincaillerie:
     )
 
 
+def _voisine_du_poteau(rang: Rang, u: int, about: str) -> BriquePosee | None:
+    """Brique qui presente cet about au module de poteau pose en `u`."""
+    if about == "fin":
+        return next((b for b in rang.briques if b.fin == u), None)
+    return next((b for b in rang.briques if b.u == u + MODULE_POTEAU), None)
+
+
+def _tenons(brique: BriquePosee) -> set[int]:
+    """Abscisses, dans le repere du mur, des tenons que porte cette brique.
+
+    Un tenon deborde de 80 vers le haut : il occupe au rang superieur la mortaise
+    de meme abscisse. Tous sont a mi-epaisseur, il n'y a donc pas d'ambiguite
+    en y.
+    """
+    return {brique.u + p.x for p in pieces_de(brique.ref) if p.ref in ("P5", "P5-A")}
+
+
+def chevilles_de_poteau_dans_le_vide(mur: MurCalepine) -> list[tuple[int, int, int]]:
+    """Chevilles de liaison poteau-rang qui deboucheraient dans une mortaise.
+
+    **Regle actee (D7)** — deux C1 par rang, decalees : celle de la couche 1
+    (z = 40) plonge dans l'about de la maconnerie de gauche, celle de la couche 3
+    (z = 200) dans celui de droite. La table de geometrie dit ce que chacune
+    traverse sur ses 150 mm de penetration.
+
+    Une seule cellule peut manquer sur ces trajets : la mortaise de la ligne 2 en
+    couche 1, celle qui recoit le tenon du rang inferieur. La fonction ne le
+    suppose pas : elle **va chercher** le tenon dans le rang d'en dessous, a la
+    meme abscisse. Il s'ensuit que seul le rang 0 est signale — mais si la
+    composition d'une brique changeait, le constat suivrait de lui-meme.
+
+    Rend des triplets (rang, abscisse du poteau, cote z de la cheville).
+    """
+    creux: list[tuple[int, int, int]] = []
+    for indice, rang in enumerate(mur.rangs):
+        dessous = mur.rangs[indice - 1] if indice else None
+        for u in mur.poteaux:
+            for about, z in CHEVILLES_POTEAU:
+                brique = _voisine_du_poteau(rang, u, about)
+                if brique is None:
+                    continue
+                sous_jacente = _voisine_du_poteau(dessous, u, about) if dessous else None
+                tenus = _tenons(sous_jacente) if sous_jacente is not None else set()
+                for x, _, zc in vides_traverses(brique.ref, about, z):
+                    if zc == 0 and brique.u + x in tenus:
+                        continue
+                    creux.append((rang.indice, u, z))
+    return creux
+
+
 def calepiner(plan: Plan) -> tuple[Calepinage | None, Rapport]:
     """Calepine le plan. Retourne None si le plan porte des erreurs."""
     sq = squelette(plan)
@@ -354,6 +405,23 @@ def calepiner(plan: Plan) -> tuple[Calepinage | None, Rapport]:
             "about. Le catalogue du brief ne definit qu'une 480-ANR ; une 240-ANR "
             "est supposee, son tenon unique etant deja a 120 de l'about, donc sur "
             f"l'axe de la colonne d'angle. Concerne : {detail}",
+        )
+
+    creux = [(m.id, *c) for m in calepinage.murs for c in chevilles_de_poteau_dans_le_vide(m)]
+    if creux:
+        detail = " ; ".join(
+            f"{identifiant} rang {rang} poteau a {u} mm, cheville a z = {z}"
+            for identifiant, rang, u, z in creux
+        )
+        rapport.ajouter(
+            Gravite.HYPOTHESE,
+            "POTEAU-CHEVILLE-VIDE",
+            f"{len(creux)} chevilles",
+            "regle D7 : la C1 basse de liaison poteau-rang traverse la mortaise de "
+            "la ligne 2, que remplit le tenon du rang inferieur — sauf au premier "
+            "rang, qui repose sur le soubassement. Poser au rang 0 les deux "
+            "chevilles en couche 3, ou boucher la mortaise par un carre P8. "
+            f"Concerne : {detail}",
         )
 
     calepinage.avertissements = [str(c) for c in rapport.avertissements]

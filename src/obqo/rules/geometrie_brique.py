@@ -17,7 +17,7 @@ soit occupees, soit une poche ou un trou de reception identifie.
 
 from __future__ import annotations
 
-from typing import NamedTuple
+from typing import Final, NamedTuple
 
 from obqo.model.systeme import Ref
 
@@ -107,19 +107,86 @@ def pieces_de(ref: Ref) -> list[PiecePlacee]:
     return sorted(pieces, key=lambda p: (p.z, p.y, p.x, p.ref))
 
 
-def cellules_vides(ref: Ref) -> list[tuple[int, int, int]]:
-    """Cellules de 80 non occupees : poches ouvertes et trous de reception."""
-    longueur = ref.longueur
-    occupees = set()
+def cellules_occupees(ref: Ref) -> set[tuple[int, int, int]]:
+    """Cellules de 80 que du bois occupe, reperees par leur coin bas-gauche."""
+    occupees: set[tuple[int, int, int]] = set()
     for p in pieces_de(ref):
         for x in range(p.x, p.x + p.dx, MODULE):
             for y in range(p.y, p.y + p.dy, MODULE):
                 for z in range(p.z, min(p.z + p.dz, 240), MODULE):
                     occupees.add((x, y, z))
+    return occupees
+
+
+def cellules_vides(ref: Ref) -> list[tuple[int, int, int]]:
+    """Cellules de 80 non occupees : poches ouvertes et trous de reception."""
+    occupees = cellules_occupees(ref)
     return sorted(
         (x, y, z)
-        for x in range(0, longueur, MODULE)
+        for x in range(0, ref.longueur, MODULE)
         for y in (0, MODULE, 160)
         for z in (0, MODULE, 160)
         if (x, y, z) not in occupees
     )
+
+
+# --- Liaison poteau raidisseur / maconnerie (D7) -------------------------------
+# Le poteau est cheville en travers a chaque rang. Ou ces chevilles atterrissent
+# n'est pas une question de gout : une cheville qui debouche dans une mortaise
+# ne tient rien. La table ci-dessus permet de le verifier plutot que de l'esperer.
+
+PENETRATION_CHEVILLE_POTEAU: Final[int] = 150
+"""Ce qu'une C1 de liaison poteau-rang penetre dans l'about voisin, mm.
+
+80 mm dans le P10 et 150 dans l'about : 230, la longueur d'une C1 au catalogue.
+"""
+
+CHEVILLES_POTEAU: Final[tuple[tuple[str, int], ...]] = (("fin", 40), ("debut", 200))
+"""D7 : les deux C1 d'un rang, en (about voisin vise, hauteur z).
+
+Celle de la couche 1 (z = 40) part vers la maconnerie de gauche, dont c'est
+l'about « fin » qui fait face au poteau ; celle de la couche 3 (z = 200) part
+vers celle de droite, qui lui presente son about « debut ». Decalees ainsi,
+elles cousent le poteau aux deux cotes sans se croiser dans le P10.
+"""
+
+AXE_CHEVILLE_POTEAU: Final[int] = 120
+"""Profondeur y des deux C1 : l'axe du mur, a mi-epaisseur."""
+
+
+def _cellule(valeur: int) -> int:
+    """Coin de la cellule de 80 qui contient cette coordonnee."""
+    return valeur // MODULE * MODULE
+
+
+def trajet_de_cheville(
+    ref: Ref, about: str, z: int, penetration: int = PENETRATION_CHEVILLE_POTEAU
+) -> list[tuple[int, int, int]]:
+    """Cellules qu'une C1 de liaison traverse en entrant par cet about.
+
+    `about` vaut « debut » (x = 0) ou « fin » (x = longueur). La cheville court
+    selon x, a mi-epaisseur et a la hauteur `z`.
+    """
+    if about not in ("debut", "fin"):
+        raise ValueError(f"about {about!r} : « debut » ou « fin » attendu")
+    longueur = ref.longueur
+    if about == "debut":
+        bornes = range(0, penetration, MODULE)
+    else:
+        bornes = range(_cellule(longueur - penetration), longueur, MODULE)
+    y, zc = _cellule(AXE_CHEVILLE_POTEAU), _cellule(z)
+    return [(x, y, zc) for x in bornes]
+
+
+def vides_traverses(
+    ref: Ref, about: str, z: int, penetration: int = PENETRATION_CHEVILLE_POTEAU
+) -> list[tuple[int, int, int]]:
+    """Cellules vides que cette C1 traverse. Liste vide = la cheville tient.
+
+    Une seule cellule peut y apparaitre : la mortaise de la ligne 2 en couche 1,
+    qui recoit le tenon du rang inferieur. Elle est donc pleine des le rang 1 —
+    mais vide au rang 0, qui n'a pas de rang en dessous. C'est a l'appelant, qui
+    seul connait l'indice du rang, d'en tirer la conclusion.
+    """
+    occupees = cellules_occupees(ref)
+    return [c for c in trajet_de_cheville(ref, about, z, penetration) if c not in occupees]

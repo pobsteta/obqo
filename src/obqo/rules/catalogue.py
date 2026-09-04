@@ -112,14 +112,22 @@ LINTEAU_PAR_MONTANT: Final[Counter[str]] = Counter({"P4": 1, "C1": 2})
 CHAINAGE_PAR_BRIQUE: Final[Counter[str]] = Counter({"C1": 2})
 """Paragraphe 1.7 : lisse de chainage chevillee au dernier rang, 2 par brique."""
 
-RAIDISSEUR_PAR_RANG: Final[Counter[str]] = Counter({"P6": 9, "C1": 1})
+RAIDISSEUR_PAR_RANG: Final[Counter[str]] = Counter({"P6": 9, "C1": 2})
 """Paragraphe 1.7 : poteau raidisseur cheville en travers a chaque rang.
 
 **Regle actee (D6)** — le module de 240 qui porte le poteau se compose du P10
 (80 le long du mur, 240 d'epaisseur, toute la hauteur) et de 160 mm de
 remplissage par rang. Ces 160 x 240 x 240 se batissent en carrelet 80x80 de
 160 de long, soit le P6 : trois rangees par trois lignes, neuf pieces. Le
-volume tombe juste, et un test le verifie plutot que de le croire."""
+volume tombe juste, et un test le verifie plutot que de le croire.
+
+**Regle actee (D7)** — **deux** C1 par rang, decalees en hauteur : celle de la
+couche 1 vers l'about de gauche, celle de la couche 3 vers l'about de droite.
+Chacune traverse 80 mm de P10 et penetre de 150 mm dans l'about voisin. Une
+seule cheville ne liait le poteau qu'a un cote et le laissait pivoter ; deux
+decalees le cousent aux deux maconneries et repartissent l'effort. C'est aussi
+ce nombre que lit le module `structure` : la resistance de la liaison est une
+regle d'atelier, elle ne se duplique pas dans un calcul."""
 
 
 # --- Constantes de metre du brief (paragraphe 1.8) ----------------------------

@@ -7,13 +7,17 @@ from itertools import pairwise
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
+from obqo.engine.calepinage import calepiner, chevilles_de_poteau_dans_le_vide
 from obqo.engine.raidissement import (
     MODULES_MAXI_PAN,
     coupures,
     positions_dans_un_pan,
     positions_manquantes,
 )
+from obqo.model.plan import Plan
+from obqo.model.systeme import Ref
 from obqo.rules.catalogue import RAIDISSEUR_PAR_RANG, longueur_carrelet
+from obqo.rules.geometrie_brique import vides_traverses
 from obqo.units import (
     ENTRAXE_MAXI_RAIDISSEUR,
     GRILLE,
@@ -21,6 +25,8 @@ from obqo.units import (
     MODULE_POTEAU,
     REMPLISSAGE_POTEAU,
 )
+
+from .conftest import plan_rectangle
 
 
 def pans(longueur: int, poteaux: list[int]) -> list[int]:
@@ -110,3 +116,56 @@ def test_le_remplissage_du_module_a_le_bon_volume() -> None:
     p6 = RAIDISSEUR_PAR_RANG["P6"]
     assert p6 * 80 * 80 * 160 == vide
     assert longueur_carrelet(RAIDISSEUR_PAR_RANG) == p6 * 160
+
+
+# --- D7 : deux chevilles par rang, decalees -----------------------------------
+
+
+def test_le_catalogue_pose_deux_chevilles_par_rang() -> None:
+    """D7. Une seule C1 ne liait le poteau qu'a un cote et le laissait pivoter."""
+    assert RAIDISSEUR_PAR_RANG["C1"] == 2
+
+
+def test_la_cheville_haute_de_liaison_traverse_du_plein() -> None:
+    """Celle de la couche 3 plante dans le tenon P5 : c'est le meilleur bois."""
+    for ref in (Ref.B480_A, Ref.B480_AA, Ref.B240_A, Ref.B240_AA):
+        for about in ("debut", "fin"):
+            assert vides_traverses(ref, about, 200) == []
+
+
+def test_la_cheville_basse_de_liaison_vise_la_mortaise_du_tenon_inferieur() -> None:
+    """Celle de la couche 1 traverse la reception, pleine des le rang 1.
+
+    Ce n'est pas un defaut : c'est le tenon du rang du dessous qui l'occupe. Le
+    test verrouille le fait, parce que c'est lui qui rend le rang 0 particulier.
+    """
+    for ref in (Ref.B480_A, Ref.B240_A):
+        for about in ("debut", "fin"):
+            vides = vides_traverses(ref, about, 40)
+            assert len(vides) == 1
+            _, y, z = vides[0]
+            assert (y, z) == (80, 0)
+
+
+def test_seul_le_premier_rang_a_une_cheville_de_poteau_dans_le_vide() -> None:
+    """Au rang 0 il n'y a pas de rang inferieur, donc pas de tenon dans la mortaise.
+
+    Un mur nu de 13,92 m recoit deux poteaux : deux chevilles basses en l'air,
+    et aucune au-dessus. Le rapport de calepinage le dit de lui-meme.
+    """
+    plan = plan_rectangle(13920, 10560)
+    calepinage, rapport = calepiner(plan)
+    assert calepinage is not None
+    mur = next(m for m in calepinage.murs if len(m.poteaux) == 2)
+    creux = chevilles_de_poteau_dans_le_vide(mur)
+    assert [rang for rang, _, _ in creux] == [0, 0]
+    assert {z for _, _, z in creux} == {40}
+    assert any(c.code == "POTEAU-CHEVILLE-VIDE" for c in rapport.constats)
+
+
+def test_un_mur_sans_poteau_ne_signale_aucune_cheville(maison: Plan) -> None:
+    """La maison d'exemple n'a aucun poteau ajoute : le constat n'a pas lieu d'etre."""
+    calepinage, rapport = calepiner(maison)
+    assert calepinage is not None
+    assert all(not m.poteaux for m in calepinage.murs)
+    assert not any(c.code == "POTEAU-CHEVILLE-VIDE" for c in rapport.constats)
